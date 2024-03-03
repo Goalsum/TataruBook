@@ -1,0 +1,9 @@
+main:
+  - title: "Github"
+    url: https://github.com/Goalsum/TataruBook
+
+chinese:
+  - title: "内容列表"
+    children:
+      - title: "文档使用说明"
+        url: /index.html
