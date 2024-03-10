@@ -3,7 +3,11 @@ main:
     url: https://github.com/Goalsum/TataruBook
 
 chinese:
-  - title: "内容列表"
+  - title: "类型"
     children:
       - title: "文档使用说明"
         url: /index.html
+      - title: "表和视图"
+        url: /table_view.html
+      - title: "命令行手册"
+        url: /commands.html
