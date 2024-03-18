@@ -11,5 +11,23 @@ TataruBook是一个使用复式记账方式的、基于SQL表和视图的、以�
 
 有2种方式：
 
-1. 首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)上下载tatarubook.py文件，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何安装了Python的操作系统。
+1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)上下载tatarubook.py文件，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何安装了Python的操作系统。
 1. 从[发布页面](https://github.com/Goalsum/TataruBook/releases)下载tatarubook.zip包，解压缩到任何一个文件夹，然后运行其中的tatarubook.exe程序。这种方式不需要安装Python，但是只适用于Windows 10或以上版本的Windows操作系统。
+
+第一种方式是推荐的，因为采用这种方式的tatarubook.py运行脚本直接使用系统中最新的Python解释器、SQLite等依赖库，占用的磁盘空间极小。如果用第二种方式，则Python解释器、SQLite以及其他依赖的Python库都会被下载并占用磁盘空间，但好处是如果系统中这些库缺失或者有问题，不会影响tatarubook软件的运行。
+
+**注意：**采用第二种方式使用软件时，切勿修改、删除或移动tatarubook.zip包解压后所在目录中的任何一个文件（包括除tatarubook.exe以外的文件），这些文件都是程序运行所需要依赖的。
+{: .notice--warning}
+
+# 如何使用TataruBook进行记账？
+
+你需要先了解一些概念：
+
+TataruBook只是一个程序（严格的说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在由用户管理的xxx.db文件中（文件名由用户自己指定）。TataruBook可以对用户指定的xxx.db文件进行操作，且TataruBook的大多数命令都需要指定一个db文件名作为参数。
+
+## 什么是db文件？
+
+db文件是保存了用户记账数据的文件。每个db文件都是SQLite格式的数据库文件，可以使用任何支持SQLite数据文件格式的软件进行查看和修改。
+
+**注意：**使用其他软件（非TataruBook）修改db文件时，只能添加、删除、修改记录，不可修改表结构和视图！否则，TataruBook将无法保证正确操作这个db文件。
+{: .notice--warning}
