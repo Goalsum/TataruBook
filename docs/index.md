@@ -29,5 +29,20 @@ TataruBook只是一个程序（严格的说，是一个Python脚本），它自�
 
 db文件是保存了用户记账数据的文件。每个db文件都是SQLite格式的数据库文件，可以使用任何支持SQLite数据文件格式的软件进行查看和修改。
 
-**注意：**使用其他软件（非TataruBook）修改db文件时，只能添加、删除、修改记录，不可修改表结构和视图！否则，TataruBook将无法保证正确操作这个db文件。
+如果使用其他软件来打开TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT表）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用它的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT表。
+{: .notice}
+
+**注意：**使用其他软件（非TataruBook）修改db文件时，只能添加、删除、修改记录，不可修改表和视图的定义！否则，TataruBook将无法保证正确操作这个db文件。
 {: .notice--warning}
+
+## 我该从哪儿开始？
+
+在开始上手使用TataruBook之前，我推荐你先阅读[表和视图](/table_view.html)文档。这篇文档介绍了db文件中所有的表和视图，以及它们之间的关系。你需要先对几个基本的表有所了解，才能正确的输入记账数据。
+
+如果你觉得自己对需要用到的表结构已经理解得差不多了，那么可以阅读[命令行手册](/commands.html)文档，并使用其中的命令来操作自己的数据库文件。
+
+对于已经充分理解了db文件中的表和视图，并且会使用SQL语言的高级用户，你可以使用除TataruBook之外的其他软件来打开db文件，自己编写SQL语句进行任意查询和编辑（但是切记不要修改表和视图的定义）。
+
+# 如何反馈问题和需求？
+
+请在[Github仓库](https://github.com/Goalsum/TataruBook)上提交issue，我会查看并进行回复。
