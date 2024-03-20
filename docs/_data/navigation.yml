@@ -5,7 +5,7 @@ main:
 chinese:
   - title: "目录"
     children:
-      - title: "文档使用说明"
+      - title: "总体介绍"
         url: /index.html
       - title: "表和视图"
         url: /table_view.html
