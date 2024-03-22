@@ -69,6 +69,9 @@ title: 表和视图
 - `dst_account`（整数）：目标账户索引（在复式记账法中称为**Credit**），不允许为空，必须是[account_info表]({{ site.baseurl }}/table_view.html#account_info)中存在的某个账户索引。
 - `comment`（字符串）：交易备注信息，可以为空。仅用于在视图中展示，不会影响计算。
 
+对新用户来说，会面临如何把现有账户的当前余额导入到表中的问题。建议的做法是：在最早的一天，增加一笔从“历史余额”外部账户到自己对应账户的交易记录。
+{: .notice}
+
 ## receiving
 
 交易明细中目标账户的变动数额，见[postings表]({{ site.baseurl }}/table_view.html#postings)中的相关描述。
@@ -95,3 +98,57 @@ title: 表和视图
 - 同一资产在同一天只能有一个价格，即任两条记录的`price_date`和`asset_index`不能都相同。
 - 在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)这两天，所有非标准资产都必须有价格，否则总资产无法计算。
 - 非标准资产与外部账户发生了交易的日子必须要有价格。比如，如果标准资产为人民币，那么当有美元账户产生了消费时，消费当天必须要有美元兑人民币的价格。这是为了能把消费换算成人民币价值进行统计。
+
+## start_date
+
+统计周期的起始时间点。统计周期用于计算一段时间内的总资产变化、投资收益率等。比如要统计2023年全年的资产变化情况，则`start_date`为`2022-12-31`，`end_date`为`2023-12-31`。注意开始日期当天并不包含在统计周期内，因为资产计算是以开始日期当天结束时的资产作为起点。
+
+**字段**
+- `val``（字符串）：开始日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
+
+**约束**
+- 该表只允许有一条记录。
+- 开始日期必须小于结束日期。
+
+## end_date
+
+统计周期的结束时间点。统计周期用于计算一段时间内的总资产变化、投资收益率等。比如要统计2023年全年的资产变化情况，则`start_date`为`2022-12-31`，`end_date`为`2023-12-31`。注意结束日期当天也包含在统计周期内。
+
+**字段**
+- `val``（字符串）：结束日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
+
+**约束**
+- 该表只允许有一条记录。
+- 结束日期必须大于开始日期。
+
+# 视图
+
+## single_entries
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+把输入的复式记账交易记录转换为单式记账。每一条[postings表]({{ site.baseurl }}/table_view.html#postings)中的记录都会变成该视图中的两条记录。
+
+**字段**
+- `posting_index`：来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`posting_index`。
+- `trade_date`：来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`trade_date`。
+- `account_index`：来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`src_account`和`dst_account`。
+- `amount`：来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`src_amount`（并转换）或者[receiving表]({{ site.baseurl }}/table_view.html#postings)中的`dst_amount`。
+- `target`：交易的另一方，来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`src_account`和`dst_account`。
+- `comment`：来自[postings表]({{ site.baseurl }}/table_view.html#postings)中的`comment`。
+
+## statements
+
+把输入的复式记账交易记录转换为单式记账，并且展示交易的账户关联信息。
+
+**字段**
+- 包含[single_entries视图]({{ site.baseurl }}/table_view.html#single_entries)中的所有字段，以及：
+- `src_name`、`target_name`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `asset_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+- `is_external`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`is_external`。
+- `balance`：从该账户之前的交易数额所推导出的账户余额。注意由于交易记录只精确到天，因此在一天内的实时余额不一定准确。
+
+**示例**
+
+假设现有表内容如下：
