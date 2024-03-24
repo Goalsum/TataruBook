@@ -26,12 +26,13 @@ title: 表和视图
 
 ## standard_asset
 
-标准资产，或者叫**本位币**。所有其他资产都会换算成本位币来统计价值。通常这张表中只应当有一条记录。
+标准资产，或者叫**本位币**。所有其他资产都会换算成本位币来统计价值。
 
 **字段**
 - `asset_index`（整数）：资产索引，不允许为空，必须是[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中存在的某个资产索引。
 
 **约束**
+- 该表只允许有一条记录。
 - [prices表]({{ site.baseurl }}/table_view.html#prices)中任一条记录的`asset_index`不允许等于该表中的`asset_index`，因为本位币自身的价格固定为`1`。
 
 ## account_info
@@ -55,6 +56,9 @@ title: 表和视图
 **字段**
 - `account_index`（整数）：账户索引，不允许为空，必须是[account_info表]({{ site.baseurl }}/table_view.html#account_info)中存在的某个账户索引。
 
+**约束**
+- 所有利息账户都要求为外部账户，即对应[account_info表]({{ site.baseurl }}/table_view.html#account_info)中`is_external`字段为`1`。
+
 ## postings
 
 交易明细。根据复式记账规则，每一笔交易都是资产从一个账户转移到另一个账户，因此表中每一条记录都会包含源账户和目标账户，交易使得源账户的余额变少，目标账户余额变多。对于日常开销或者工资收入这类交易，源账户或目标账户可能是虚拟的外部账户。
@@ -68,6 +72,9 @@ title: 表和视图
 - `src_amount`（浮点数）：源账户的变动数额，不允许为空。因为源账户的余额总是减少的，该值必须小于等于`0`。
 - `dst_account`（整数）：目标账户索引（在复式记账法中称为**Credit**），不允许为空，必须是[account_info表]({{ site.baseurl }}/table_view.html#account_info)中存在的某个账户索引。
 - `comment`（字符串）：交易备注信息，可以为空。仅用于在视图中展示，不会影响计算。
+
+**约束**
+- 一条记录中，`src_account`的值不能等于`dst_account`的值。
 
 对新用户来说，会面临如何把现有账户的当前余额导入到表中的问题。建议的做法是：在最早的一天，增加一笔从“历史余额”外部账户到自己对应账户的交易记录。
 {: .notice}
@@ -97,7 +104,7 @@ title: 表和视图
 - 标准资产不允许有价格。
 - 同一资产在同一天只能有一个价格，即任两条记录的`price_date`和`asset_index`不能都相同。
 - 在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)这两天，所有非标准资产都必须有价格，否则总资产无法计算。
-- 非标准资产与外部账户发生了交易的日子必须要有价格。比如，如果标准资产为人民币，那么当有美元账户产生了消费时，消费当天必须要有美元兑人民币的价格。这是为了能把消费换算成人民币价值进行统计。
+- 非标准资产与外部账户发生了交易的日子必须要有其价格。比如，如果标准资产为人民币，那么当有美元账户产生了消费时，消费当天必须要有美元兑人民币的价格。这是为了能把消费换算成人民币价值进行统计。
 
 ## start_date
 
@@ -152,3 +159,102 @@ title: 表和视图
 **示例**
 
 假设现有表内容如下：
+
+`asset_info`
+
+| asset_index | asset_name | asset_category |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | 加隆德炼铁厂股份 | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`account_info`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 莫古证券_加隆德股份 | 2 | 0 |
+| 3 | 餐饮消费 | 1 | 1 |
+| 4 | 工资 | 1 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_amount | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2023-01-06 | 4 | -50000.0 | 1 | 领取工资 |
+| 2 | 2023-01-07 | 1 | -67.5 | 3 | 背水咖啡厅晚餐 |
+| 3 | 2023-01-09 | 1 | -13000.0 | 2 | 购入加隆德股份 |
+
+`receiving`
+
+| posting_index | dst_amount |
+|:-:|:-:|
+| 3 | 260.0 |
+
+则`statements`视图内容为：
+
+| posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2023-01-06 | 1 | 50000.0 | 4 | 领取工资 | 萨雷安银行活期 | 1 | 0 | 工资 | 50000.0 |
+| 2 | 2023-01-07 | 1 | -67.5 | 3 | 背水咖啡厅晚餐 | 萨雷安银行活期 | 1 | 0 | 餐饮消费 | 49932.5 |
+| 3 | 2023-01-09 | 1 | -13000.0 | 2 | 购入加隆德股份 | 萨雷安银行活期 | 1 | 0 | 莫古证券_加隆德股份 | 36932.5 |
+| 3 | 2023-01-09 | 2 | 260.0 | 1 | 购入加隆德股份 | 莫古证券_加隆德股份 | 2 | 0 | 萨雷安银行活期 | 260.0 |
+| 2 | 2023-01-07 | 3 | 67.5 | 1 | 背水咖啡厅晚餐 | 餐饮消费 | 1 | 1 | 萨雷安银行活期 | 67.5 |
+| 1 | 2023-01-06 | 4 | -50000.0 | 1 | 领取工资 | 工资 | 1 | 1 | 萨雷安银行活期 | -50000.0 |
+
+说明：`statements`视图比较像通常人们所习惯的单式记账账单。如果只想查看某一个账户的变动记录，可以用其他软件打开并按`account_index`或`src_name`筛选。比如筛选`account_index`为`1`的记录，就能看到`萨雷安银行活期`的所有历史变动和余额变化。
+
+## start_balance
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+在[start_date]({{ site.baseurl }}/table_view.html#start_date)这天结束时，所有内部账户的余额。
+
+**字段**
+- `date_val`：来自[start_date表]({{ site.baseurl }}/table_view.html#start_date)中的`val`。
+- `account_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
+- `account_name`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `balance`：通过累加`start_date`及之前所有交易记录计算得到的账户余额。
+- `asset_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+
+## start_stats
+
+在[start_date]({{ site.baseurl }}/table_view.html#start_date)这天结束时，所有内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/table_view.html#standard_asset)的价值。
+
+**字段**
+- 包含[start_balance视图]({{ site.baseurl }}/table_view.html#start_balance)中的所有字段，以及：
+- `asset_category`：来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
+- `asset_name`：来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
+- `price`：来自[prices表]({{ site.baseurl }}/table_view.html#account_info)中的`price`；如果是标准资产，则值为`1`。
+- `worth`：通过$$ price \times balance $$计算得到的价值。
+
+**示例**
+
+假设在[statements视图]({{ site.baseurl }}/table_view.html#statements)中示例已有表基础上，另外加入表：
+
+`start_date`
+
+| val |
+|:-:|
+| 2023-1-9 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2023-1-9 | 2 | 51 |
+
+则`start_stats`视图内容为：
+
+| asset_category | date_val | account_index | account_name | balance | asset_index | asset_name | price | worth |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 |
+| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 |
+
+说明：注意`balance`列的值和`statements`视图中该日期各账户的余额是一致的；外部账户不会在`start_stats`视图里出现。根据`postings`表中购买`加隆德炼铁厂股份`的交易记录可以换算当时交易的价格是$$ 13000 \div 260 = 50 $$，但是`prices`表中`2023-1-9`的价格记录是$$ 51 $$，且账户资产价值是根据$$ 51 $$计算的。这个例子展示了实时交易价格可以和收盘价不同。
