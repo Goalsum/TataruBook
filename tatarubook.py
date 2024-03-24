@@ -288,9 +288,10 @@ COMBINED_INSERT = {("postings", 7):
 
 VALUE_LOOKUPS = {("postings", "src_account"): (("account_info", 0, 0), ("account_info", 1, 0)),
                  ("postings", "dst_account"): (("account_info", 0, 0), ("account_info", 1, 0)),
+                 ("interest_account", "account_index"): (("account_info", 0, 0), ("account_info", 1, 0)),
                  ("account_info", "asset_index"): (("asset_info", 0, 0), ("asset_info", 1, 0)),
                  ("prices", "asset_index"): (("asset_info", 0, 0), ("asset_info", 1, 0)),
-                 ("interest_account", "account_index"): (("account_info", 0, 0), ("account_info", 1, 0))}
+                 ("standard_asset", "asset_index"): (("asset_info", 0, 0), ("asset_info", 1, 0))}
 
 
 def db_file_to_path(f):
