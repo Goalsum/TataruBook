@@ -389,8 +389,8 @@ def integrity_check(con):
         all_passed = False
 
     count = len(con.execute("SELECT * FROM standard_asset").fetchall())
-    if not count:
-        print("standard_asset is empty.")
+    if count != 1:
+        print("standard_asset should contain exactly 1 row but {} row(s) are found.".format(count))
         all_passed = False
 
     views = (
