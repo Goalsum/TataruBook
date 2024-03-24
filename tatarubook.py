@@ -319,6 +319,7 @@ def db_csv_file_to_path(f):
 @contextmanager
 def fence(con):
     try:
+        con.execute("PRAGMA foreign_keys = ON")
         yield con
     except Exception as e:
         print(e)
@@ -352,7 +353,6 @@ def init(db_file):
         return
 
     with fence(sqlite3.connect(db_path)) as con:
-        con.execute("PRAGMA foreign_keys = ON")
         con.executescript(INIT_SQL_CMD)
 
     print("{} file created".format(db_file))
