@@ -232,7 +232,7 @@ title: 表和视图
 - `asset_category`：来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
 - `asset_name`：来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
 - `price`：来自[prices表]({{ site.baseurl }}/table_view.html#account_info)中的`price`；如果是标准资产，则值为`1`。
-- `worth`：通过$$ price \times balance $$计算得到的价值。
+- `worth`：通过$$ \text{price} \times \text{balance} $$计算得到的价值。
 
 **示例**
 
@@ -258,3 +258,87 @@ title: 表和视图
 | 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 |
 
 说明：注意`balance`列的值和`statements`视图中该日期各账户的余额是一致的；外部账户不会在`start_stats`视图里出现。根据`postings`表中购买`加隆德炼铁厂股份`的交易记录可以换算当时交易的价格是$$ 13000 \div 260 = 50 $$，但是`prices`表中`2023-1-9`的价格记录是$$ 51 $$，且账户资产价值是根据$$ 51 $$计算的。这个例子展示了实时交易价格可以和收盘价不同。
+
+## diffs
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+每个账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。
+
+**字段**
+- `account_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
+- `account_name`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `amount`：通过累加`start_date`和`end_date`之间所有交易记录计算得到的交易额统计。
+- `asset_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+
+## comparison
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+每个账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)的初始余额，[end_date]({{ site.baseurl }}/table_view.html#end_date)的最终余额，以及两个日期之间的交易额统计。
+
+**字段**
+- 包含[diffs视图]({{ site.baseurl }}/table_view.html#diffs)中的`account_index`、`account_name`、`asset_index`字段，以及：
+- `init_amount`：来自[start_balance视图]({{ site.baseurl }}/table_view.html#start_balance)中的`balance`。
+- `diff`：来自[diffs视图]({{ site.baseurl }}/table_view.html#diffs)中的`amount`；或者，如果一个账户在统计周期内没有变化，则为`0`。
+- `end_amount`：通过$$ \text{init_amount} + \text{diff} $$计算得到的最终余额。
+
+## end_stats
+
+在[end_date]({{ site.baseurl }}/table_view.html#end_date)这天结束时，所有内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/table_view.html#standard_asset)的价值。
+
+注意：[start_date表]({{ site.baseurl }}/table_view.html#start_date)中必须要有一条记录，才能使`end_stats`视图显示正确的内容。
+{: .notice--warning}
+
+**字段**
+- 除以下字段外，其他字段均与[start_stats视图]({{ site.baseurl }}/table_view.html#start_stats)中的字段相同：
+- `balance`：通过累加`end_date`及之前所有交易记录计算得到的账户余额。
+
+**示例**
+
+假设在[statements视图]({{ site.baseurl }}/table_view.html#statements)中示例已有表基础上，另外加入表：
+
+`start_date`
+
+| val |
+|:-:|
+| 2023-1-5 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2023-1-9 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2023-1-9 | 2 | 51 |
+
+则`end_stats`视图内容为：
+
+| asset_category | date_val | account_index | account_name | balance | asset_index | asset_name | price | worth |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 |
+| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 |
+
+说明：可以看到`end_stats`视图的内容与[start_stats视图]({{ site.baseurl }}/table_view.html#start_stats)几乎一样，仅统计日期为`end_date`这一点有区别。
+
+## expense_worth
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+每个**外部账户**在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
+
+**字段**
+- `asset_category`：来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
+- `account_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
+- `account_name`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `total_amount`：通过累加`start_date`和`end_date`之间交易记录计算得到的交易额统计（未换算成标准资产）。
+- `asset_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+- `asset_name`：来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
+- `worth`：把每笔交易按当天资产价格换算成标准资产，并累加得到的总价值。假设某外部账户一共有$$ n $$笔交易，在交易当天该外部账户所属资产的单位价格分别为$$ p_1 \dots p_n $$，原始交易额分别为$$ a_1 \dots a_n $$，则总价值为：$$ \displaystyle\sum_{i=1}^{n} p_ia_i $$。
