@@ -104,14 +104,15 @@ INIT_SQL_CMD = """
         FROM diffs WHERE account_index NOT IN (SELECT account_index FROM start_balance);
 
     CREATE VIEW end_stats AS
-        SELECT *, end_amount * price as worth
-        FROM (SELECT asset_info.asset_category, end_date.val, comparison.account_index, comparison.account_name,
-                comparison.end_amount, comparison.asset_index, asset_info.asset_name,
+        SELECT *, balance * price as worth
+        FROM (SELECT asset_info.asset_category, end_date.val AS date_val, comparison.account_index, 
+                comparison.account_name, comparison.end_amount AS balance, comparison.asset_index, 
+                asset_info.asset_name,
                 iif(asset_info.asset_index IN (SELECT * FROM standard_asset), 1.0,
                     (SELECT price FROM prices WHERE asset_info.asset_index = prices.asset_index
                         AND prices.price_date = end_date.val)) AS price
             FROM comparison INNER JOIN asset_info ON comparison.asset_index = asset_info.asset_index, end_date
-            WHERE end_amount <> 0
+            WHERE balance <> 0
             ORDER BY asset_info.asset_category ASC);
 
     CREATE VIEW expense_worth AS
