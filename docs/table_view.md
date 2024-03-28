@@ -329,10 +329,7 @@ title: 表和视图
 
 ## expense_worth
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
-{: .notice}
-
-每个**外部账户**在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
+每个**外部账户**在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计，以及换算的总价值。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
 
 **字段**
 - `asset_category`：来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
@@ -342,3 +339,116 @@ title: 表和视图
 - `asset_index`：来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
 - `asset_name`：来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
 - `worth`：把每笔交易按当天资产价格换算成标准资产，并累加得到的总价值。假设某外部账户一共有$$ n $$笔交易，在交易当天该外部账户所属资产的单位价格分别为$$ p_1 \dots p_n $$，原始交易额分别为$$ a_1 \dots a_n $$，则总价值为：$$ \displaystyle\sum_{i=1}^{n} p_ia_i $$。
+
+**示例**
+
+假设现有表内容如下：
+
+`asset_info`
+
+| asset_index | asset_name | asset_category |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | 金蝶币 | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`account_info`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 金蝶钱包 | 2 | 0 |
+| 3 | 工资 | 1 | 1 |
+| 4 | 金蝶消费 | 2 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_amount | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2023-02-06 | 3 | -50000.0 | 1 | 领取工资 |
+| 2 | 2023-02-07 | 1 | -30000.0 | 2 | 购买金蝶币 |
+| 3 | 2023-02-12 | 2 | -30.0 | 4 | 游戏娱乐 |
+| 4 | 2023-02-15 | 2 | -100.0 | 4 | 购买饰品 |
+
+`receiving`
+
+| posting_index | dst_amount |
+|:-:|:-:|
+| 2 | 300.0 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2023-02-12 | 2 | 90.0 |
+| 2023-02-15 | 2 | 110.0 |
+
+则`expense_worth`视图内容为：
+
+| asset_category | account_index | account_name | total_amount | asset_index | asset_name | worth |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 3 | 工资 | -50000.0 | 1 | Gil | -50000.0 |
+| 0 | 4 | 金蝶消费 | 130.0 | 2 | 金蝶币 | 13700.0 |
+
+说明：注意外部账户的统计变动数量等于内部账户变动的相反数，比如`工资`账户统计$$ -50000.0 $$，即表示内部账户共有$$ 50000.0 $$的工资收入。
+
+对于外部账户资产为标准资产（如例子中的`Gil`）的，统计价值等于变动数额累加；但是当外部账户资产非标准资产（本位币）时（如例子中的`金蝶币`），会按交易发生当天的价格依次换算为标准资产并累加。在这个例子中，`金蝶消费`的计算过程为$$ 30 \times 90 + 100 \times 110 = 13700 $$。
+
+## invest_gain
+
+只有一条记录，展示周期开始和结束时的净资产、总收入支出、总投资收益。
+
+**字段**
+- `start_equity`：期初净资产，从[start_stats表]({{ site.baseurl }}/table_view.html#start_stats)中的`worth`累加得到。
+- `end_equity`：期末净资产，从[end_stats表]({{ site.baseurl }}/table_view.html#end_stats)中的`worth`累加得到。
+- `expense`：期间发生的收入支出总计，从[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中非[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到，注意利息收入不会被记入。
+- `interest`：期间发生的利息收入总计，从[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到。
+- `profit`：期间投资产生的总收益（或总亏损），计算方法为$$ \text{end_equity} + \text{expense} - \text{start_equity} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
+- `return_rate`：以期初净资产为分母计算的期间投资收益率，计算方法为$$ \text{profit} \div \text{start_equity} $$。
+- `conservative_rate`：以期末净资产为分母计算的期间投资收益率，计算方法为$$ \text{profit} \div \text{end_equity} $$。注意通常不使用这种方法定义收益率，这个值仅当期初资产失真（比如期间有大额的收入或支出）时用于参考。
+
+## expense_stats
+
+每个内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间与**外部账户**发生的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
+
+注意该视图和[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)相比有两个区别：
+1. `expense_stats`中不同内部账户会分开进行统计，但`expense_worth`中不同内部账户和同一外部账户交易的数额会被合并；
+1. `expense_stats`只展示按相应资产统计的数量变动，但`expense_worth`还按照资产价格换算成了标准资产。
+
+**字段**
+- `account_index`：外部账户索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
+- `exp_name`：外部账户名字，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `target`：内部账户索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
+- `target_name`：内部账户名字，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `amount`：通过累加`start_date`和`end_date`之间交易记录计算得到的交易额统计（未换算成标准资产）。
+
+**示例**
+
+假设在[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中示例已有表基础上，在这两个表中加入额外的记录：
+
+`account_info`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 5 | 萨雷安个人养老金 | 1 | 0 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_amount | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 5 | 2023-02-06 | 3 | -10000.0 | 5 | 随工资发放养老金 |
+
+则`expense_stats`视图内容为：
+
+| account_index | exp_name | target | target_name | amount |
+|:-:|:-:|:-:|:-:|:-:|
+| 3 | 工资 | 1 | 萨雷安银行活期 | -50000.0 |
+| 3 | 工资 | 5 | 萨雷安个人养老金 | -10000.0 |
+| 4 | 金蝶消费 | 2 | 金蝶钱包 | 130.0 |
+
+说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`expense_worth`视图只会显示一条`工资`记录（所有内部账户统计到一起）。此外，`金蝶消费`统计的是以`金蝶币`为单位的数量，而不是标准资产`Gil`。
