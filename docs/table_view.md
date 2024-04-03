@@ -452,3 +452,41 @@ title: 表和视图
 | 4 | 金蝶消费 | 2 | 金蝶钱包 | 130.0 |
 
 说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`expense_worth`视图只会显示一条`工资`记录（所有内部账户统计到一起）。此外，`金蝶消费`统计的是以`金蝶币`为单位的数量，而不是标准资产`Gil`。
+
+## cash_to_invest
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+对于非标准资产的内部账户，计算该账户与其他账户的每一笔交易额换算成标准资产的价值。该数据用于计算非标准资产（即投资品）的投资收益率。
+
+**字段**
+- 包含[single_entries视图]({{ site.baseurl }}/table_view.html#single_entries)中的所有字段，以及：
+- `account_name`：非标准资产的账户名字，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `asset_index`：非标准资产的资产索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+- `asset_name`：非标准资产的资产名字，来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
+- `asset_category`：非标准资产的资产类型，来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
+- `worth`：该笔交易额换算成标准资产后的价值。
+
+## realisation
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+计算每个非标准资产账户（即投资品）的**最小初始资金**（见收益率计算方法中的说明）金额，以及中交易该投资品获得的现金（标准资产）增量。
+
+**字段**
+- `asset_category`：非标准资产的资产类型，来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
+- `asset_index`：非标准资产的资产索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_index`。
+- `asset_name`：非标准资产的资产名字，来自[asset_info表]({{ site.baseurl }}/table_view.html#account_info)中的`asset_name`。
+- `account_index`：非标准资产的账户索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `account_name`：非标准资产的账户名字，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_name`。
+- `petty`：该标准资产（即投资品）的**最小初始资金**（见收益率计算方法中的说明）金额。
+- `cash_gained`：交易该标准资产（投资品）获得的现金（标准资产）增量。
+
+## float_return
+
+将每个非标准资产的内部账户视为投资品，计算每个投资品在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。
+
+计算收益率采用的是**最小初始资金**法，见收益率计算方法中的说明。
+{: .notice}
