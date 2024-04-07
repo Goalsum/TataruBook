@@ -281,9 +281,9 @@ title: 表和视图
 
 **字段**
 - 包含[diffs视图]({{ site.baseurl }}/table_view.html#diffs)中的`account_index`、`account_name`、`asset_index`字段，以及：
-- `init_amount`：来自[start_balance视图]({{ site.baseurl }}/table_view.html#start_balance)中的`balance`。
+- `start_amount`：来自[start_balance视图]({{ site.baseurl }}/table_view.html#start_balance)中的`balance`。
 - `diff`：来自[diffs视图]({{ site.baseurl }}/table_view.html#diffs)中的`amount`；或者，如果一个账户在统计周期内没有变化，则为`0`。
-- `end_amount`：通过$$ \text{init_amount} + \text{diff} $$计算得到的最终余额。
+- `end_amount`：通过$$ \text{start_amount} + \text{diff} $$计算得到的最终余额。
 
 ## end_stats
 
@@ -327,9 +327,9 @@ title: 表和视图
 
 说明：可以看到`end_stats`视图的内容与[start_stats视图]({{ site.baseurl }}/table_view.html#start_stats)几乎一样，仅统计日期为`end_date`这一点有区别。
 
-## expense_worth
+## external_flows
 
-每个**外部账户**在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计，以及换算的总价值。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
+除[利息账户]({{ site.baseurl }}/table_view.html#interest_account)以外，每个**外部账户**在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的交易额统计，以及换算的总价值。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
 
 **字段**
 - `asset_category`：来自[asset_info表]({{ site.baseurl }}/table_view.html#asset_info)中的`asset_category`。
@@ -388,7 +388,7 @@ title: 表和视图
 | 2023-02-12 | 2 | 90.0 |
 | 2023-02-15 | 2 | 110.0 |
 
-则`expense_worth`视图内容为：
+则`external_flows`视图内容为：
 
 | asset_category | account_index | account_name | total_amount | asset_index | asset_name | worth |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -406,8 +406,8 @@ title: 表和视图
 **字段**
 - `start_equity`：期初净资产，从[start_stats表]({{ site.baseurl }}/table_view.html#start_stats)中的`worth`累加得到。
 - `end_equity`：期末净资产，从[end_stats表]({{ site.baseurl }}/table_view.html#end_stats)中的`worth`累加得到。
-- `expense`：期间发生的收入支出总计，从[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中非[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到，注意利息收入不会被记入。
-- `interest`：期间发生的利息收入总计，从[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到。
+- `expense`：期间发生的收入支出总计，从[external_flows视图]({{ site.baseurl }}/table_view.html#external_flows)中非[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到，注意利息收入不会被记入。
+- `interest`：期间发生的利息收入总计，从[external_flows视图]({{ site.baseurl }}/table_view.html#external_flows)中[利息账户]({{ site.baseurl }}/table_view.html#interest_account)的`worth`累加得到。
 - `profit`：期间投资产生的总收益（或总亏损），计算方法为$$ \text{end_equity} + \text{expense} - \text{start_equity} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
 - `return_rate`：以期初净资产为分母计算的期间投资收益率，计算方法为$$ \text{profit} \div \text{start_equity} $$。
 - `conservative_rate`：以期末净资产为分母计算的期间投资收益率，计算方法为$$ \text{profit} \div \text{end_equity} $$。注意通常不使用这种方法定义收益率，这个值仅当期初资产失真（比如期间有大额的收入或支出）时用于参考。
@@ -416,9 +416,9 @@ title: 表和视图
 
 每个内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间与**外部账户**发生的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意复式记账法中，外部账户就是收入和支出的分类统计。
 
-注意该视图和[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)相比有两个区别：
-1. `expense_stats`中不同内部账户会分开进行统计，但`expense_worth`中不同内部账户和同一外部账户交易的数额会被合并；
-1. `expense_stats`只展示按相应资产统计的数量变动，但`expense_worth`还按照资产价格换算成了标准资产。
+注意该视图和[external_flows视图]({{ site.baseurl }}/table_view.html#external_flows)相比有两个区别：
+1. `expense_stats`中不同内部账户会分开进行统计，但`external_flows`中不同内部账户和同一外部账户交易的数额会被合并；
+1. `expense_stats`只展示按相应资产统计的数量变动，但`external_flows`还按照资产价格换算成了标准资产。
 
 **字段**
 - `account_index`：外部账户索引，来自[account_info表]({{ site.baseurl }}/table_view.html#account_info)中的`account_index`。
@@ -429,7 +429,7 @@ title: 表和视图
 
 **示例**
 
-假设在[expense_worth视图]({{ site.baseurl }}/table_view.html#expense_worth)中示例已有表基础上，在这两个表中加入额外的记录：
+假设在[external_flows视图]({{ site.baseurl }}/table_view.html#external_flows)中示例已有表基础上，在这两个表中加入额外的记录：
 
 `account_info`
 
@@ -451,7 +451,7 @@ title: 表和视图
 | 3 | 工资 | 5 | 萨雷安个人养老金 | -10000.0 |
 | 4 | 金蝶消费 | 2 | 金蝶钱包 | 130.0 |
 
-说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`expense_worth`视图只会显示一条`工资`记录（所有内部账户统计到一起）。此外，`金蝶消费`统计的是以`金蝶币`为单位的数量，而不是标准资产`Gil`。
+说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`external_flows`视图只会显示一条`工资`记录（所有内部账户统计到一起）。此外，`金蝶消费`统计的是以`金蝶币`为单位的数量，而不是标准资产`Gil`。
 
 ## cash_to_invest
 
