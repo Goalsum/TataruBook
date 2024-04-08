@@ -233,7 +233,7 @@ INIT_SQL_CMD = """
     CREATE VIEW check_same_account AS
         SELECT * FROM postings WHERE postings.src_account == postings.dst_account;
 
-    CREATE VIEW check_receiving AS
+    CREATE VIEW check_diff_asset AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
             src_ai.asset_index, src_ai.is_external, postings.src_change, postings.dst_account, dst_ai.account_name,
             dst_ai.asset_index, dst_ai.is_external, posting_extras.dst_change, postings.comment
@@ -406,7 +406,7 @@ def integrity_check(con):
         ("check_standard_prices", "Standard assets should not have price attached but these are found:"),
         ("check_interest_account", "Interest accounts should all be external but these are not:"),
         ("check_same_account", "The source and target accounts are same in these postings:"),
-        ("check_receiving",
+        ("check_diff_asset",
          "These postings should have posting_extras attached because source asset is different from target asset:"),
         ("check_same_asset",
          "These postings should NOT have posting_extras attached because source and target assets are same:"),
