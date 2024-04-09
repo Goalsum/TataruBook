@@ -116,17 +116,20 @@ INIT_SQL_CMD = """
             ORDER BY asset_types.asset_order ASC);
 
     CREATE VIEW external_flows AS
+        SELECT single_entries.trade_date, asset_types.asset_order, accounts.account_index, accounts.account_name,
+            single_entries.amount, accounts.asset_index, asset_types.asset_name,
+            iif(asset_types.asset_index IN (SELECT * FROM standard_asset), 1.0,
+                (SELECT price FROM prices WHERE asset_types.asset_index = prices.asset_index
+                    AND prices.price_date = single_entries.trade_date)) AS price
+        FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index
+            INNER JOIN asset_types ON accounts.asset_index = asset_types.asset_index, start_date, end_date
+        WHERE single_entries.trade_date > start_date.val AND single_entries.trade_date <= end_date.val
+            AND accounts.is_external = 1;
+
+    CREATE VIEW income_and_expenses AS
         SELECT asset_order, account_index, account_name, sum(amount) AS total_amount, asset_index, asset_name,
             sum(price * amount) AS total_value
-        FROM (SELECT asset_types.asset_order, accounts.account_index, accounts.account_name,
-                single_entries.amount, accounts.asset_index, asset_types.asset_name,
-                iif(asset_types.asset_index IN (SELECT * FROM standard_asset), 1.0,
-                    (SELECT price FROM prices WHERE asset_types.asset_index = prices.asset_index
-                        AND prices.price_date = single_entries.trade_date)) AS price
-            FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index
-                INNER JOIN asset_types ON accounts.asset_index = asset_types.asset_index, start_date, end_date
-            WHERE single_entries.trade_date > start_date.val AND single_entries.trade_date <= end_date.val
-                AND accounts.is_external = 1)
+        FROM external_flows
         GROUP BY account_index
         ORDER BY asset_order ASC;
 
@@ -135,10 +138,10 @@ INIT_SQL_CMD = """
         FROM (SELECT *, end_value + net_outflow - start_value AS net_gain
             FROM (SELECT sum(start_stats.market_value) AS start_value FROM start_stats),
                 (SELECT sum(end_stats.market_value) AS end_value FROM end_stats),
-                (SELECT sum(external_flows.total_value) AS net_outflow FROM external_flows
-                 WHERE external_flows.account_index NOT IN (SELECT * FROM interest_accounts)),
-                (SELECT sum(external_flows.total_value) AS interest FROM external_flows
-                 WHERE external_flows.account_index IN (SELECT * FROM interest_accounts)));
+                (SELECT sum(income_and_expenses.total_value) AS net_outflow FROM income_and_expenses
+                 WHERE income_and_expenses.account_index NOT IN (SELECT * FROM interest_accounts)),
+                (SELECT sum(income_and_expenses.total_value) AS interest FROM income_and_expenses
+                 WHERE income_and_expenses.account_index IN (SELECT * FROM interest_accounts)));
 
     CREATE VIEW flow_stats AS
         SELECT single_entries.account_index AS flow_index, flow_acc.account_name AS flow_name,
@@ -222,6 +225,20 @@ INIT_SQL_CMD = """
             INNER JOIN interest_stats ON day_stats.account_index = interest_stats.account_index
             GROUP BY day_stats.account_index);
 
+    CREATE VIEW periods_cash_flows AS
+        SELECT start_date.val AS trade_date, 0 AS period, -portfolio_stats.start_value AS cash_flow
+        FROM portfolio_stats, start_date
+        UNION
+        SELECT trade_date, julianday(trade_date) - julianday(start_date.val) AS period,
+            sum(price * amount) AS cash_flow
+        FROM external_flows, start_date, end_date
+        GROUP BY trade_date
+        UNION
+        SELECT end_date.val AS trade_date, julianday(end_date.val) - julianday(start_date.val) AS period,
+            portfolio_stats.end_value AS cash_flow
+        FROM portfolio_stats, start_date, end_date
+        ORDER BY trade_date ASC;
+
     CREATE VIEW check_standard_prices AS
         SELECT * FROM prices INNER JOIN standard_asset ON prices.asset_index = standard_asset.asset_index;
 
@@ -282,7 +299,8 @@ INIT_SQL_CMD = """
 
 EXPORT_TABLES = ("asset_types", "standard_asset", "accounts", "interest_accounts", "postings", "posting_extras",
                  "prices", "start_date", "end_date", "statements", "start_stats", "end_stats", "external_flows",
-                 "portfolio_stats", "flow_stats", "share_trades", "return_on_shares", "interest_rates")
+                 "income_and_expenses", "portfolio_stats", "flow_stats", "share_trades", "return_on_shares",
+                 "interest_rates", "periods_cash_flows")
 
 DATE_COLUMNS = {("postings", "trade_date"), ("prices", "price_date"), ("start_date", "val"), ("end_date", "val")}
 
