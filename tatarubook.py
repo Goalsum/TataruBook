@@ -232,6 +232,7 @@ INIT_SQL_CMD = """
         SELECT trade_date, julianday(trade_date) - julianday(start_date.val) AS period,
             sum(price * amount) AS cash_flow
         FROM external_flows, start_date, end_date
+        WHERE external_flows.account_index NOT IN (SELECT * FROM interest_accounts)
         GROUP BY trade_date
         UNION
         SELECT end_date.val AS trade_date, julianday(end_date.val) - julianday(start_date.val) AS period,
