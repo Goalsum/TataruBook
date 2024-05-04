@@ -11,3 +11,5 @@ chinese:
         url: /table_view.html
       - title: "命令行手册"
         url: /commands.html
+      - title: "收益率计算方法"
+        url: /rate_of_return.html
