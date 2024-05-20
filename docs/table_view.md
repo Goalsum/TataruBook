@@ -493,7 +493,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产（即投资品）的投资收益率。
+每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
 
 如果把非标准资产看成股票，那么这个视图可以理解为每一笔交易的买入成本或卖出收入。
 
@@ -510,7 +510,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个非标准资产的内部账户（即投资品）在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的所需最小资金净流入，以及通过交易和持有该投资品获得的净现金（标准资产）增量。请参见[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)的介绍来理解该视图的数据。
+每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的所需最小资金净流入，以及通过交易和持有该内部账户中的资产获得的净现金（以标准资产计价）增量。请参见[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)的介绍来理解该视图的数据。
 
 **字段**
 - `asset_order`：来自[asset_types表]({{ site.baseurl }}/table_view.html#asset_types)中的`asset_order`。
@@ -523,7 +523,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## return_on_shares
 
-每个非标准资产的内部账户（即投资品）在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。计算收益率采用的是[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
+每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间，以标准资产计算市场价值得到的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。计算收益率采用的是[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
 
 注意：利息收入不会被计入该视图展示的投资收益率，而是在[interest_rates视图]({{ site.baseurl }}/table_view.html#interest_rates)中展示。如果不希望利息收益被剥离计算，那么可以把利息收入记录为成本为$$ 0 $$的买入操作（类似股份的拆分或送股）。
 {: .notice}
