@@ -445,7 +445,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/table_view.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/table_view.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负数。
 - `interest`：统计周期内发生的利息收入总计，从[income_and_expenses视图]({{ site.baseurl }}/table_view.html#income_and_expenses)中[利息账户]({{ site.baseurl }}/table_view.html#interest_accounts)的`total_value`累加得到。
 - `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
-- `rate_of_return`：使用[简单Dietz方法]({{ site.baseurl }}/rate_of_return.html#简单Dietz方法)计算的投资收益率。
+- `rate_of_return`：使用[简单Dietz方法]({{ site.baseurl }}/rate_of_return.html#简单dietz方法)计算的投资收益率。
 
 ## flow_stats
 
@@ -544,6 +544,170 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `profit`：该非标准资产的投资利润（或亏损），计算方法为$$ \text{cash_gained} + \text{end_value} - \text{start_value} $$。
 - `rate_of_return`：使用[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)计算的该非标准资产的投资收益率。
 
+**示例1**
+
+假设现有表内容如下：
+
+`asset_types`
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | 加隆德炼铁厂股份 | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`accounts`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 莫古证券_加隆德股份 | 2 | 0 |
+| 3 | Gil历史结余 | 1 | 1 |
+| 4 | 加隆德股份历史结余 | 2 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2022-12-31 | 3 | -10000.0 | 1 | Gil历史结余 |
+| 2 | 2022-12-31 | 4 | -10.0 | 2 | 股份历史结余 |
+| 3 | 2023-02-08 | 1 | -60.0 | 2 | 买入股份 |
+| 4 | 2023-03-08 | 2 | -6.0 | 1 | 卖出股份 |
+
+`posting_extras`
+
+| posting_index | dst_change |
+|:-:|:-:|
+| 3 | 5.0 |
+| 4 | 90.0 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2022-12-31 | 2 | 10.0 |
+| 2023-06-30 | 2 | 11.0 |
+
+`start_date`
+
+| val |
+|:-:|
+| 2022-12-31 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2023-06-30 |
+
+则`return_on_shares`视图内容为：
+
+| asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2 | 加隆德炼铁厂股份 | 2 | 莫古证券_加隆德股份 | 10.0 | 100.0 | -1.0 | 9.0 | 99.0 | 30.0 | 60.0 | 29.0 | 0.18125 |
+
+说明：这个例子与[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)中的**举例1**非常像，只是资金流入流出的时间间隔不一样，所以计算出的收益率和那个例子是相同的。注意`prices`表中只需要提供统计周期开始和结束时的价格就行了，不需要提供每笔交易发生时的价格，因为交易本身已经体现了价格信息。
+
+**示例2**
+
+假设现有表内容如下：
+
+`asset_types`
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | 金碟币 | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`accounts`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 金碟钱包 | 2 | 0 |
+| 2 | 金碟币历史结余 | 2 | 1 |
+| 3 | 金碟币利息 | 2 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2022-12-31 | 2 | -1000.0 | 1 | 金碟币历史结余 |
+| 2 | 2023-06-21 | 3 | -10.0 | 1 | 利息 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2022-12-31 | 2 | 10.0 |
+| 2023-06-21 | 2 | 11.0 |
+| 2023-06-30 | 2 | 12.0 |
+
+`start_date`
+
+| val |
+|:-:|
+| 2022-12-31 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2023-06-30 |
+
+则`return_on_shares`视图内容为：
+
+| asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2 | 金碟币 | 1 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | -110.0 | 110.0 | 2010.0 | 0.199 |
+
+说明：`金碟币`是非标准资产，但同时又有利息收益。这种情况下，利息收益会被剥离计算并单独展示在[interest_rates视图]({{ site.baseurl }}/table_view.html#interest_rates)中。`return_on_shares`视图计算收益时，把利息收益看作按照利息发放当天的资产价格进行了一次加仓买入。所以虽然看起来统计周期内没有显式的买入卖出操作，但计算出的收益率并不等于资产价格的增长率。
+
+如果不希望利息收益被剥离计算，那么可以把利息收益记为一次成本为$$ 0 $$的加仓，见示例3。
+
+**示例3**
+
+以示例2中的表为基础，但是`standard_asset`表内容为空，`accounts`表内容修改如下：
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 金碟钱包 | 2 | 0 |
+| 3 | 金碟币历史结余 | 2 | 1 |
+
+`postings`表修改如下：
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2022-12-31 | 3 | -1000.0 | 2 | 金碟币历史结余 |
+| 2 | 2023-06-21 | 1 | 0.0 | 2 | 利息 |
+
+`posting_extras`表如下（示例2中这个表为空）：
+
+| posting_index | dst_change |
+| 2 | 10.0 |
+
+则`return_on_shares`视图内容为：
+
+| asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2 | 金碟币 | 2 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | 0.0 | 0 | 2120.0 | 0.212 |
+
+说明：和示例2对比，实际的财务状态都是一致的，仅仅只是记账方法不同。`金碟币`的利息收益在本例中不再视为利息，而是看作了一次成本为$$ 0 $$的加仓（类似送股），合并计入`return_on_shares`视图中的收益。
+
+实际应用中，采用示例2还是示例3的记账方式，取决于用户自己的喜好。如果用户很关心利息收益率，那么把利息收益剥离展示会很有用；如果用户更关心一个账户整体的收益，那么利息收益与其他收益合并展示会更合适。
+{: .notice}
+
 ## interest_stats
 
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
@@ -559,7 +723,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## interest_rates
 
-每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间获得的利息、平均每日余额，以及按照[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的Dietz方法)计算出的**利率**（投资收益率）。
+每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/table_view.html#start_date)和[end_date]({{ site.baseurl }}/table_view.html#end_date)之间获得的利息、平均每日余额，以及按照[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)计算出的**利率**（投资收益率）。
 
 该视图展示的收益率仅仅为利息部分的收益率，并不包含资产价格变动产生的收益。
 
@@ -569,7 +733,66 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `asset_index`：来自[accounts表]({{ site.baseurl }}/table_view.html#accounts)中的`asset_index`。
 - `avg_balance`：该账户在统计周期内的平均每日余额（未换算成标准资产）。
 - `interest`：来自[interest_stats视图]({{ site.baseurl }}/table_view.html#interest_stats)中的`amount`。
-- `rate_of_return`：使用[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的Dietz方法)计算的投资收益率（即利率）。
+- `rate_of_return`：使用[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)计算的投资收益率（即利率）。
+
+**示例**
+
+假设现有表内容如下：
+
+`asset_types`
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`accounts`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 工资 | 1 | 1 |
+| 3 | 消费 | 1 | 1 |
+| 4 | Gil利息 | 1 | 1 |
+
+`interest_accounts`
+
+| account_index |
+|:-:|
+| 4 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2023-03-31 | 2 | -10000.0 | 1 | 领取工资 |
+| 2 | 2023-09-30 | 1 | -10000.0 | 3 | 大件消费 |
+| 3 | 2023-12-21 | 4 | -100.0 | 1 | 利息 |
+
+`start_date`
+
+| val |
+|:-:|
+| 2022-12-31 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2023-12-31 |
+
+则`interest_rates`视图内容为：
+
+| account_index | account_name | asset_index | avg_balance | interest | rate_of_return |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 5016.44 | 100.0 | 0.02 |
+
+说明：利率计算方法见[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)。注意`interest_rates`表计算的利率是以这个账户的资产类型进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/table_view.html#return_on_shares)。
 
 ## periods_cash_flows
 
