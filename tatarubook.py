@@ -300,8 +300,8 @@ INIT_SQL_CMD = """
 
 EXPORT_TABLES = ("asset_types", "standard_asset", "accounts", "interest_accounts", "postings", "posting_extras",
                  "prices", "start_date", "end_date", "statements", "start_stats", "end_stats", "external_flows",
-                 "income_and_expenses", "portfolio_stats", "flow_stats", "share_trades", "return_on_shares",
-                 "interest_rates", "periods_cash_flows")
+                 "income_and_expenses", "portfolio_stats", "flow_stats", "share_trades", "share_stats",
+                 "return_on_shares", "interest_stats", "interest_rates", "periods_cash_flows")
 
 DATE_COLUMNS = {("postings", "trade_date"), ("prices", "price_date"), ("start_date", "val"), ("end_date", "val")}
 
