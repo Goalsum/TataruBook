@@ -17,7 +17,7 @@ title: "TataruBook"
 subtitle: "A personal accounting tool"
 logo: "/assets/images/logo.png"
 description: >- # this means to ignore newlines until "baseurl:"
-  TataruBook is a double-entry bookkeeping and holding period return calculation tool based on SQL tables and views. This is the documentary site for TataruBook.
+  TataruBook is a free, open-source accounting tool based on SQL tables and views. This is the documentary site for TataruBook.
 baseurl: /TataruBook
 minimal_mistakes_skin: default
 search: false

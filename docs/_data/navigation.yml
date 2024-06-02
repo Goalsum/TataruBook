@@ -8,7 +8,7 @@ chinese:
       - title: "总体介绍"
         url: /index.html
       - title: "表和视图"
-        url: /table_view.html
+        url: /tables_and_views.html
       - title: "命令行手册"
         url: /commands.html
       - title: "收益率计算方法"
