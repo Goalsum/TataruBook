@@ -20,7 +20,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 这样，每笔交易在其涉及的两个账户中的变动数额加起来总是恰好等于$$ 0 $$（当两个账户的资产类型相同时）。在任一时刻把所有内部账户的余额相加，就能得到当时的净资产。
 
-如果你学过专业的会计方法，那么要注意在TataruBook的简化记账方法中，有一些名词与会计专业中的术语含义并不完全相同。比如**资产（Asset）**在TataruBook中指的是单位价格不同的商品或者货币，而不是会计公式中的**负债**加**所有者权益**。
+如果你学过专业的会计方法，那么要注意在TataruBook的简化的复式记账法中，有一些名词与会计专业中的术语含义并不完全相同。比如**资产（Asset）**在TataruBook中指的是单位价格不同的商品或者货币，而不是会计公式中的**负债**加**所有者权益**。
 {: .notice}
 
 在TataruBook使用的记账方法中，每笔交易涉及的两个账户可以为不同的**资产类型**（比如两种不同的货币，或者一个是货币另一个是股票），这样的交易在两个账户上产生的变动数额相加不再等于$$ 0 $$（除非两种资产的单位价格恰好相等）。TataruBook要求指定某一种资产类型为**标准资产**，其他类型的资产都会按照（某个时间）对应的单位价格转换为标准资产来进行计算。
@@ -55,7 +55,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 账户列表。**账户**是**具有独立交易记录及余额**的实体。注意一张个人银行卡通常包含多个账户，比如活期账户、投资账户、信用账户等等，在给账户命名的时候应当注意。
 
-账户余额并不一定是正数，当余额为负数时，表示账户中有负债。比如，大多数时候信用卡的余额就是负值，表示用户在这个账户上存在未来需要归还的负债。
+账户余额并不一定是正值，当余额为负值时，表示账户中有负债。比如，大多数时候信用卡的余额就是负值，表示用户在这个账户上存在未来需要归还的负债。
 
 账户有两种：**内部账户**和**外部账户**，见[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)。一个外部账户表示一类收入/支出，用户通过定义外部账户可自定义如何对收入/支出进行分类统计。
 
@@ -81,9 +81,9 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## postings
 
-交易明细列表。根据[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，每一笔交易都可看作资产从一个账户转移到另一个账户。因此该表中每一条记录都包含**源账户**和**目标账户**，交易使得源账户的余额变少，目标账户余额变多。
+交易明细列表。根据[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，每一笔交易都可看作资产从一个账户转移到另一个账户的过程。因此该列表中每一条交易明细记录都包含**源账户**和**目标账户**，交易使得源账户的余额变少，目标账户余额变多。
 
-只要源账户和目标账户的资产为同一种，则目标账户的变动数额等于源账户的变动数额的相反数，即两者相加等于$$ 0 $$。这种情况下，只需要输入源账户的变动数额，目标账户的变动数额会被自动计算出来。当源账户和目标账户为不同资产时，需要辅助用[posting_extras表]({{ site.baseurl }}/tables_and_views.html#accounts)记录这笔交易中目标账户的变动数额。
+只要源账户和目标账户为相同资产，则目标账户的变动数额等于源账户的变动数额的相反数，即两者相加等于$$ 0 $$。这种情况下，只需要输入源账户的变动数额，目标账户的变动数额会被自动计算出来。当源账户和目标账户为不同资产时，需要辅助用[posting_extras表]({{ site.baseurl }}/tables_and_views.html#accounts)记录这笔交易中目标账户的变动数额。
 
 **字段**
 - `posting_index`（整数）：自动生成的索引，无需用户输入。通常，后输入的记录的索引比先输入的大。
@@ -108,8 +108,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `dst_change`（浮点数）：目标账户的变动数额，不允许为空。该值必须大于等于$$ 0 $$。
 
 **约束**
-- 当源账户和目标账户的资产为同一种时，该交易不允许有`posting_extras`记录，此时目标账户的变动数额等于源账户的变动数额的相反数。（由[check_same_asset视图]({{ site.baseurl }}/tables_and_views.html#check_same_asset)校验）
-- 当源账户和目标账户的资产不同时，该交易必须要有`posting_extras`记录指定目标账户的变动数额。（由[check_diff_asset视图]({{ site.baseurl }}/tables_and_views.html#check_diff_asset)校验）
+- 当源账户和目标账户为相同资产时，该交易不允许有`posting_extras`记录，此时目标账户的变动数额等于源账户的变动数额的相反数。（由[check_same_asset视图]({{ site.baseurl }}/tables_and_views.html#check_same_asset)校验）
+- 当源账户和目标账户为不同资产时，该交易必须要有`posting_extras`记录指定目标账户的变动数额。（由[check_diff_asset视图]({{ site.baseurl }}/tables_and_views.html#check_diff_asset)校验）
 
 ## prices
 
@@ -167,7 +167,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## statements
 
-把输入的复式记账交易记录转换为单式记账，并且展示账户相关信息。
+把输入的复式记账交易记录转换为单式记账展示，并且展示账户相关信息。
 
 **字段**
 - 包含[single_entries视图]({{ site.baseurl }}/tables_and_views.html#single_entries)中的所有字段，以及：
@@ -442,7 +442,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 **字段**
 - `start_value`：期初净资产，从[start_stats表]({{ site.baseurl }}/tables_and_views.html#start_stats)中的`market_value`累加得到。
 - `end_value`：期末净资产，从[end_stats表]({{ site.baseurl }}/tables_and_views.html#end_stats)中的`market_value`累加得到。
-- `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负数。
+- `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负值。
 - `interest`：统计周期内发生的利息收入总计，从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。
 - `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
 - `rate_of_return`：使用[简单Dietz方法]({{ site.baseurl }}/rate_of_return.html#简单dietz方法)计算的投资收益率。
@@ -819,7 +819,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## check_diff_asset
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户的资产不同，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
+正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户为不同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
 
 ## check_same_asset
 

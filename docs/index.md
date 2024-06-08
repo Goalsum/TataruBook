@@ -23,13 +23,13 @@ TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_an
 
 你需要先了解一些概念：
 
-TataruBook只是一个程序（严格的说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在**db文件**中，db文件是由用户命名且后缀名为`.db`的文件。TataruBook可以对命令行中指定的db文件进行操作。
+TataruBook只是一个程序（严格地说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在**db文件**中，db文件是由用户命名且后缀名为`.db`的文件。TataruBook可以对命令行中指定的db文件进行操作。
 
 ## 什么是db文件？
 
 db文件是保存了财务数据和相关报表的文件。每个db文件都是[SQLite格式](https://sqlite.com/)的数据库文件，可以使用任何支持SQLite文件格式的软件进行查看和修改。
 
-如果使用其他软件来打开TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
+如果使用其他软件来查看和修改TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
 {: .notice}
 
 **注意：**使用其他软件修改db文件时，只能添加、删除、修改记录，不可修改表和视图的定义！否则，TataruBook将无法保证以后还能正确操作这个db文件。
@@ -37,15 +37,17 @@ db文件是保存了财务数据和相关报表的文件。每个db文件都是[
 
 通常来说，一个用户或家庭/组织的所有历史财务数据都放在同一个db文件中。db文件中有一些报表会把该db文件中所有的内部账户看作一个**投资组合（portfolio）**，并展示这个投资组合的净资产、收益率和资金流入流出情况。因此，希望参与统计的账户数据都应当放在同一个db文件中，TataruBook不支持跨db文件进行计算。
 
-有些用户喜欢按时间周期分割财务数据，比如把每一年的财务数据放在一个独立的db文件中。使用TataruBook时没有必要做这种分割，因为TataruBook支持展示任意历史时间段（精确到天）的财务报表。把所有历史财务数据存放在一个db文件中可以保持连贯而准确的财务记录，省去新建db文件时需要导入每个账户历史余额的麻烦。
+有些用户习惯于按时间周期分割财务数据，比如把每一年的财务数据放在一个独立的db文件中。使用TataruBook时没有必要做这种分割，因为TataruBook支持展示任意历史时间段（精确到天）的财务报表。把所有历史财务数据存放在一个db文件中可以保持连贯而准确的财务记录，省去新建db文件时需要导入每个账户历史余额的麻烦。
 
 ## 我该从哪儿开始？
 
-在开始上手使用TataruBook之前，推荐先阅读[表和视图]({{ site.baseurl }}/tables_and_views.html)——这篇文档介绍了db文件中所有的表和视图，以及它们之间的关系。你需要先对几个基本的表结构有所了解，才能正确的输入财务数据。
+对于第一次使用TataruBook的用户，推荐阅读[快速入门]({{ site.baseurl }}/quick_start.html)。这篇教程通过由浅入深的使用案例帮助新用户快速掌握TataruBook的主要用法。
 
-如果你觉得自己对需要用到的表结构已经理解得差不多了，那么可以阅读[命令行手册]({{ site.baseurl }}/commands.html)，并使用其中的命令来操作db文件。
+[表和视图]({{ site.baseurl }}/tables_and_views.html)介绍了db文件中所有的表和视图，以及它们之间的关系。当你对某些表或视图的字段有疑问时，可参阅此文档。
 
-如果你觉得db文件中的现有视图还不能满足自己，并且你知道如何使用SQL语言，那么，你可以使用其他支持SQLite格式的软件来打开db文件，并自己编写SQL语句对数据进行查询和编辑（但是不要修改已有表和视图的定义）。
+[命令行手册]({{ site.baseurl }}/commands.html)介绍了TataruBook的所有命令用法和注意事项。
+
+如果你觉得db文件中的现有视图还不能满足自己，并且你知道如何使用SQL语言，那么，你可以使用其他支持SQLite格式的软件（需确保这些软件支持SQLite的一些新特性）来打开db文件，并自己编写SQL语句对数据进行查询和编辑（但是不要修改已有表和视图的定义）。
 
 对于投资者来说，投资收益率是倍受关注的。TataruBook中有多个视图从各个角度呈现投资收益率。[收益率计算方法]({{ site.baseurl }}/rate_of_return.html)中详细介绍了各种收益率的计算方法，以及其在TataruBook的视图中是如何被使用的。
 

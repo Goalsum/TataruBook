@@ -74,7 +74,7 @@ tatarubook insert accounting.db accounts NULL 萨雷安银行活期 Gil 0
 
 这表示账户的名字是`萨雷安银行活期`，对应的资产类型（货币）是`Gil`，最后的`0`表示该账户为**内部账户**。
 
-你可能会奇怪内部账户是什么？——很快你就知道了。假设在记账前，`萨雷安银行活期`账户里面已经有一笔余额了，现在我们希望把这笔余额的数据输入到TataruBook。但是TataruBook使用[复式记账]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，**要向某个账户增加资产，一定要有某个账户等量的减少资产**。为了满足这个要求，我们添加一个名为`历史结余`的**外部账户**（注意最后一个字段值为`1`）：
+你可能会疑惑内部账户是什么？——很快就知道了。假设在记账前，`萨雷安银行活期`账户里面已经有一笔余额了，现在我们希望把这笔余额的数据输入到TataruBook。但是TataruBook使用[复式记账]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，**要向某个账户增加资产，一定要有某个账户等量的减少资产**。为了满足这个要求，我们添加一个名为`历史结余`的**外部账户**（注意最后一个字段值为`1`）：
 
 ~~~
 tatarubook insert accounting.db accounts NULL 历史结余 Gil 1
@@ -118,7 +118,82 @@ tatarubook export accounting.db --table statements
 
 使用Excel，既可以按内部账户筛选查看，也可以按外部账户筛选查看。当按照外部账户`餐饮费`筛选时，可以观察内部账户和`餐饮费`之间的所有交易，也就是所有的餐饮费用情况。所以，**外部账户实际上是对收支的分类**。TataruBook的外部账户是由用户自己添加的，所以你可以用任何自己喜欢的方式来分类统计收入和支出。
 
-# 分类收支
+# 批量导入数据
+
+有了上面的基础，我们可以输入更多记账数据了。先添加更多的内部和外部账户：
+
+~~~
+tatarubook insert accounting.db accounts NULL 萨雷安银行信用卡 Gil 0
+tatarubook insert accounting.db accounts NULL 购物 Gil 1
+tatarubook insert accounting.db accounts NULL 房租 Gil 1
+tatarubook insert accounting.db accounts NULL 工资 Gil 1
+~~~
+
+接下来要输入很多日常的交易记录。记账的一个常见场景是把银行等机构提供的交易明细记录批量的处理并导入到记账软件中。为了应对这种需求，TataruBook提供了导入功能。
+
+把其他来源的数据用Excel处理成下面这样的格式，并保存为`postings.csv`文件：
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| | 2023/2/10 | 工资 | -8000 | 萨雷安银行活期 | 月工资 |
+| | 2023/2/13 | 萨雷安银行信用卡 | -190 | 购物 | 买衣服 |
+| | 2023/2/26 | 萨雷安银行信用卡 | -140 | 购物 | 买生活用品 |
+| | 2023/3/2 | 萨雷安银行信用卡 | -9000 | 房租 | 半年租金 |
+| | 2023/3/10 | 工资 | -8000 | 萨雷安银行活期 | 月工资 |
+| | 2023/3/10 | 萨雷安银行信用卡 | -43 | 餐饮费 | 背水咖啡厅午餐 |
+| | 2023/3/20 | 萨雷安银行活期 | -9300 | 萨雷安银行信用卡 | 还信用卡 |
+
+然后用这条命令，把csv文件中的所有记录导入[postings表]({{ site.baseurl }}/tables_and_views.html#postings)：
+
+~~~
+tatarubook import accounting.db postings.csv
+~~~
+
+现在我们想看一下分类的收支统计，用这个命令导出[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)：
+
+~~~
+tatarubook export accounting.db --table income_and_expenses
+~~~
+
+打开生成的`income_and_expenses.csv`文件，内容如下：
+
+| asset_order | account_index | account_name | total_amount | asset_index | asset_name | total_value |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 3 | 餐饮费 | 108.0 | 1 | Gil | 108.0 |
+| 0 | 5 | 购物 | 330.0 | 1 | Gil | 330.0 |
+| 0 | 6 | 房租 | 9000.0 | 1 | Gil | 9000.0 |
+| 0 | 7 | 工资 | -16000.0 | 1 | Gil | -16000.0 |
+
+这就是在统计周期内每一类收支的统计结果。注意由于外部账户的交易数额是内部账户的相反数，所以这张报表中正数表示开支，负数表示收入。
+
+[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)展示的是每一类收支的累计数据，如果想看细分到每个内部账户的统计数据，可以查看[flow_stats视图]({{ site.baseurl }}/tables_and_views.html#flow_stats)：
+
+~~~
+tatarubook export accounting.db --table flow_stats
+~~~
+
+| flow_index | flow_name | account_index | account_name | amount |
+|:-:|:-:|:-:|:-:|:-:|
+| 3 | 餐饮费 | 1 | 萨雷安银行活期 | 65.0 |
+| 3 | 餐饮费 | 4 | 萨雷安银行信用卡 | 43.0 |
+| 5 | 购物 | 4 | 萨雷安银行信用卡 | 330.0 |
+| 6 | 房租 | 4 | 萨雷安银行信用卡 | 9000.0 |
+| 7 | 工资 | 1 | 萨雷安银行活期 | -16000.0 |
+
+在[flow_stats视图]({{ site.baseurl }}/tables_and_views.html#flow_stats)中，可以看到`萨雷安银行活期`和`萨雷安银行信用卡`分别产生了多少`餐饮费`。
+
+还有个疑问是：经过这么多交易后，每个内部账户还剩多少钱呢？可以查看[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)：
+
+~~~
+tatarubook export accounting.db --table end_stats
+~~~
+
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 11635.0 | 1 | Gil | 1.0 | 11635.0 |
+| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 |
+
+注意信用卡的余额是负值，这是大多数信用卡的常态。
 
 # 利息
 
