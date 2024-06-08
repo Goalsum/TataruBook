@@ -7,6 +7,8 @@ chinese:
     children:
       - title: "总体介绍"
         url: /index.html
+      - title: "快速入门"
+        url: /quick_start.html
       - title: "表和视图"
         url: /tables_and_views.html
       - title: "命令行手册"

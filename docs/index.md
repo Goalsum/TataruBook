@@ -11,25 +11,25 @@ TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_an
 
 有2种方式：
 
-1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)上下载`tatarubook.py`文件，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何能够支持Python的操作系统。
+1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)上下载`tatarubook.py`脚本，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何能够支持Python的操作系统。
 1. 从[发布页面](https://github.com/Goalsum/TataruBook/releases)下载`tatarubook.zip`包，解压缩到任何一个文件夹，然后运行其中的`tatarubook.exe`程序。这种方式不需要安装Python，但是只适用于Windows 10或以上版本的Windows操作系统。
 
 第一种方式是推荐的，因为采用这种方式的`tatarubook.py`运行脚本直接使用运行环境中最新的Python解释器、SQLite等依赖库，占用的磁盘空间极小。如果用第二种方式，则Python解释器、SQLite以及其他依赖的Python库都会被下载并占用磁盘空间，但好处是如果运行环境中这些库缺失或者有问题，不会影响TataruBook软件的运行。
 
-**注意：**采用第二种方式使用软件时，`tatarubook.exe`程序运行时需要依赖压缩包中的其他文件。因此，请确保在同一目录解压`tatarubook.zip`中的所有文件，且保持压缩包里的目录结构。
+**注意：**采用第二种方式安装软件后，`tatarubook.exe`程序运行时需要依赖压缩包中的其他文件。因此，请确保在同一目录解压`tatarubook.zip`中的所有文件，且保持压缩包里的目录结构。
 {: .notice--warning}
 
 # 如何使用TataruBook进行记账？
 
 你需要先了解一些概念：
 
-TataruBook只是一个程序（严格的说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在由用户管理的`xxx.db`文件中（文件名由用户自己指定）。TataruBook可以对命令行中指定的`xxx.db`文件进行操作。
+TataruBook只是一个程序（严格的说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在**db文件**中，db文件是由用户命名且后缀名为`.db`的文件。TataruBook可以对命令行中指定的db文件进行操作。
 
 ## 什么是db文件？
 
 db文件是保存了财务数据和相关报表的文件。每个db文件都是[SQLite格式](https://sqlite.com/)的数据库文件，可以使用任何支持SQLite文件格式的软件进行查看和修改。
 
-如果使用其他软件来打开TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用它的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
+如果使用其他软件来打开TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
 {: .notice}
 
 **注意：**使用其他软件修改db文件时，只能添加、删除、修改记录，不可修改表和视图的定义！否则，TataruBook将无法保证以后还能正确操作这个db文件。

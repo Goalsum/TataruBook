@@ -19,6 +19,16 @@ TataruBook命令行有[两种用法]({{ site.baseurl }}/index.html#如何下载�
 
 有一些字段的值是在插入时自动生成的，比如[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)的`account_index`，[postings表]({{ site.baseurl }}/tables_and_views.html#postings)的`posting_index`等等。当用[insert命令]({{ site.baseurl }}/commands.html#insert)插入这些表的记录时，这些字段的值应当填写为`NULL`；用[import命令]({{ site.baseurl }}/commands.html#import)导入记录时，这个字段对应单元格的内容应当为空。这样，TataruBook会自动找到一个与其他记录不同的新索引值填入这个字段。
 
+## 日期的输入方式
+
+在输入日期时，TataruBook要求以年、月、日的顺序排列，三者之间可以用`/`、`-`、`.`三种字符中的任一种分隔，但是分隔符必须一致。年必须是4位数字，月和日可以是1位或2位数字，可以有或者没有前导0。
+
+年月日之间也可以没有分隔符，但没有分隔符时整个日期必须是8位数字，形式为`yyyymmdd`。
+
+以下日期形式都是合法的：`2023/5/3`、`2023-5-3`、`2023.5.3`、`2023-05-03`、`2023/5/03`、`20230503`。
+
+以下日期形式都是不合法的：`2023-5/3`（分隔符不一致）、`23-05-03`（年不是4位数字）、`2023053`（没有分隔符但不是8位数字）。
+
 ## 根据名字查找索引
 
 当一张表的某条记录引用另一张表的某条记录时，根据数据库的设计原则，引用的是记录的**索引（index）**。但是人工输入索引是比较麻烦且容易出错的。举个例子：如果[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)的内容如下：
@@ -46,7 +56,9 @@ TataruBook命令行有[两种用法]({{ site.baseurl }}/index.html#如何下载�
 
 不光[import命令]({{ site.baseurl }}/commands.html#import)支持这个功能，[insert命令]({{ site.baseurl }}/commands.html#insert)也支持这个功能。上面的这条记录也可以直接用一条命令插入：
 
-`tatarubook insert example.db postings NULL 2023-01-07 萨雷安银行活期 -67.5 餐饮消费 背水咖啡厅晚餐`
+~~~
+tatarubook insert example.db postings NULL 2023-01-07 萨雷安银行活期 -67.5 餐饮消费 背水咖啡厅晚餐
+~~~
 
 TataruBook根据名字查找索引的具体规则如下：
 
@@ -82,7 +94,9 @@ TataruBook根据名字查找索引的具体规则如下：
 
 [insert命令]({{ site.baseurl }}/commands.html#insert)也支持这个功能，用下面这条命令可达到一样的效果：
 
-`tatarubook insert example.db postings NULL 2023-05-22 萨雷安银行活期 -10000 加隆德炼铁厂股份 买入股票 500`
+~~~
+tatarubook insert example.db postings NULL 2023-05-22 萨雷安银行活期 -10000 加隆德炼铁厂股份 买入股票 500
+~~~
 
 注意`dst_change`字段一定要放在末尾。TataruBook只根据位置来识别字段，不关心csv文件标题行的内容。
 
@@ -105,22 +119,34 @@ TataruBook根据名字查找索引的具体规则如下：
 
 ## init
 
-创建并初始化一个空的db文件。命令格式：`tatarubook init [-h] db_file`
+创建并初始化一个空的db文件。
+
+**命令格式**：
+
+~~~
+tatarubook init [-h] db_file
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果该文件已存在，不会执行任何操作，只打印错误信息。如果路径和文件名中有空格，需要使用引号括起来。
 
 ## check
 
-检查db文件中的数据是否符合一致性约束。命令格式：`tatarubook check [-h] db_file`
+检查db文件中的数据是否符合一致性约束。
+
+**命令格式**：
+
+~~~
+tatarubook check [-h] db_file
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
 
 一致性约束分为两种：
 
-1. 强制性约束：如果不满足，那么修改操作会立即失败，数据会马上回滚。一般来说，字段值类型/范围约束、外键有效性都是强制性约束。由于强制性约束已经由底层数据库保证，在正常情况下不可能被违反，所以`check`命令不会检查这类约束。
-1. 警示性约束：如果不满足，数据仍然允许修改，但是会提示需要修复。这种约束大多通过特定的`check`视图来检查，比如要求特定日期特定资产需要有价格信息。`check`命令检查这类约束。
+1. 强制性约束：如果不满足，那么修改操作会立即失败，数据会马上回滚。一般来说，字段值类型/范围约束、外键有效性都是强制性约束。由于强制性约束已经由底层数据库保证，在正常情况下不可能被违反，所以`check`命令不会检查强制性约束。
+1. 警示性约束：如果不满足，数据仍然允许修改，但是会提示需要修复。这种约束大多通过特定的`check`视图来检查，比如要求特定日期特定资产需要有价格信息。`check`命令只检查警示性约束。
 
 想了解一致性约束包含哪些检查，可以查看[表和视图]({{ site.baseurl }}/tables_and_views.html)中的说明。
 
@@ -129,7 +155,13 @@ TataruBook根据名字查找索引的具体规则如下：
 
 ## export
 
-把指定表/视图或者所有表/视图的内容导出到csv文件。命令格式：`tatarubook export [-h] [--table TABLE] [--encoding ENCODING] db_file`
+把指定表/视图或者所有表/视图的内容导出到csv文件。
+
+**命令格式**：
+
+~~~
+tatarubook export [-h] [--table TABLE] [--encoding ENCODING] db_file
+~~~
 
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表或视图。如果没有这个参数，导出所有的表和视图。
@@ -140,7 +172,13 @@ TataruBook根据名字查找索引的具体规则如下：
 
 ## insert
 
-插入指定表的一条记录（通常来说）。命令格式：`tatarubook insert [-h] db_file table values`
+插入指定表的一条记录（通常是一条，除非触发[自动插入关联表的记录]({{ site.baseurl }}/commands.html#自动插入关联表的记录)功能）。
+
+**命令格式**：
+
+~~~
+tatarubook insert [-h] db_file table values
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
@@ -151,7 +189,13 @@ TataruBook根据名字查找索引的具体规则如下：
 
 ## import
 
-使用csv文件批量导入（新增）指定表的一批记录，表中已经存在的记录不受影响。命令格式：`tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file`
+使用csv文件批量导入（新增）指定表的一批记录，表中已经存在的记录不受影响。
+
+**命令格式**：
+
+~~~
+tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
+~~~
 
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表。如果没有这个参数，则根据`csv_file`的文件名判断导入哪个表。
@@ -167,7 +211,13 @@ TataruBook会自动判断csv文件有没有标题行，判断方式是：如果c
 
 ## overwrite
 
-把指定表的所有内容删除，然后插入一条记录。这个命令只适用于仅含一个字段的表：[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)、[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)、[standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset)。命令格式：`tatarubook overwrite [-h] db_file table content`
+把指定表的所有内容删除，然后插入一条记录。这个命令只适用于仅含一个字段的表：[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)、[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)、[standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset)。
+
+**命令格式**：
+
+~~~
+tatarubook overwrite [-h] db_file table content
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
@@ -178,7 +228,13 @@ TataruBook会自动判断csv文件有没有标题行，判断方式是：如果c
 
 ## delete
 
-删除指定表指定索引的一条记录。命令格式：`tatarubook delete [-h] db_file table values`
+删除指定表指定索引的一条记录。
+
+**命令格式**：
+
+~~~
+tatarubook delete [-h] db_file table values
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
@@ -191,7 +247,13 @@ TataruBook会自动判断csv文件有没有标题行，判断方式是：如果c
 
 ## prune
 
-删除指定表中由csv文件给出的一个或多个索引对应的一批记录。命令格式：`tatarubook prune [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file`
+删除指定表中由csv文件给出的一个或多个索引对应的一批记录。
+
+**命令格式**：
+
+~~~
+tatarubook prune [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
+~~~
 
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表。如果没有这个参数，则根据`csv_file`的文件名判断操作哪个表。
@@ -209,7 +271,13 @@ TataruBook会自动判断csv文件有没有标题行，判断方式是：如果c
 
 ## execsql
 
-执行自定义的SQL命令。命令格式：`tatarubook execsql [-h] db_file cmd`
+执行自定义的SQL命令。
+
+**命令格式**：
+
+~~~
+tatarubook execsql [-h] db_file cmd
+~~~
 
 **参数**：
 - `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
@@ -219,4 +287,6 @@ TataruBook不对SQL命令进行任何检查和约束，执行自定义的SQL命�
 
 由于TataruBook没有查询命令，如果想在命令行直接查询某个表/视图的内容（而不是导出到csv文件），可以使用`execsql`命令来完成。比如，下面这条命令可以查询`statements`视图的内容：
 
-`tatarubook execsql example.db "select * from statements"`
+~~~
+tatarubook execsql example.db "select * from statements"
+~~~
