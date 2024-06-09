@@ -3,7 +3,7 @@ title: 命令行手册
 ---
 本页介绍TataruBook支持的所有命令及选项。
 
-TataruBook命令行有[两种用法]({{ site.baseurl }}/index.html#如何下载和安装tatarubook)，为了简便起见，本页都以可执行文件用法为示例。如果采用的是Python脚本用法，则需要将所有命令开头从`tatarubook`换成`python tatarubook.py`。比如，要创建一个名为`example.db`的数据库文件，需要将`tatarubook init example.db`命令改为`python tatarubook.py init example.db`。
+TataruBook有两种[安装方式]({{ site.baseurl }}/index.html#如何下载和安装tatarubook)，与之对应的有两种命令行用法：**Python脚本用法**和**可执行文件用法**。为了简便起见，本页都以可执行文件用法为示例。如果采用的是Python脚本用法，则需要将所有命令开头从`tatarubook`换成`python tatarubook.py`。比如，要创建一个名为`example.db`的数据库文件，需要将`tatarubook init example.db`命令改为`python tatarubook.py init example.db`。
 
 # 通用特性
 
@@ -19,15 +19,15 @@ TataruBook命令行有[两种用法]({{ site.baseurl }}/index.html#如何下载�
 
 有一些字段的值是在插入时自动生成的，比如[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)的`account_index`，[postings表]({{ site.baseurl }}/tables_and_views.html#postings)的`posting_index`等等。当用[insert命令]({{ site.baseurl }}/commands.html#insert)插入这些表的记录时，这些字段的值应当填写为`NULL`；用[import命令]({{ site.baseurl }}/commands.html#import)导入记录时，这个字段对应单元格的内容应当为空。这样，TataruBook会自动找到一个与其他记录不同的新索引值填入这个字段。
 
-## 日期的输入方式
+## 日期的输入格式
 
-在输入日期时，TataruBook要求以年、月、日的顺序排列，三者之间可以用`/`、`-`、`.`三种字符中的任一种分隔，但是分隔符必须一致。年必须是4位数字，月和日可以是1位或2位数字，可以有或者没有前导0。
+在输入日期时，TataruBook要求一个日期包含且仅包含年、月、日三个成员，且成员排列顺序依次为年、月、日。成员之间可以用`/`、`-`、`.`三种字符中的任一种分隔，但是分隔符必须一致。年必须是4位数字，月和日可以是1位或2位数字，可以有或者没有前导0。
 
-年月日之间也可以没有分隔符，但没有分隔符时整个日期必须是8位数字，形式为`yyyymmdd`。
+年、月、日之间也可以没有分隔符，但没有分隔符时整个日期必须是8位数字，形式为`yyyymmdd`。
 
-以下日期形式都是合法的：`2023/5/3`、`2023-5-3`、`2023.5.3`、`2023-05-03`、`2023/5/03`、`20230503`。
+以下日期格式都是合法的：`2023/5/3`、`2023-5-3`、`2023.5.3`、`2023-05-03`、`2023/5/03`、`20230503`。
 
-以下日期形式都是不合法的：`2023-5/3`（分隔符不一致）、`23-05-03`（年不是4位数字）、`2023053`（没有分隔符但不是8位数字）。
+以下日期格式都是不合法的：`2023-5/3`（分隔符不一致）、`23-05-03`（年不是4位数字）、`2023053`（没有分隔符但不是8位数字）。
 
 ## 根据名字查找索引
 
@@ -82,7 +82,7 @@ TataruBook根据名字查找索引的具体规则如下：
 
 ## 自动插入关联表的记录
 
-[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)的记录几乎总是和[postings表]({{ site.baseurl }}/tables_and_views.html#postings)的相应记录同时被插入的——因为它们描述的是同一条交易记录。如果用普通方法，需要先插入`postings`表的记录，然后查询刚刚插入的记录的`posting_index`，然后编辑`posting_extras`表的记录写入这个`posting_index`，最后再插入`posting_extras`表的记录。
+[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)的记录几乎总是和[postings表]({{ site.baseurl }}/tables_and_views.html#postings)的相应记录同时被插入的——因为它们描述的是同一条交易记录。因此在添加交易记录时，需要先插入`postings`表的记录，然后查询刚刚插入的记录的`posting_index`，然后编辑`posting_extras`表的记录写入这个`posting_index`，最后再插入`posting_extras`表的记录。
 
 这个过程显然很麻烦。为了简化交易记录的插入，TataruBook支持**自动插入关联表的记录**功能。当插入`postings`表的记录时，如果在末尾多写一个字段，TataruBook即认为这是要关联插入`posting_extras`表，这个多出的字段是`posting_extras`表的`dst_change`字段的值。
 
@@ -128,7 +128,7 @@ tatarubook init [-h] db_file
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果该文件已存在，不会执行任何操作，只打印错误信息。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果该文件已存在，不会执行任何操作，只打印错误信息。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 
 ## check
 
@@ -141,7 +141,7 @@ tatarubook check [-h] db_file
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 
 一致性约束分为两种：
 
@@ -166,7 +166,7 @@ tatarubook export [-h] [--table TABLE] [--encoding ENCODING] db_file
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表或视图。如果没有这个参数，导出所有的表和视图。
 - `--encoding ENCODING`（可选）：指定字符编码。见[字符编码格式]({{ site.baseurl }}/commands.html#字符编码格式)中的说明。
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 
 生成文件名的规则：对应表/视图的名字加上`.csv`后缀。如果遇到某个文件已经存在，则会**跳过**这个文件，但仍会导出其他没有冲突的文件（如果存在的话）。
 
@@ -181,7 +181,7 @@ tatarubook insert [-h] db_file table values
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 - `table`：表名。
 - `values`：所有字段的值，字段之间以空格分隔。如果某个字段中含有空格，需要用引号括起来。
 
@@ -200,8 +200,8 @@ tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表。如果没有这个参数，则根据`csv_file`的文件名判断导入哪个表。
 - `--encoding ENCODING`（可选）：指定字符编码。见[字符编码格式]({{ site.baseurl }}/commands.html#字符编码格式)中的说明。
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
-- `csv_file`：csv文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
+- `csv_file`：csv文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 
 TataruBook会自动判断csv文件有没有标题行，判断方式是：如果csv的第一行所有列都不是数字，那么就认为是标题行。注意：TataruBook只判断并跳过标题行，不会根据标题行的内容来调整字段顺序。字段顺序必须和表定义一致。
 
@@ -220,7 +220,7 @@ tatarubook overwrite [-h] db_file table content
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 - `table`：表名，必须是`start_date`、`end_date`、`standard_asset`之一。
 - `content`：插入的唯一一条记录的唯一字段的内容。
 
@@ -237,7 +237,7 @@ tatarubook delete [-h] db_file table values
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 - `table`：表名。
 - `values`：指定的索引值。如果索引包含了多个字段，字段之间以空格分隔。如果某个字段中含有空格，需要用引号括起来。
 
@@ -258,8 +258,8 @@ tatarubook prune [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 **参数**：
 - `--table TABLE`（可选）：指定名字为`TABLE`的表。如果没有这个参数，则根据`csv_file`的文件名判断操作哪个表。
 - `--encoding ENCODING`（可选）：指定字符编码。见[字符编码格式]({{ site.baseurl }}/commands.html#字符编码格式)中的说明。
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
-- `csv_file`：csv文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
+- `csv_file`：csv文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
 
 TataruBook会自动判断csv文件有没有标题行，判断方式是：如果csv的第一行所有列都不是数字，那么就认为是标题行。注意：TataruBook只判断并跳过标题行，不会根据标题行的内容来调整索引字段的顺序。索引字段的顺序必须和表定义一致。
 
@@ -280,8 +280,8 @@ tatarubook execsql [-h] db_file cmd
 ~~~
 
 **参数**：
-- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要使用引号括起来。
-- `cmd`：SQL命令字符串，需要使用引号括起来。
+- `db_file`：db文件名，可带路径。如果路径和文件名中有空格，需要在这个参数两侧加上引号。
+- `cmd`：SQL命令字符串，需要在这个参数两侧加上引号。
 
 TataruBook不对SQL命令进行任何检查和约束，执行自定义的SQL命令所造成的后果由用户自己负责。如果SQL命令修改了表/视图的定义，可能导致这个db文件以后无法再被TataruBook正确处理。
 

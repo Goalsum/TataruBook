@@ -250,8 +250,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 **字段**
 - 包含[start_balance视图]({{ site.baseurl }}/tables_and_views.html#start_balance)中的所有字段，以及：
 - `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_name`。
-- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`price`；如果是标准资产，则值为$$ 1 $$。
+- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
+- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为$$ 1 $$。
 - `market_value`：通过$$ \text{price} \times \text{balance} $$计算得到的市场价值。
 
 **示例**
@@ -364,8 +364,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
 - `amount`：来自[single_entries表]({{ site.baseurl }}/tables_and_views.html#single_entries)中的`amount`。
 - `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_name`。
-- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`price`；如果是标准资产，则值为`1`。
+- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
+- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为`1`。
 
 ## income_and_expenses
 
@@ -440,8 +440,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 只有一条记录：把所有内部账户的集合看作一个**投资组合**，展示该投资组合在统计周期开始和结束时的净资产、统计周期内的总收入支出、总投资收益。
 
 **字段**
-- `start_value`：期初净资产，从[start_stats表]({{ site.baseurl }}/tables_and_views.html#start_stats)中的`market_value`累加得到。
-- `end_value`：期末净资产，从[end_stats表]({{ site.baseurl }}/tables_and_views.html#end_stats)中的`market_value`累加得到。
+- `start_value`：期初净资产，从[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的`market_value`累加得到。
+- `end_value`：期末净资产，从[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)中的`market_value`累加得到。
 - `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负值。
 - `interest`：统计周期内发生的利息收入总计，从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。
 - `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
