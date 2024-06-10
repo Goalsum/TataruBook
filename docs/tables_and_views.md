@@ -243,16 +243,27 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `balance`：通过累加`start_date`及之前所有交易记录的变动数额得到的账户余额。
 - `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
 
-## start_stats
+## start_values
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
 
 在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值。
 
 **字段**
 - 包含[start_balance视图]({{ site.baseurl }}/tables_and_views.html#start_balance)中的所有字段，以及：
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
 - `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为$$ 1 $$。
 - `market_value`：通过$$ \text{price} \times \text{balance} $$计算得到的市场价值。
+
+## start_stats
+
+在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。
+
+**字段**
+- 包含[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的所有字段，以及：
+- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
+- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
+- `proportion`：这个账户的价值占所有账户价值总和的比例。
 
 **示例**
 
@@ -272,12 +283,26 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 则`start_stats`视图内容为：
 
-| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 |
-| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 |
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
+| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 | 0.2642 |
 
 说明：注意`balance`列的值和`statements`视图中该日期各账户的余额是一致的；外部账户不会在`start_stats`视图里出现。根据`postings`表中购买`加隆德炼铁厂股份`的交易记录可以换算当时交易的价格是$$ 13000 \div 260 = 50 $$，但是`prices`表中`2023-1-9`的价格记录是$$ 51 $$，且市场价值是根据$$ 51 $$计算的。这个例子展示了实时交易价格可以和收盘价不同。
+
+## start_assets
+
+在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，每一种资产的数量，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，每种资产的价值占总价值的比例。
+
+**字段**
+- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
+- `date_val`：来自[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)中的`val`。
+- `asset_index`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_index`。
+- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
+- `amount`：通过累加属于这种资产的所有账户的余额得到的资产数量。
+- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为$$ 1 $$。
+- `total_value`：通过$$ \text{price} \times \text{amount} $$计算得到的市场价值。
+- `proportion`：这种资产的价值占所有资产价值总和的比例。
 
 ## diffs
 
@@ -305,16 +330,25 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `diff`：来自[diffs视图]({{ site.baseurl }}/tables_and_views.html#diffs)中的`amount`；或者，如果账户余额在统计周期内没有变化，则为$$ 0 $$。
 - `end_amount`：通过$$ \text{start_amount} + \text{diff} $$计算得到的期末余额。
 
-## end_stats
+## end_values
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
 
 在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值。
 
-注意：[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)中必须要有一条记录，才能使`end_stats`视图显示正确的内容。
+**字段**
+- 所有字段均与[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
+
+## end_stats
+
+在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。。
+
+注意：[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)必须各有一条记录，才能使`end_stats`视图显示正确的内容。
 {: .notice--warning}
 
 **字段**
-- 除以下字段外，其他字段均与[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的字段相同：
-- `balance`：通过累加`end_date`及之前所有交易记录的变动数额得到的账户余额。和[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`end_amount`字段相同。
+- 所有字段均与[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
 
 **示例**
 
@@ -340,12 +374,22 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 则`end_stats`视图内容为：
 
-| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 |
-| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 |
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
+| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 | 0.2642 |
 
 说明：可以看到`end_stats`视图的内容与[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)几乎一样，仅统计日期为`end_date`这一点有区别。
+
+## end_assets
+
+在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，每一种资产的数量，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，每种资产的价值占总价值的比例。
+
+注意：[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)必须各有一条记录，才能使`end_assets`视图显示正确的内容。
+{: .notice--warning}
+
+**字段**
+- 所有字段均与[start_assets视图]({{ site.baseurl }}/tables_and_views.html#start_assets)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
 
 ## external_flows
 
@@ -440,8 +484,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 只有一条记录：把所有内部账户的集合看作一个**投资组合**，展示该投资组合在统计周期开始和结束时的净资产、统计周期内的总收入支出、总投资收益。
 
 **字段**
-- `start_value`：期初净资产，从[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的`market_value`累加得到。
-- `end_value`：期末净资产，从[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)中的`market_value`累加得到。
+- `start_value`：期初净资产，从[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的`market_value`累加得到。
+- `end_value`：期末净资产，从[end_values视图]({{ site.baseurl }}/tables_and_views.html#end_values)中的`market_value`累加得到。
 - `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负值。
 - `interest`：统计周期内发生的利息收入总计，从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。
 - `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
@@ -535,10 +579,10 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
 - `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
 - `start_amount`：期初余额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`start_amount`。
-- `start_value`：期初市场价值。来自[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的`market_value`，或者$$ 0 $$（如果`start_stats`中没有此账户）。
+- `start_value`：期初市场价值。来自[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的`market_value`，或者$$ 0 $$（如果`start_values`中没有此账户）。
 - `diff`：期间变动数额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`diff`。
 - `end_amount`：期末余额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`end_amount`。
-- `end_value`：期末市场价值。来自[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)中的`market_value`，或者$$ 0 $$（如果`end_stats`中没有此账户）。
+- `end_value`：期末市场价值。来自[end_values视图]({{ site.baseurl }}/tables_and_views.html#end_values)中的`market_value`，或者$$ 0 $$（如果`end_values`中没有此账户）。
 - `cash_gained`：已实现收益。来自[share_stats视图]({{ site.baseurl }}/tables_and_views.html#share_stats)中的`cash_gained`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
 - `min_inflow`：最小资金净流入。来自[share_stats视图]({{ site.baseurl }}/tables_and_views.html#share_stats)中的`min_inflow`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
 - `profit`：该非标准资产的投资利润（或亏损），计算方法为$$ \text{cash_gained} + \text{end_value} - \text{start_value} $$。

@@ -200,14 +200,14 @@ tatarubook export accounting.db --table flow_stats
 tatarubook export accounting.db --table end_stats
 ~~~
 
-| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 11635.0 | 1 | Gil | 1.0 | 11635.0 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 |
+| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 11635.0 | 1 | Gil | 1.0 | 11635.0 | 1.006 |
+| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.006 |
 
 注意信用卡的余额是负值——这是大多数信用卡账户的常态。
 
-TataruBook不允许手工输入账户余额，所有账户的余额都是根据交易记录自动计算出来的。在记账时，通过核对TataruBook展示的余额和实际账户余额是否一致，可以有效的校验输入的数据是否完整、准确。
+TataruBook不允许手工指定账户余额（之前输入初始余额的操作其实录入的是一笔交易），所有账户的余额都是根据交易记录自动计算出来的。在记账时，通过核对TataruBook展示的余额和实际账户余额是否一致，可以有效的校验输入的数据是否完整、准确。
 {: .notice}
 
 # 利息收益
@@ -297,11 +297,11 @@ tatarubook insert accounting.db prices 2023-12-31 加隆德炼铁厂股份 12
 tatarubook export accounting.db --table end_stats
 ~~~
 
-| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 9700.0 | 1 | Gil | 1.0 | 9700.0 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 |
-| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 |
+| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 9700.0 | 1 | Gil | 1.0 | 9700.0 | 0.8065 |
+| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0061 |
+| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 | 0.1996 |
 
 # 投资收益率
 
@@ -342,14 +342,26 @@ tatarubook insert accounting.db prices 2023-12-31 艾欧泽亚100指数基金 2.
 tatarubook export accounting.db --table end_stats
 ~~~
 
-| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value |
+| asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 7000.0 | 1 | Gil | 1.0 | 7000.0 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 |
-| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 |
-| 1 | 2023-12-31 | 10 | 莫古证券_艾欧泽亚100 | 1580.0 | 3 | 艾欧泽亚100指数基金 | 2.35 | 3713.0 |
+| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 7000.0 | 1 | Gil | 1.0 | 7000.0 | 0.5368 |
+| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0056 |
+| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 | 0.1840 |
+| 1 | 2023-12-31 | 10 | 莫古证券_艾欧泽亚100 | 1580.0 | 3 | 艾欧泽亚100指数基金 | 2.35 | 3713.0 | 0.2847 |
 
-虽然账户最终的价值计算出来了，但对于投资者来说，还关心这只基金通过这些买卖交易，整体的收益如何？通过[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)可以查看所有投资品的收益统计（TataruBook把所有不是本位币的资产都看作投资品）：
+除了按账户展示价值外，还可以通过[end_assets视图]({{ site.baseurl }}/tables_and_views.html#end_assets)来查看每种资产的数量和价值：
+
+~~~
+tatarubook export accounting.db --table end_assets
+~~~
+
+| asset_order | date_val | asset_index | asset_name | amount | price | total_value | proportion |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 0 | 2023-12-31 | 1 | Gil | 6927.0 | 1.0 | 6927.0 | 0.5312116564417177 |
+| 1 | 2023-12-31 | 2 | 加隆德炼铁厂股份 | 200.0 | 12.0 | 2400.0 | 0.18404907975460122 |
+| 1 | 2023-12-31 | 3 | 艾欧泽亚100指数基金 | 1580.0 | 2.35 | 3713.0 | 0.284739263803681 |
+
+虽然最终的价值计算出来了，但对于投资者来说，还关心这只基金通过这些买卖交易，整体的收益如何？通过[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)可以查看每个包含投资品的账户的收益情况（TataruBook把所有不是本位币的资产都看作投资品）：
 
 ~~~
 tatarubook export accounting.db --table return_on_shares

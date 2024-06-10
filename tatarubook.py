@@ -75,14 +75,30 @@ INIT_SQL_CMD = """
         WHERE single_entries.trade_date <= start_date.val AND accounts.is_external = 0
         GROUP BY accounts.account_index
         HAVING sum(single_entries.amount) <> 0;
+    
+    CREATE VIEW start_values AS
+        SELECT *, balance * price as market_value
+        FROM (SELECT start_balance.*,
+                iif(start_balance.asset_index IN (SELECT * FROM standard_asset), 1.0,
+                    (SELECT price FROM prices WHERE start_balance.asset_index = prices.asset_index
+                        AND prices.price_date = start_balance.date_val)) AS price
+            FROM start_balance);
 
     CREATE VIEW start_stats AS
-        SELECT *, balance * price as market_value
-        FROM (SELECT asset_types.asset_order, start_balance.*, asset_types.asset_name,
-                iif(asset_types.asset_index IN (SELECT * FROM standard_asset), 1.0,
-                    (SELECT price FROM prices WHERE asset_types.asset_index = prices.asset_index
-                        AND prices.price_date = start_balance.date_val)) AS price
-            FROM start_balance INNER JOIN asset_types ON start_balance.asset_index = asset_types.asset_index
+        SELECT asset_types.asset_order, start_values.date_val, start_values.account_index,
+            start_values.account_name, start_values.balance, asset_types.asset_index, asset_types.asset_name,
+            start_values.price, start_values.market_value,
+            start_values.market_value / (SELECT start_value FROM portfolio_stats) AS proportion
+        FROM start_values INNER JOIN asset_types ON start_values.asset_index = asset_types.asset_index
+        ORDER BY asset_types.asset_order ASC;
+
+    CREATE VIEW start_assets AS
+        SELECT *, total_value / (SELECT start_value FROM portfolio_stats) AS proportion
+        FROM (SELECT asset_types.asset_order, start_values.date_val, asset_types.asset_index, asset_types.asset_name, 
+                sum(start_values.balance) AS amount, start_values.price, sum(start_values.market_value) AS total_value
+            FROM start_values INNER JOIN asset_types ON start_values.asset_index = asset_types.asset_index
+            GROUP BY asset_types.asset_order, start_values.date_val, asset_types.asset_index, asset_types.asset_name,
+                start_values.price
             ORDER BY asset_types.asset_order ASC);
 
     CREATE VIEW diffs AS
@@ -102,17 +118,32 @@ INIT_SQL_CMD = """
         UNION
         SELECT account_index, account_name, 0 AS start_amount, amount AS diff, amount AS end_amount, asset_index
         FROM diffs WHERE account_index NOT IN (SELECT account_index FROM start_balance);
+    
+    CREATE VIEW end_values AS
+        SELECT *, balance * price as market_value
+        FROM (SELECT end_date.val AS date_val, comparison.account_index, comparison.account_name,
+                comparison.end_amount AS balance, comparison.asset_index,
+                iif(comparison.asset_index IN (SELECT * FROM standard_asset), 1.0,
+                    (SELECT price FROM prices WHERE comparison.asset_index = prices.asset_index
+                        AND prices.price_date = end_date.val)) AS price
+            FROM comparison, end_date
+            WHERE balance <> 0);
 
     CREATE VIEW end_stats AS
-        SELECT *, balance * price as market_value
-        FROM (SELECT asset_types.asset_order, end_date.val AS date_val, comparison.account_index, 
-                comparison.account_name, comparison.end_amount AS balance, comparison.asset_index, 
-                asset_types.asset_name,
-                iif(asset_types.asset_index IN (SELECT * FROM standard_asset), 1.0,
-                    (SELECT price FROM prices WHERE asset_types.asset_index = prices.asset_index
-                        AND prices.price_date = end_date.val)) AS price
-            FROM comparison INNER JOIN asset_types ON comparison.asset_index = asset_types.asset_index, end_date
-            WHERE balance <> 0
+        SELECT asset_types.asset_order, end_values.date_val, end_values.account_index,
+            end_values.account_name, end_values.balance, asset_types.asset_index, asset_types.asset_name,
+            end_values.price, end_values.market_value,
+            end_values.market_value / (SELECT end_value FROM portfolio_stats) AS proportion
+        FROM end_values INNER JOIN asset_types ON end_values.asset_index = asset_types.asset_index
+        ORDER BY asset_types.asset_order ASC;
+
+    CREATE VIEW end_assets AS
+        SELECT *, total_value / (SELECT end_value FROM portfolio_stats) AS proportion
+        FROM (SELECT asset_types.asset_order, end_values.date_val, asset_types.asset_index, asset_types.asset_name, 
+                sum(end_values.balance) AS amount, end_values.price, sum(end_values.market_value) AS total_value
+            FROM end_values INNER JOIN asset_types ON end_values.asset_index = asset_types.asset_index
+            GROUP BY asset_types.asset_order, end_values.date_val, asset_types.asset_index, asset_types.asset_name,
+                end_values.price
             ORDER BY asset_types.asset_order ASC);
 
     CREATE VIEW external_flows AS
@@ -136,11 +167,11 @@ INIT_SQL_CMD = """
     CREATE VIEW portfolio_stats AS
         SELECT *, net_gain / (start_value - net_outflow / 2) AS rate_of_return
         FROM (SELECT *, end_value + net_outflow - start_value AS net_gain
-            FROM (SELECT sum(start_stats.market_value) AS start_value FROM start_stats),
-                (SELECT sum(end_stats.market_value) AS end_value FROM end_stats),
-                (SELECT sum(income_and_expenses.total_value) AS net_outflow FROM income_and_expenses
+            FROM (SELECT total(start_values.market_value) AS start_value FROM start_values),
+                (SELECT total(end_values.market_value) AS end_value FROM end_values),
+                (SELECT total(income_and_expenses.total_value) AS net_outflow FROM income_and_expenses
                  WHERE income_and_expenses.account_index NOT IN (SELECT * FROM interest_accounts)),
-                (SELECT sum(income_and_expenses.total_value) AS interest FROM income_and_expenses
+                (SELECT total(income_and_expenses.total_value) AS interest FROM income_and_expenses
                  WHERE income_and_expenses.account_index IN (SELECT * FROM interest_accounts)));
 
     CREATE VIEW flow_stats AS
@@ -186,12 +217,12 @@ INIT_SQL_CMD = """
                 (cash_gained + end_value - start_value) / (start_value + min_inflow)) AS rate_of_return
         FROM (SELECT asset_types.asset_order, asset_types.asset_index, asset_types.asset_name,
                 comparison.account_index, comparison.account_name, comparison.start_amount,
-                ifnull(start_stats.market_value, 0) AS start_value, comparison.diff, comparison.end_amount,
-                ifnull(end_stats.market_value, 0) AS end_value, ifnull(share_stats.cash_gained, 0) AS cash_gained,
+                ifnull(start_values.market_value, 0) AS start_value, comparison.diff, comparison.end_amount,
+                ifnull(end_values.market_value, 0) AS end_value, ifnull(share_stats.cash_gained, 0) AS cash_gained,
                 ifnull(share_stats.min_inflow, 0) AS min_inflow
             FROM comparison INNER JOIN asset_types ON comparison.asset_index = asset_types.asset_index
-                LEFT JOIN start_stats ON comparison.account_index = start_stats.account_index
-                LEFT JOIN end_stats ON comparison.account_index = end_stats.account_index
+                LEFT JOIN start_values ON comparison.account_index = start_values.account_index
+                LEFT JOIN end_values ON comparison.account_index = end_values.account_index
                 LEFT JOIN share_stats ON comparison.account_index = share_stats.account_index
             WHERE comparison.asset_index NOT IN (SELECT * FROM standard_asset));
 
@@ -209,7 +240,7 @@ INIT_SQL_CMD = """
     CREATE VIEW interest_rates AS
         SELECT *, iif(avg_balance <= 0, 0, interest / avg_balance) AS rate_of_return
         FROM (SELECT day_stats.account_index, day_stats.account_name, day_stats.asset_index,
-                ifnull(start_stats.balance, 0) + sum(day_stats.amount) / days AS avg_balance,
+                ifnull(start_balance.balance, 0) + sum(day_stats.amount) / days AS avg_balance,
                 interest_stats.amount AS interest
             FROM (SELECT single_entries.account_index, accounts.account_name, accounts.asset_index,
                     single_entries.trade_date,
@@ -221,7 +252,7 @@ INIT_SQL_CMD = """
                     AND single_entries.trade_date <= end_date.val
                     AND single_entries.account_index IN (SELECT account_index FROM interest_stats)
                 GROUP BY single_entries.account_index, single_entries.trade_date) AS day_stats
-            LEFT JOIN start_stats ON day_stats.account_index = start_stats.account_index
+            LEFT JOIN start_balance ON day_stats.account_index = start_balance.account_index
             INNER JOIN interest_stats ON day_stats.account_index = interest_stats.account_index
             GROUP BY day_stats.account_index);
 
@@ -299,9 +330,10 @@ INIT_SQL_CMD = """
 """
 
 EXPORT_TABLES = ("asset_types", "standard_asset", "accounts", "interest_accounts", "postings", "posting_extras",
-                 "prices", "start_date", "end_date", "statements", "start_stats", "end_stats", "external_flows",
-                 "income_and_expenses", "portfolio_stats", "flow_stats", "share_trades", "share_stats",
-                 "return_on_shares", "interest_stats", "interest_rates", "periods_cash_flows")
+                 "prices", "start_date", "end_date", "statements", "start_balance", "start_values", "start_stats",
+                 "start_assets", "end_values", "end_stats", "end_assets", "external_flows", "income_and_expenses",
+                 "portfolio_stats", "flow_stats", "share_trades", "share_stats", "return_on_shares", "interest_stats",
+                 "interest_rates", "periods_cash_flows")
 
 DATE_COLUMNS = {("postings", "trade_date"), ("prices", "price_date"), ("start_date", "val"), ("end_date", "val")}
 
