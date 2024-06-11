@@ -59,7 +59,7 @@ tatarubook overwrite accounting.db end_date 2023-12-31
 
 注意：统计周期的起点是`start_date`那天的**结束**时刻，所以如果希望统计2023年一整年的数据，不要把`start_date`写成`2023-1-1`，否则统计时将会漏掉`2023-1-1`这一天的数据。
 
-TataruBook中绝大多数视图的内容都是由[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)所定义的统计周期决定的。比如，[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)展示`start_date`这天结束时的账户资产；[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)展示`end_date`这天结束时的账户资产；投资收益率相关视图展示统计周期内的收益情况，等等。通过修改`start_date`和`end_date`，可以修改统计周期来观察指定的某段历史时期的财务状况。
+TataruBook中绝大多数视图的内容都是由[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)所定义的统计周期决定的。比如，[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)展示`start_date`这天结束时的账户余额和价值；[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)展示`end_date`这天结束时的账户余额和价值；投资收益率相关视图展示统计周期内的收益情况，等等。通过修改`start_date`和`end_date`，可以修改统计周期来观察指定的某段历史时期的财务状况。
 {: .notice}
 
 现在数据一致性的问题都解决了，TataruBook报告：
@@ -77,7 +77,7 @@ Everything is fine, no integrity breach found.
 tatarubook insert accounting.db accounts NULL 萨雷安银行活期 Gil 0
 ~~~
 
-这条命令表示账户的名字是`萨雷安银行活期`，对应的资产类型（货币）是`Gil`，最后一个字段的值为`0`表示该账户为**内部账户**。
+这条命令表示账户的名字是`萨雷安银行活期`，对应的资产（货币）是`Gil`，最后一个字段的值为`0`表示该账户为**内部账户**。
 
 你可能会疑惑“内部账户”是什么？——这个问题的答案很快就会出现。
 
@@ -251,7 +251,7 @@ tatarubook export accounting.db --table interest_rates
 
 # 股票投资
 
-要记录股票投资，首先需要添加某只股票的**资产类型**。对TataruBook来说，股票和货币并没有本质的区别，它们都是特定的资产。因此，在[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中添加股票资产的方法和添加一种货币一样：
+要记录股票投资，首先需要添加某只股票的**资产**。对TataruBook来说，股票和货币并没有本质的区别，它们都是特定的资产。因此，在[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中添加股票资产的方法和添加一种货币一样：
 
 ~~~
 tatarubook insert accounting.db asset_types NULL 加隆德炼铁厂股份 1
@@ -265,9 +265,9 @@ tatarubook insert accounting.db asset_types NULL 加隆德炼铁厂股份 1
 tatarubook insert accounting.db accounts NULL 莫古证券_加隆德股份 加隆德炼铁厂股份 0
 ~~~
 
-TataruBook中的股票交易只不过是内部账户之间的资产转移。但是现在出现一个问题：之前的每笔交易中，源账户（即转出账户）减少的数额总是等于目标账户（即转入账户）增加的数额。所以记录交易时，我们只用写一个数字，TataruBook就会同时完成源账户和目标账户的余额变更。但是现在，现金和股票账户的资产类型不同：现金账户中的余额是货币的数量，而股票账户中的余额是股份的数量。所以交易中现金账户的变动数额并不等于股票账户的变动数额的相反数（除非股价恰好为$$ 1 $$）。
+TataruBook中的股票交易只不过是内部账户之间的资产转移。但是现在出现一个问题：之前的每笔交易中，源账户（即转出账户）减少的数额总是等于目标账户（即转入账户）增加的数额。所以记录交易时，我们只用写一个数字，TataruBook就会同时完成源账户和目标账户的余额变更。但是现在，现金和股票账户包含的资产不同：现金账户中的余额是货币的数量，而股票账户中的余额是股份的数量。所以交易中现金账户的变动数额并不等于股票账户的变动数额的相反数（除非股价恰好为$$ 1 $$）。
 
-为了解决这个问题，TataruBook规定：**当一笔交易记录中两个账户的资产类型不同时，必须同时提供源账户和目标账户的变动数额**。体现到命令上，就是插入命令的结尾要多出一个数字来表示目标账户的变动数额：
+为了解决这个问题，TataruBook规定：**当一笔交易记录中两个账户包含的资产不同时，必须同时提供源账户和目标账户的变动数额**。体现到命令上，就是插入命令的结尾要多出一个数字来表示目标账户的变动数额：
 
 ~~~
 tatarubook insert accounting.db postings NULL 2023-7-3 萨雷安银行活期 -2000 莫古证券_加隆德股份 买入股票 200

@@ -18,12 +18,12 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - **内部账户**中的某笔变动数额为正表示财产变多，为负表示财产变少；余额为正时表示拥有财产，为负时表示对外负债。
 - **外部账户**中的某笔变动数额为正表示支出，为负表示收入或利息。
 
-这样，每笔交易在其涉及的两个账户中的变动数额加起来总是恰好等于$$ 0 $$（当两个账户的资产类型相同时）。在任一时刻把所有内部账户的余额相加，就能得到当时的净资产。
+这样，每笔交易在其涉及的两个账户中的变动数额加起来总是恰好等于$$ 0 $$（当两个账户包含相同的资产时）。在任一时刻把所有内部账户的余额相加，就能得到当时的净资产。
 
 如果你学过专业的会计方法，那么要注意在TataruBook的简化的复式记账法中，有一些名词与会计专业中的术语含义并不完全相同。比如**资产（Asset）**在TataruBook中指的是单位价格不同的商品或者货币，而不是会计公式中的**负债**加**所有者权益**。
 {: .notice}
 
-在TataruBook使用的记账方法中，每笔交易涉及的两个账户可以为不同的**资产类型**（比如两种不同的货币，或者一个是货币另一个是股票），这样的交易在两个账户上产生的变动数额相加不再等于$$ 0 $$（除非两种资产的单位价格恰好相等）。TataruBook要求指定某一种资产类型为**标准资产**，其他类型的资产都会按照（某个时间）对应的单位价格转换为标准资产来进行计算。
+在TataruBook使用的记账方法中，每笔交易涉及的两个账户可以包含不同的资产（比如两种不同的货币，或者一个是货币另一个是股票），这样的交易在两个账户上产生的变动数额相加不再等于$$ 0 $$（除非两种资产的单位价格恰好相等）。TataruBook要求指定某一种资产为**标准资产**，其他资产都会按照（某个时间）对应的单位价格转换为标准资产来进行计算。
 
 有一些视图的名字里会把非标准资产称为**股份（share）**，把标准资产称为**现金（cash）**，要注意这仅仅是为了方便理解所做的类比，并不严格对应现实中的股份和现金。举个例子：如果用户定义标准资产为人民币，那么他所持有的美元现金会被TataruBook看作“股份”，因为美元的价格是浮动的，持有的美元现金在以人民币计价时可能产生收益或亏损。资产的数量可以不是整数，比如$$ 0.1 $$美元或$$ 0.001 $$美元在记账中都是允许的。
 
@@ -31,7 +31,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## asset_types
 
-资产类型列表，此处**资产**指任何**具有价格**的商品、实物、所有权等等。某一种货币、某一只股票、某一只有净值或价格的基金都可称为一种资产。你也可以把其他任何具有单位价格的物品定义为资产，比如房产、数字货币等等。
+资产类型列表。在TataruBook中，一种**资产**是具有**独立单位价格**的一类实体，如某一种货币、某一只股票、某一只有单位净值的基金等等。
 
 如果你只使用一种货币，也不持有或交易其他投资品或商品，那么你的`asset_types`表就只有一条记录：自己使用的货币。
 
@@ -55,6 +55,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 账户列表。**账户**是**具有独立交易记录及余额**的实体。注意一张个人银行卡通常包含多个账户，比如活期账户、投资账户、信用账户等等，在给账户命名的时候应当注意。
 
+一个账户的余额所使用的单位由它包含的资产定义。比如，如果账户包含的资产是货币，那么账户余额是货币的金额；如果账户包含的资产是某只股票，那么账户余额是股份的数量。
+
 账户余额并不一定是正值，当余额为负值时，表示账户中有负债。比如，大多数时候信用卡的余额就是负值，表示用户在这个账户上存在未来需要归还的负债。
 
 账户有两种：**内部账户**和**外部账户**，见[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)。一个外部账户表示一类收入/支出，用户通过定义外部账户可自定义如何对收入/支出进行分类统计。
@@ -62,7 +64,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 **字段**
 - `account_index`（整数）：自动生成的索引，无需用户输入。
 - `account_name`（字符串）：账户名字，不允许为空。仅用于在视图中展示，不会影响计算。
-- `asset_index`（整数）：账户对应的资产索引，即这个账户上存放的是哪种资产。不允许为空，必须是[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中存在的某个资产索引。
+- `asset_index`（整数）：账户包含的资产的索引。不允许为空，必须是[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中存在的某个资产索引。
 - `is_external`（`0`或`1`）：为`0`表示内部账户，为`1`表示外部账户。
 
 ## interest_accounts
@@ -81,9 +83,9 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## postings
 
-交易明细列表。根据[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，每一笔交易都可看作资产从一个账户转移到另一个账户的过程。因此该列表中每一条交易明细记录都包含**源账户**和**目标账户**，交易使得源账户的余额变少，目标账户余额变多。
+交易明细列表。根据[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，每一笔交易都可看作价值从一个账户转移到另一个账户的过程。因此该列表中每一条交易明细记录都包含**源账户**和**目标账户**，交易使得源账户的余额变少，目标账户余额变多。
 
-只要源账户和目标账户为相同资产，则目标账户的变动数额等于源账户的变动数额的相反数，即两者相加等于$$ 0 $$。这种情况下，只需要输入源账户的变动数额，目标账户的变动数额会被自动计算出来。当源账户和目标账户为不同资产时，需要辅助用[posting_extras表]({{ site.baseurl }}/tables_and_views.html#accounts)记录这笔交易中目标账户的变动数额。
+只要源账户和目标账户包含相同资产，则目标账户的变动数额等于源账户的变动数额的相反数，即两者相加等于$$ 0 $$。这种情况下，只需要输入源账户的变动数额，目标账户的变动数额会被自动计算出来。当源账户和目标账户包含不同资产时，需要辅助用[posting_extras表]({{ site.baseurl }}/tables_and_views.html#accounts)记录这笔交易中目标账户的变动数额。
 
 **字段**
 - `posting_index`（整数）：自动生成的索引，无需用户输入。通常，后输入的记录的索引比先输入的大。
@@ -101,19 +103,19 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## posting_extras
 
-当源账户和目标账户为不同资产时，交易明细中目标账户的变动数额，见[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的相关描述。
+当源账户和目标账户包含不同资产时，交易明细中目标账户的变动数额，见[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的相关描述。
 
 **字段**
 - `posting_index`（整数）：交易索引，不允许为空，必须是[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中存在的某个索引。
 - `dst_change`（浮点数）：目标账户的变动数额，不允许为空。该值必须大于等于$$ 0 $$。
 
 **约束**
-- 当源账户和目标账户为相同资产时，该交易不允许有`posting_extras`记录，此时目标账户的变动数额等于源账户的变动数额的相反数。（由[check_same_asset视图]({{ site.baseurl }}/tables_and_views.html#check_same_asset)校验）
-- 当源账户和目标账户为不同资产时，该交易必须要有`posting_extras`记录指定目标账户的变动数额。（由[check_diff_asset视图]({{ site.baseurl }}/tables_and_views.html#check_diff_asset)校验）
+- 当源账户和目标账户包含相同资产时，该交易不允许有`posting_extras`记录，此时目标账户的变动数额等于源账户的变动数额的相反数。（由[check_same_asset视图]({{ site.baseurl }}/tables_and_views.html#check_same_asset)校验）
+- 当源账户和目标账户包含不同资产时，该交易必须要有`posting_extras`记录指定目标账户的变动数额。（由[check_diff_asset视图]({{ site.baseurl }}/tables_and_views.html#check_diff_asset)校验）
 
 ## prices
 
-资产价格，用于在需要时将非标准资产换算成[标准资产（记账本位币）]({{ site.baseurl }}/tables_and_views.html#standard_asset)。一种资产在每一天最多只能有一个价格，该价格视为该资产在这天结束时的价格。对于股票这类有日内价格变动的资产，其资产价格是一天的收盘价。因此，如果在某一天的交易明细中买入或卖出了某种资产，那么，该笔交易中的实际交易价格（实时价）可以不等于当天`prices`表中该资产的价格（收盘价）。（见[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)的示例）
+资产的单位价格，用于在需要时将非标准资产换算成[标准资产（记账本位币）]({{ site.baseurl }}/tables_and_views.html#standard_asset)。一种资产在每一天最多只能有一个价格，该价格视为该资产在这天结束时的价格。对于股票这类有日内价格变动的资产，其资产价格是一天的收盘价。因此，如果在某一天的交易明细中买入或卖出了某种资产，那么，该笔交易中的实际交易价格（实时价）可以不等于当天`prices`表中该资产的价格（收盘价）。（见[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)的示例）
 
 **字段**
 - `price_date`（字符串）：日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
@@ -418,7 +420,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 **字段**
 - 包含[external_flows视图]({{ site.baseurl }}/tables_and_views.html#external_flows)中的`asset_order`、`account_index`、`account_name`、`asset_index`、`asset_name`字段，以及：
 - `total_amount`：通过累加`start_date`和`end_date`之间该外部账户所有交易记录的变动数额得到的交易额统计（未换算成标准资产）。
-- `total_value`：把每笔交易的变动数额按当天资产价格换算成标准资产，并累加得到的总市场价值。假设某外部账户一共有$$ n $$笔交易，每笔交易变动数额分别为$$ a_1 \dots a_n $$，该账户对应的资产在每笔交易当天的单位价格分别为$$ p_1 \dots p_n $$，则总价值为：$$ \displaystyle\sum_{i=1}^{n} p_ia_i $$。
+- `total_value`：把每笔交易的变动数额按当天资产价格换算成标准资产，并累加得到的总市场价值。假设某外部账户一共有$$ n $$笔交易，每笔交易变动数额分别为$$ a_1 \dots a_n $$，该账户包含的资产在每笔交易当天的单位价格分别为$$ p_1 \dots p_n $$，则总价值为：$$ \displaystyle\sum_{i=1}^{n} p_ia_i $$。
 
 **示例**
 
@@ -477,7 +479,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 说明：注意外部账户的变动数额等于内部账户变动数额的相反数，比如`工资`账户`total_amount`为$$ -50000.0 $$，代表内部账户共有$$ 50000.0 $$的工资收入。
 
-对于外部账户资产为标准资产（如例子中的`Gil`）的，统计市场价值等于变动数额累加；但是当外部账户资产为非标准资产时（如例子中的`金碟币`），会按交易发生当天的价格依次换算为标准资产再累加。在这个例子中，`金碟消费`的`total_value`计算过程为$$ 30 \times 90 + 100 \times 110 = 13700 $$。
+对于外部账户包含的资产为标准资产（如例子中的`Gil`）的，统计市场价值等于变动数额累加；但是当外部账户包含的资产为非标准资产时（如例子中的`金碟币`），会按交易发生当天的价格依次换算为标准资产再累加。在这个例子中，`金碟消费`的`total_value`计算过程为$$ 30 \times 90 + 100 \times 110 = 13700 $$。
 
 ## portfolio_stats
 
@@ -537,7 +539,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
+每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
 
 如果把非标准资产看成股票，那么这个视图可以理解为每一笔交易的买入成本或卖出收入。
 
@@ -554,7 +556,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的所需最小资金净流入，以及通过交易和持有该内部账户中的资产获得的净现金（以标准资产计价）增量。请参见[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)的介绍来理解该视图的数据。
+每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的所需最小资金净流入，以及通过交易和持有该内部账户中的资产获得的净现金（以标准资产计价）增量。请参见[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)的介绍来理解该视图的数据。
 
 **字段**
 - `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
@@ -567,7 +569,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## return_on_shares
 
-每个非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间，以标准资产计算市场价值得到的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。计算收益率采用的是[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
+每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间，以标准资产计算市场价值得到的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。计算收益率采用的是[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
 
 注意：利息收入不会被计入该视图展示的投资收益率，而是在[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)中展示。如果不希望利息收益被剥离计算，那么可以把利息收入记录为成本为$$ 0 $$的买入操作（类似股份的拆分或送股）。
 {: .notice}
@@ -836,7 +838,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 1 | 萨雷安银行活期 | 1 | 5016.44 | 100.0 | 0.02 |
 
-说明：利率计算方法见[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)。注意`interest_rates`表计算的利率是以这个账户的资产类型进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
+说明：利率计算方法见[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)。注意`interest_rates`表计算的利率是以这个账户包含的资产进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
 
 ## periods_cash_flows
 
@@ -863,11 +865,11 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## check_diff_asset
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户为不同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
+正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含不同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
 
 ## check_same_asset
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户的资产相同，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却有对应记录，违反了约束。
+正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含相同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却有对应记录，违反了约束。
 
 ## check_absent_price
 
