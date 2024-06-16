@@ -11,8 +11,8 @@ TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_an
 
 有2种方式：
 
-1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)上下载`tatarubook.py`脚本，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何能够支持Python的操作系统。
-1. 从[发布页面](https://github.com/Goalsum/TataruBook/releases)下载`tatarubook.zip`包，解压缩到任何一个文件夹，然后运行其中的`tatarubook.exe`程序。这种方式不需要安装Python，但是只适用于Windows 10或以上版本的Windows操作系统。
+1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)或者[Gitee仓库](https://gitee.com/goalsum/tatarubook)上下载`tatarubook.py`脚本，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何能够支持Python的操作系统。
+1. 从[Github发布页面](https://github.com/Goalsum/TataruBook/releases)或者[Gitee发布页面](https://gitee.com/goalsum/tatarubook/releases)下载`tatarubook.zip`包，解压缩到任何一个文件夹，然后运行其中的`tatarubook.exe`程序。这种方式不需要安装Python，但是只适用于Windows 10或以上版本的Windows操作系统。
 
 第一种方式是推荐的，因为采用这种方式的`tatarubook.py`运行脚本直接使用运行环境中最新的Python解释器、SQLite等依赖库，占用的磁盘空间极小。如果用第二种方式，则Python解释器、SQLite以及其他依赖的Python库都会被下载并占用磁盘空间，但好处是如果运行环境中这些库缺失或者有问题，不会影响TataruBook软件的运行。
 
@@ -53,4 +53,4 @@ db文件是保存了财务数据和相关报表的文件。每个db文件都是[
 
 # 如何反馈问题和需求？
 
-请在[Github仓库](https://github.com/Goalsum/TataruBook)上提交issue，我会查看并进行回复。
+请在[Github仓库](https://github.com/Goalsum/TataruBook)或者[Gitee仓库](https://gitee.com/goalsum/tatarubook)上提交issue，我会查看并进行回复。

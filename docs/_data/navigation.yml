@@ -1,6 +1,8 @@
 main:
   - title: "Github"
     url: https://github.com/Goalsum/TataruBook
+  - title: "Gitee"
+    url: https://gitee.com/goalsum/tatarubook
 
 chinese:
   - title: "目录"
