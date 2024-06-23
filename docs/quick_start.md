@@ -1,7 +1,7 @@
 ---
 title: 快速入门
 ---
-本页是为刚开始使用TataruBook的人提供的上手教程。此教程将通过由浅入深的使用案例来展示TataruBook的常用功能。
+本页是为刚开始使用TataruBook的人提供的上手教程。此教程通过一个连贯的使用案例来由浅入深的展示TataruBook的常用功能。
 
 # 初始化db文件
 
@@ -40,17 +40,17 @@ end_date should contain exactly 1 row but 0 row(s) are found.
 standard_asset should contain exactly 1 row but 0 row(s) are found.
 ~~~
 
-这是TataruBook进行**数据一致性检查**后报告的问题。TataruBook包含很多分析财务状况的**视图**，其中不少视图需要特定的数据存在才能进行计算。因此，如果TataruBook发现缺失了需要的数据，就会进行提示。
+这是TataruBook进行**数据一致性检查**后报告的问题。TataruBook包含很多分析财务状况的**视图**，其中不少视图需要特定的数据存在才能进行计算。因此，如果TataruBook发现缺失了需要的数据，就会进行提示。通常通过信息文本就足以理解它所报告的问题是什么。
 
 让我们逐个解决提示信息中的问题：
 
-首先把唯一的货币`Gil`设置为记账**本位币**：
+首先把唯一的货币`Gil`设置为记账**本位币**，解决[standard_asset表]({{ site.baseurl }}/tables_and_views.html#standard_asset)中需要有一条记录的问题：
 
 ~~~
 tatarubook overwrite accounting.db standard_asset Gil
 ~~~
 
-然后设置**统计周期**的开始时间和结束时间：
+然后设置**统计周期**的开始时间和结束时间，解决[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)中各需要有一条记录的问题：
 
 ~~~
 tatarubook overwrite accounting.db start_date 2022-12-31
@@ -244,7 +244,7 @@ tatarubook export accounting.db --table interest_rates
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 1 | 萨雷安银行活期 | 1 | 11278.38 | 65.0 | 0.00576 |
 
-这些数据表示：统计周期内`萨雷安银行活期`的平均每日账户余额是$$ 11278.38 $$Gil，利率大约是$$ 0.576\% $$。如果想知道详细的计算过程，可参考[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)。
+这些数据表示：统计周期内`萨雷安银行活期`的平均每日账户余额是$$ 11278.38 $$Gil，利率大约是$$ 0.576\% $$。如果想知道详细的计算过程，可参考[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)。
 
 检查每个账户的利率有助于避免记账中的错误——如果计算出的利率不合理，那表明记账数据可能存在差错。
 {: .notice}

@@ -771,7 +771,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## interest_rates
 
-每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间获得的利息、平均每日余额，以及按照[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)计算出的**利率**（投资收益率）。
+每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间获得的利息、平均每日余额，以及按照[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)计算出的**利率**（投资收益率）。
 
 该视图展示的收益率仅仅为利息部分的收益率，并不包含资产价格变动产生的收益。
 
@@ -781,7 +781,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
 - `avg_balance`：该账户在统计周期内的平均每日余额（未换算成标准资产）。
 - `interest`：来自[interest_stats视图]({{ site.baseurl }}/tables_and_views.html#interest_stats)中的`amount`。
-- `rate_of_return`：使用[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)计算的投资收益率（即利率）。
+- `rate_of_return`：使用[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)计算的投资收益率（即利率）。
 
 **示例**
 
@@ -840,7 +840,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 1 | 萨雷安银行活期 | 1 | 5016.44 | 100.0 | 0.02 |
 
-说明：利率计算方法见[修改的Dietz方法]({{ site.baseurl }}/rate_of_return.html#修改的dietz方法)。注意`interest_rates`表计算的利率是以这个账户包含的资产进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
+说明：利率计算方法见[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)。注意`interest_rates`表计算的利率是以这个账户包含的资产进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
 
 ## periods_cash_flows
 
