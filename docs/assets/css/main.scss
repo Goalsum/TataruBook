@@ -36,6 +36,7 @@ $x-large: 1800px;
 .author__avatar {
   img {
     max-width: 120px;
+    border-radius: 0%;
 
     @include breakpoint($large) {
       padding: 0px;
