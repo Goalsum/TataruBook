@@ -1,4 +1,4 @@
-![]({{ site.baseurl }}/assets/images/overview.png)
+![](https://raw.githubusercontent.com/Goalsum/TataruBook/main/docs/assets/images/overview.png)
 
 # TataruBook
 
