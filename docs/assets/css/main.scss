@@ -33,6 +33,17 @@ $x-large: 1800px;
   }
 }
 
+.author__avatar {
+  img {
+    max-width: 120px;
+
+    @include breakpoint($large) {
+      padding: 0px;
+      border: 0px;
+    }
+  }
+}
+
 .toc__menu {
   a {
     font-size: 1.2em;

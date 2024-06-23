@@ -49,13 +49,16 @@ plugins:
   - jemoji
   - jekyll-include-cache
 
+author:
+  avatar: "/assets/images/tataru_width120.png"
+
 defaults:
   # _posts
   - scope:
       path: ""
     values:
       layout: single
-      author_profile: false
+      author_profile: true
       read_time: false
       comments: false
       share: false

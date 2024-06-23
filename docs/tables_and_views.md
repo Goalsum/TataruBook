@@ -13,6 +13,8 @@ title: 表和视图
 
 # 简化的复式记账法
 
+![记账数据架构]({{ site.baseurl }}/assets/images/architecture.png)
+
 TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookkeeping)里“每笔交易都必须有两个账户参与”的要求，但并没有使用专业会计方法中的账户分类法，以及[每种账户约定的正负号](https://en.wikipedia.org/wiki/Debits_and_credits)。对于普通个人或家庭的记账来说，严格遵循专业会计方法会使记账太过于复杂且难以理解。因此TataruBook用了更简单直观的记账方法，只把所有账户分为两类：
 
 - **内部账户**中的某笔变动数额为正表示财产变多，为负表示财产变少；余额为正时表示拥有财产，为负时表示对外负债。
