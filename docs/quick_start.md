@@ -140,7 +140,7 @@ tatarubook insert accounting.db accounts NULL 工资 Gil 1
 
 然后，我们希望输入一批交易记录。要想高效的输入数据，我们希望把银行等机构提供的交易明细记录批量的导入到记账软件中。对此，TataruBook提供了[import命令]({{ site.baseurl }}/commands.html#import)。
 
-首先把数据用Excel处理成下面的格式，并保存为`postings.csv`文件：
+首先把数据用Excel处理成下面的格式，并保存为`postings.csv`文件（`posting_index`这一列中的数据是故意留为空的，因为它会在导入时自动生成。见[自动生成的索引字段]({{ site.baseurl }}/commands.html#自动生成的索引字段)）：
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
