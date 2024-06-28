@@ -17,3 +17,5 @@ chinese:
         url: /commands.html
       - title: "收益率计算方法"
         url: /rate_of_return.html
+      - title: "数据导入指南"
+        url: /importing_data.html
