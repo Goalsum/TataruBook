@@ -104,7 +104,7 @@ tatarubook insert example.db postings NULL 2023-05-22 萨雷安银行活期 -100
 
 | account_index | account_name | asset_index | is_external | asset_name | asset_order |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 莫古证券_加隆德股份 | | 0 | 加隆德炼铁厂股份 | 0 |
+| | 莫古证券_加隆德股份 | | 0 | 加隆德炼铁厂股份 | 0 |
 
 这种场景常见于买入新的基金/股票品种时，需要同时添加新的资产类型和新的账户。
 
