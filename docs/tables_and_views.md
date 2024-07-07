@@ -99,6 +99,8 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 **约束**
 - 一条记录中，`src_account`的值不能等于`dst_account`的值。（由[check_same_account视图]({{ site.baseurl }}/tables_and_views.html#check_same_account)校验）
+- 一条记录中，源账户和目标账户不能都是外部账户。（由[check_both_external视图]({{ site.baseurl }}/tables_and_views.html#check_both_external)校验）（v1.1新增）
+- 一条记录中，源账户或者目标账户是外部账户时，该外部账户要么包含标准资产，要么和另一个账户包含相同资产。（由[check_external_asset视图]({{ site.baseurl }}/tables_and_views.html#check_external_asset)校验）（v1.1新增）
 
 刚开始记账的用户可能会疑惑如何把各个账户的现有余额导入到db文件中。建议的做法是：建立一个名为`历史结余`的外部账户，并对每个需要导入余额的内部账户，添加一笔从`历史结余`到该内部账户的交易记录。
 {: .notice}
@@ -128,7 +130,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - 标准资产不允许有价格。（由[check_standard_prices视图]({{ site.baseurl }}/tables_and_views.html#check_standard_prices)校验）
 - 同一资产在同一天只能有一个价格，即任两条记录的`price_date`和`asset_index`不能都相同。
 - 在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这两天，所有非标准资产都必须有价格。（由[check_absent_price视图]({{ site.baseurl }}/tables_and_views.html#check_absent_price)校验）
-- 非标准资产与外部账户发生了交易的日子必须要有价格。比如，如果标准资产为人民币，那么当有美元账户产生了消费时，消费当天必须要有美元兑人民币的价格。这是为了能把消费换算成人民币价值进行统计。（由[check_absent_price视图]({{ site.baseurl }}/tables_and_views.html#check_absent_price)校验）
+- 如果两个含有非标准资产的账户发生了交易（无论是内部账户还是外部账户），该（一种或两种）非标准资产在交易当天必须要有价格。比如：如果美元是非标准资产，那么当使用美元买入美国股票时，交易当天必须要有美元的价格和该股票的价格（注意是以标准资产计价的价格）。这是因为在对这两个账户计算投资收益率时，它们在交易当天都有一次资金流入或流出，需要计算流入/流出的价值。（由[check_absent_price视图]({{ site.baseurl }}/tables_and_views.html#check_absent_price)校验）
 
 ## start_date
 
@@ -865,6 +867,13 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有`src_account`和`dst_account`相同的记录，违反了约束。
 
+## check_both_external
+
+这是v1.1版本新增的视图。
+{: .notice}
+
+正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有`src_account`和`dst_account`同时都是外部账户，违反了约束。
+
 ## check_diff_asset
 
 正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含不同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
@@ -872,6 +881,13 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 ## check_same_asset
 
 正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含相同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却有对应记录，违反了约束。
+
+## check_external_asset
+
+这是v1.1版本新增的视图。
+{: .notice}
+
+正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户或者目标账户是外部账户，且该外部账户既不包含标准资产，也没有和另一个账户包含相同资产，违反了约束。
 
 ## check_absent_price
 

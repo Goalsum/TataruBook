@@ -10,45 +10,46 @@ from contextlib import contextmanager
 from collections import namedtuple
 
 
-INIT_SQL_CMD = """
-    BEGIN;
-
-    CREATE TABLE asset_types(asset_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                             asset_name TEXT NOT NULL,
-                             asset_order INTEGER NOT NULL) STRICT;
-
-    CREATE TABLE standard_asset(asset_index INTEGER PRIMARY KEY NOT NULL REFERENCES asset_types(asset_index)) STRICT;
-
-    CREATE TABLE accounts(account_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                          account_name TEXT NOT NULL,
-                          asset_index INTEGER NOT NULL REFERENCES asset_types(asset_index),
-                          is_external INTEGER NOT NULL CHECK(is_external IN (0,1))) STRICT;
-
-    CREATE TABLE interest_accounts(
-        account_index INTEGER PRIMARY KEY NOT NULL REFERENCES accounts(account_index)) STRICT;
-
-    CREATE TABLE postings(posting_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-                          trade_date TEXT NOT NULL CHECK(date(trade_date) IS trade_date),
-                          src_account INTEGER NOT NULL REFERENCES accounts(account_index),
-                          src_change REAL NOT NULL CHECK(src_change <= 0),
-                          dst_account INTEGER NOT NULL REFERENCES accounts(account_index),
-                          comment TEXT) STRICT;
-
-    CREATE INDEX postings_by_date ON postings(trade_date);
-
-    CREATE TABLE posting_extras(posting_index INTEGER PRIMARY KEY NOT NULL REFERENCES postings(posting_index),
-                                dst_change REAL NOT NULL CHECK(dst_change >= 0)) STRICT;
-
-    CREATE TABLE prices(price_date TEXT NOT NULL CHECK(date(price_date) IS price_date),
-                        asset_index INTEGER NOT NULL REFERENCES asset_types(asset_index),
-                        price REAL NOT NULL,
-                        PRIMARY KEY(price_date, asset_index),
-                        UNIQUE(price_date, asset_index)) STRICT, WITHOUT ROWID;
-
-    CREATE TABLE start_date(val TEXT PRIMARY KEY NOT NULL CHECK(date(val) IS val)) STRICT, WITHOUT ROWID;
-    CREATE TABLE end_date(val TEXT PRIMARY KEY NOT NULL CHECK(date(val) IS val)) STRICT, WITHOUT ROWID;
-
-    CREATE VIEW single_entries AS
+SQL_CREATE_COMMANDS = (
+    ("asset_types", "table",
+     """CREATE TABLE asset_types(asset_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                                 asset_name TEXT NOT NULL,
+                                 asset_order INTEGER NOT NULL) STRICT"""),
+    ("standard_asset", "table",
+     """CREATE TABLE standard_asset(asset_index INTEGER PRIMARY KEY NOT NULL REFERENCES asset_types(asset_index))
+        STRICT"""),
+    ("accounts", "table",
+     """CREATE TABLE accounts(account_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                              account_name TEXT NOT NULL,
+                              asset_index INTEGER NOT NULL REFERENCES asset_types(asset_index),
+                              is_external INTEGER NOT NULL CHECK(is_external IN (0,1))) STRICT"""),
+    ("interest_accounts", "table",
+     """CREATE TABLE interest_accounts(
+        account_index INTEGER PRIMARY KEY NOT NULL REFERENCES accounts(account_index)) STRICT"""),
+    ("postings", "table",
+     """CREATE TABLE postings(posting_index INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                              trade_date TEXT NOT NULL CHECK(date(trade_date) IS trade_date),
+                              src_account INTEGER NOT NULL REFERENCES accounts(account_index),
+                              src_change REAL NOT NULL CHECK(src_change <= 0),
+                              dst_account INTEGER NOT NULL REFERENCES accounts(account_index),
+                              comment TEXT) STRICT"""),
+    ("postings_by_date", "index",
+     """CREATE INDEX postings_by_date ON postings(trade_date)"""),
+    ("posting_extras", "table",
+     """CREATE TABLE posting_extras(posting_index INTEGER PRIMARY KEY NOT NULL REFERENCES postings(posting_index),
+                                    dst_change REAL NOT NULL CHECK(dst_change >= 0)) STRICT"""),
+    ("prices", "table",
+     """CREATE TABLE prices(price_date TEXT NOT NULL CHECK(date(price_date) IS price_date),
+                            asset_index INTEGER NOT NULL REFERENCES asset_types(asset_index),
+                            price REAL NOT NULL,
+                            PRIMARY KEY(price_date, asset_index),
+                            UNIQUE(price_date, asset_index)) STRICT, WITHOUT ROWID"""),
+    ("start_date", "table",
+     """CREATE TABLE start_date(val TEXT PRIMARY KEY NOT NULL CHECK(date(val) IS val)) STRICT, WITHOUT ROWID"""),
+    ("end_date", "table",
+     """CREATE TABLE end_date(val TEXT PRIMARY KEY NOT NULL CHECK(date(val) IS val)) STRICT, WITHOUT ROWID"""),
+    ("single_entries", "view",
+     """CREATE VIEW single_entries AS
         SELECT posting_index, trade_date, src_account AS account_index, src_change AS amount,
             dst_account AS target, comment
         FROM postings
@@ -56,70 +57,75 @@ INIT_SQL_CMD = """
         SELECT postings.posting_index, trade_date, dst_account AS account_index,
             ifnull(posting_extras.dst_change, -src_change) AS amount, src_account AS target, comment
         FROM postings LEFT JOIN posting_extras ON postings.posting_index = posting_extras.posting_index
-        WHERE amount <> 0;
-
-    CREATE VIEW statements AS
+        WHERE amount <> 0
+        ORDER BY trade_date ASC, posting_index ASC"""),
+    ("statements", "view",
+     """CREATE VIEW statements AS
         SELECT single_entries.*, src_acc.account_name AS src_name, src_acc.asset_index, src_acc.is_external,
             target_acc.account_name AS target_name,
             sum(amount) OVER (PARTITION BY single_entries.account_index
                 ORDER BY trade_date, posting_index ROWS UNBOUNDED PRECEDING) AS balance
         FROM single_entries INNER JOIN accounts AS src_acc ON single_entries.account_index = src_acc.account_index
             INNER JOIN accounts as target_acc ON single_entries.target = target_acc.account_index
-        ORDER BY single_entries.account_index, trade_date, posting_index;
-
-    CREATE VIEW start_balance AS
+        ORDER BY trade_date ASC, posting_index ASC"""),
+    ("start_balance", "view",
+     """CREATE VIEW start_balance AS
         SELECT start_date.val AS date_val, accounts.account_index, accounts.account_name,
             sum(single_entries.amount) AS balance, accounts.asset_index
         FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index,
             start_date
         WHERE single_entries.trade_date <= start_date.val AND accounts.is_external = 0
         GROUP BY accounts.account_index
-        HAVING sum(single_entries.amount) <> 0;
-    
-    CREATE VIEW start_values AS
+        HAVING sum(single_entries.amount) <> 0
+        ORDER BY accounts.asset_index ASC"""),
+    ("start_values", "view",
+     """CREATE VIEW start_values AS
         SELECT *, balance * price as market_value
         FROM (SELECT start_balance.*,
                 iif(start_balance.asset_index IN (SELECT * FROM standard_asset), 1.0,
                     (SELECT price FROM prices WHERE start_balance.asset_index = prices.asset_index
                         AND prices.price_date = start_balance.date_val)) AS price
-            FROM start_balance);
-
-    CREATE VIEW start_stats AS
+            FROM start_balance)
+        ORDER BY asset_index ASC"""),
+    ("start_stats", "view",
+     """CREATE VIEW start_stats AS
         SELECT asset_types.asset_order, start_values.date_val, start_values.account_index,
             start_values.account_name, start_values.balance, asset_types.asset_index, asset_types.asset_name,
             start_values.price, start_values.market_value,
             start_values.market_value / (SELECT start_value FROM portfolio_stats) AS proportion
         FROM start_values INNER JOIN asset_types ON start_values.asset_index = asset_types.asset_index
-        ORDER BY asset_types.asset_order ASC;
-
-    CREATE VIEW start_assets AS
+        ORDER BY asset_order ASC, asset_types.asset_index ASC"""),
+    ("start_assets", "view",
+     """CREATE VIEW start_assets AS
         SELECT *, total_value / (SELECT start_value FROM portfolio_stats) AS proportion
         FROM (SELECT asset_types.asset_order, start_values.date_val, asset_types.asset_index, asset_types.asset_name, 
                 sum(start_values.balance) AS amount, start_values.price, sum(start_values.market_value) AS total_value
             FROM start_values INNER JOIN asset_types ON start_values.asset_index = asset_types.asset_index
             GROUP BY asset_types.asset_order, start_values.date_val, asset_types.asset_index, asset_types.asset_name,
-                start_values.price
-            ORDER BY asset_types.asset_order ASC);
-
-    CREATE VIEW diffs AS
+                start_values.price)
+        ORDER BY asset_order ASC, asset_index ASC"""),
+    ("diffs", "view",
+     """CREATE VIEW diffs AS
         SELECT accounts.account_index, accounts.account_name, sum(single_entries.amount) AS amount,
             accounts.asset_index
         FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index,
             start_date, end_date
         WHERE single_entries.trade_date > start_date.val AND single_entries.trade_date <= end_date.val
             AND accounts.is_external = 0
-        GROUP BY accounts.account_index;
-
-    CREATE VIEW comparison AS
+        GROUP BY accounts.asset_index, accounts.account_index
+        ORDER BY accounts.asset_index ASC"""),
+    ("comparison", "view",
+     """CREATE VIEW comparison AS
         SELECT start_balance.account_index, start_balance.account_name, start_balance.balance AS start_amount,
             ifnull(diffs.amount, 0) AS diff, start_balance.balance + ifnull(diffs.amount, 0) AS end_amount,
             start_balance.asset_index
         FROM start_balance LEFT JOIN diffs ON start_balance.account_index = diffs.account_index
         UNION
         SELECT account_index, account_name, 0 AS start_amount, amount AS diff, amount AS end_amount, asset_index
-        FROM diffs WHERE account_index NOT IN (SELECT account_index FROM start_balance);
-    
-    CREATE VIEW end_values AS
+        FROM diffs WHERE account_index NOT IN (SELECT account_index FROM start_balance)
+        ORDER BY asset_index ASC"""),
+    ("end_values", "view",
+     """CREATE VIEW end_values AS
         SELECT *, balance * price as market_value
         FROM (SELECT end_date.val AS date_val, comparison.account_index, comparison.account_name,
                 comparison.end_amount AS balance, comparison.asset_index,
@@ -127,26 +133,27 @@ INIT_SQL_CMD = """
                     (SELECT price FROM prices WHERE comparison.asset_index = prices.asset_index
                         AND prices.price_date = end_date.val)) AS price
             FROM comparison, end_date
-            WHERE balance <> 0);
-
-    CREATE VIEW end_stats AS
+            WHERE balance <> 0)
+        ORDER BY asset_index ASC"""),
+    ("end_stats", "view",
+     """CREATE VIEW end_stats AS
         SELECT asset_types.asset_order, end_values.date_val, end_values.account_index,
             end_values.account_name, end_values.balance, asset_types.asset_index, asset_types.asset_name,
             end_values.price, end_values.market_value,
             end_values.market_value / (SELECT end_value FROM portfolio_stats) AS proportion
         FROM end_values INNER JOIN asset_types ON end_values.asset_index = asset_types.asset_index
-        ORDER BY asset_types.asset_order ASC;
-
-    CREATE VIEW end_assets AS
+        ORDER BY asset_order ASC, asset_types.asset_index ASC"""),
+    ("end_assets", "view",
+     """CREATE VIEW end_assets AS
         SELECT *, total_value / (SELECT end_value FROM portfolio_stats) AS proportion
         FROM (SELECT asset_types.asset_order, end_values.date_val, asset_types.asset_index, asset_types.asset_name, 
                 sum(end_values.balance) AS amount, end_values.price, sum(end_values.market_value) AS total_value
             FROM end_values INNER JOIN asset_types ON end_values.asset_index = asset_types.asset_index
             GROUP BY asset_types.asset_order, end_values.date_val, asset_types.asset_index, asset_types.asset_name,
-                end_values.price
-            ORDER BY asset_types.asset_order ASC);
-
-    CREATE VIEW external_flows AS
+                end_values.price)
+        ORDER BY asset_order ASC, asset_index ASC"""),
+    ("external_flows", "view",
+     """CREATE VIEW external_flows AS
         SELECT single_entries.trade_date, asset_types.asset_order, accounts.account_index, accounts.account_name,
             single_entries.amount, accounts.asset_index, asset_types.asset_name,
             iif(asset_types.asset_index IN (SELECT * FROM standard_asset), 1.0,
@@ -155,16 +162,17 @@ INIT_SQL_CMD = """
         FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index
             INNER JOIN asset_types ON accounts.asset_index = asset_types.asset_index, start_date, end_date
         WHERE single_entries.trade_date > start_date.val AND single_entries.trade_date <= end_date.val
-            AND accounts.is_external = 1;
-
-    CREATE VIEW income_and_expenses AS
+            AND accounts.is_external = 1
+        ORDER BY single_entries.trade_date ASC"""),
+    ("income_and_expenses", "view",
+     """CREATE VIEW income_and_expenses AS
         SELECT asset_order, account_index, account_name, sum(amount) AS total_amount, asset_index, asset_name,
             sum(price * amount) AS total_value
         FROM external_flows
-        GROUP BY account_index
-        ORDER BY asset_order ASC;
-
-    CREATE VIEW portfolio_stats AS
+        GROUP BY asset_order, asset_index, account_index
+        ORDER BY asset_order ASC, asset_index ASC"""),
+    ("portfolio_stats", "view",
+     """CREATE VIEW portfolio_stats AS
         SELECT *, net_gain / (start_value - net_outflow / 2) AS rate_of_return
         FROM (SELECT *, end_value + net_outflow - start_value AS net_gain
             FROM (SELECT total(start_values.market_value) AS start_value FROM start_values),
@@ -172,9 +180,9 @@ INIT_SQL_CMD = """
                 (SELECT total(income_and_expenses.total_value) AS net_outflow FROM income_and_expenses
                  WHERE income_and_expenses.account_index NOT IN (SELECT * FROM interest_accounts)),
                 (SELECT total(income_and_expenses.total_value) AS interest FROM income_and_expenses
-                 WHERE income_and_expenses.account_index IN (SELECT * FROM interest_accounts)));
-
-    CREATE VIEW flow_stats AS
+                 WHERE income_and_expenses.account_index IN (SELECT * FROM interest_accounts)))"""),
+    ("flow_stats", "view",
+     """CREATE VIEW flow_stats AS
         SELECT single_entries.account_index AS flow_index, flow_acc.account_name AS flow_name,
             single_entries.target AS account_index, real_acc.account_name, sum(single_entries.amount) AS amount
         FROM single_entries INNER JOIN accounts as flow_acc ON single_entries.account_index = flow_acc.account_index
@@ -182,9 +190,10 @@ INIT_SQL_CMD = """
         WHERE single_entries.trade_date > (SELECT * FROM start_date)
             AND single_entries.trade_date <= (SELECT * FROM end_date)
             AND flow_acc.is_external = 1
-        GROUP BY single_entries.account_index, single_entries.target;
-
-    CREATE VIEW share_trades AS
+        GROUP BY single_entries.account_index, single_entries.target
+        ORDER BY single_entries.account_index ASC, single_entries.target ASC"""),
+    ("share_trades", "view",
+     """CREATE VIEW share_trades AS
         SELECT single_entries.*, share_acc.account_name,
             share_acc.asset_index, asset_types.asset_name, asset_types.asset_order,
             amount * iif(cash_acc.asset_index IN (SELECT * FROM standard_asset), 1.0,
@@ -198,20 +207,19 @@ INIT_SQL_CMD = """
             AND share_acc.is_external = 0 AND single_entries.account_index <> single_entries.target
             AND single_entries.account_index NOT IN (SELECT * FROM interest_accounts)
             AND asset_types.asset_index NOT IN (SELECT * FROM standard_asset)
-        ORDER BY asset_types.asset_order, single_entries.target,
-            single_entries.trade_date, single_entries.posting_index;
-
-    CREATE VIEW share_stats AS
+        ORDER BY single_entries.trade_date ASC, single_entries.posting_index ASC"""),
+    ("share_stats", "view",
+     """CREATE VIEW share_stats AS
         SELECT asset_order, asset_index, asset_name, account_index, account_name,
             iif(min(balance) >= 0, 0, -min(balance)) AS min_inflow, sum(cash_flow) AS cash_gained
         FROM (SELECT asset_order, asset_index, asset_name, target AS account_index, account_name, cash_flow,
                 sum(cash_flow) OVER (PARTITION BY target
                     ORDER BY trade_date, posting_index ROWS UNBOUNDED PRECEDING) AS balance
             FROM share_trades)
-        GROUP BY account_index
-        ORDER BY asset_order, account_index;
-
-    CREATE VIEW return_on_shares AS
+        GROUP BY asset_order, asset_index, account_index
+        ORDER BY asset_order ASC, asset_index ASC"""),
+    ("return_on_shares", "view",
+     """CREATE VIEW return_on_shares AS
         SELECT *, (cash_gained + end_value - start_value) AS profit,
             iif(start_value + min_inflow <= 0, 0,
                 (cash_gained + end_value - start_value) / (start_value + min_inflow)) AS rate_of_return
@@ -224,9 +232,10 @@ INIT_SQL_CMD = """
                 LEFT JOIN start_values ON comparison.account_index = start_values.account_index
                 LEFT JOIN end_values ON comparison.account_index = end_values.account_index
                 LEFT JOIN share_stats ON comparison.account_index = share_stats.account_index
-            WHERE comparison.asset_index NOT IN (SELECT * FROM standard_asset));
-
-    CREATE VIEW interest_stats AS
+            WHERE comparison.asset_index NOT IN (SELECT * FROM standard_asset))
+        ORDER BY asset_order ASC, asset_index ASC"""),
+    ("interest_stats", "view",
+     """CREATE VIEW interest_stats AS
         SELECT single_entries.account_index, deposit_acc.account_name, deposit_acc.asset_index,
             sum(single_entries.amount) AS amount
         FROM single_entries INNER JOIN accounts AS interest_acc ON single_entries.target = interest_acc.account_index
@@ -235,9 +244,10 @@ INIT_SQL_CMD = """
             AND single_entries.trade_date <= (SELECT * FROM end_date)
             AND deposit_acc.is_external = 0
             AND interest_acc.account_index IN (SELECT * FROM interest_accounts)
-        GROUP BY single_entries.account_index;
-
-    CREATE VIEW interest_rates AS
+        GROUP BY deposit_acc.asset_index, single_entries.account_index
+        ORDER BY deposit_acc.asset_index ASC"""),
+    ("interest_rates", "view",
+     """CREATE VIEW interest_rates AS
         SELECT *, iif(avg_balance <= 0, 0, interest / avg_balance) AS rate_of_return
         FROM (SELECT day_stats.account_index, day_stats.account_name, day_stats.asset_index,
                 ifnull(start_balance.balance, 0) + sum(day_stats.amount) / days AS avg_balance,
@@ -254,9 +264,10 @@ INIT_SQL_CMD = """
                 GROUP BY single_entries.account_index, single_entries.trade_date) AS day_stats
             LEFT JOIN start_balance ON day_stats.account_index = start_balance.account_index
             INNER JOIN interest_stats ON day_stats.account_index = interest_stats.account_index
-            GROUP BY day_stats.account_index);
-
-    CREATE VIEW periods_cash_flows AS
+            GROUP BY day_stats.account_index)
+        ORDER BY asset_index ASC"""),
+    ("periods_cash_flows", "view",
+     """CREATE VIEW periods_cash_flows AS
         SELECT start_date.val AS trade_date, 0 AS period, -portfolio_stats.start_value AS cash_flow
         FROM portfolio_stats, start_date
         UNION
@@ -269,20 +280,28 @@ INIT_SQL_CMD = """
         SELECT end_date.val AS trade_date, julianday(end_date.val) - julianday(start_date.val) AS period,
             portfolio_stats.end_value AS cash_flow
         FROM portfolio_stats, start_date, end_date
-        ORDER BY trade_date ASC;
-
-    CREATE VIEW check_standard_prices AS
-        SELECT * FROM prices INNER JOIN standard_asset ON prices.asset_index = standard_asset.asset_index;
-
-    CREATE VIEW check_interest_account AS
+        ORDER BY trade_date ASC"""),
+    ("check_standard_prices", "view",
+     """CREATE VIEW check_standard_prices AS
+        SELECT * FROM prices INNER JOIN standard_asset ON prices.asset_index = standard_asset.asset_index"""),
+    ("check_interest_account", "view",
+     """CREATE VIEW check_interest_account AS
         SELECT accounts.*
         FROM interest_accounts INNER JOIN accounts ON interest_accounts.account_index = accounts.account_index
-        WHERE accounts.is_external == 0;
-
-    CREATE VIEW check_same_account AS
-        SELECT * FROM postings WHERE postings.src_account == postings.dst_account;
-
-    CREATE VIEW check_diff_asset AS
+        WHERE accounts.is_external == 0"""),
+    ("check_same_account", "view",
+     """CREATE VIEW check_same_account AS
+        SELECT * FROM postings WHERE postings.src_account == postings.dst_account"""),
+    ("check_both_external", "view",
+     """CREATE VIEW check_both_external AS
+        SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
+            src_ai.asset_index, src_ai.is_external, postings.src_change, postings.dst_account, dst_ai.account_name,
+            dst_ai.asset_index, dst_ai.is_external, postings.comment
+        FROM postings INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
+            INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
+        WHERE src_ai.is_external == 1 AND dst_ai.is_external == 1"""),
+    ("check_diff_asset", "view",
+     """CREATE VIEW check_diff_asset AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
             src_ai.asset_index, src_ai.is_external, postings.src_change, postings.dst_account, dst_ai.account_name,
             dst_ai.asset_index, dst_ai.is_external, posting_extras.dst_change, postings.comment
@@ -291,18 +310,28 @@ INIT_SQL_CMD = """
             INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
         WHERE src_ai.asset_index <> dst_ai.asset_index AND posting_extras.dst_change ISNULL
             AND NOT (src_ai.asset_index IN (SELECT * FROM standard_asset)
-                AND dst_ai.asset_index IN (SELECT * FROM standard_asset));
-
-    CREATE VIEW check_same_asset AS
+                AND dst_ai.asset_index IN (SELECT * FROM standard_asset))"""),
+    ("check_same_asset", "view",
+     """CREATE VIEW check_same_asset AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
             src_ai.asset_index, src_ai.is_external, postings.src_change, postings.dst_account, dst_ai.account_name,
             dst_ai.asset_index, dst_ai.is_external, posting_extras.dst_change, postings.comment
         FROM postings INNER JOIN posting_extras ON postings.posting_index = posting_extras.posting_index
             INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
             INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
-        WHERE src_ai.asset_index == dst_ai.asset_index;
-
-    CREATE VIEW check_absent_price AS
+        WHERE src_ai.asset_index == dst_ai.asset_index"""),
+    ("check_external_asset", "view",
+     """CREATE VIEW check_external_asset AS
+        SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
+            src_ai.asset_index, src_ai.is_external, postings.src_change, postings.dst_account, dst_ai.account_name,
+            dst_ai.asset_index, dst_ai.is_external, postings.comment
+        FROM postings INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
+            INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
+        WHERE src_ai.asset_index <> dst_ai.asset_index
+            AND ((src_ai.is_external == 1 AND src_ai.asset_index NOT IN (SELECT * FROM standard_asset))
+                OR (dst_ai.is_external == 1 AND dst_ai.asset_index NOT IN (SELECT * FROM standard_asset)))"""),
+    ("check_absent_price", "view",
+     """CREATE VIEW check_absent_price AS
         SELECT asset_types.asset_index, asset_types.asset_name, asset_types.asset_order, absence.date_val
         FROM (SELECT start_balance.asset_index, start_date.val AS date_val
             FROM start_balance, start_date
@@ -317,23 +346,23 @@ INIT_SQL_CMD = """
                 INNER JOIN accounts AS cash_acc ON single_entries.account_index = cash_acc.account_index
             WHERE single_entries.trade_date > (SELECT * FROM start_date)
                 AND single_entries.trade_date <= (SELECT * FROM end_date)
-                AND share_acc.is_external = 0 AND single_entries.account_index <> single_entries.target
-                AND single_entries.account_index NOT IN (SELECT * FROM interest_accounts)
                 AND share_acc.asset_index NOT IN (SELECT * FROM standard_asset)
             EXCEPT
             SELECT asset_index, price_date AS date_val FROM prices) AS absence
             INNER JOIN asset_types ON absence.asset_index = asset_types.asset_index
         WHERE absence.asset_index NOT IN (SELECT * FROM standard_asset)
-        ORDER BY asset_types.asset_order, asset_types.asset_index, absence.date_val;
+        ORDER BY asset_types.asset_order, asset_types.asset_index, absence.date_val""")
+)
 
+INIT_SQL_CMD = """
+    BEGIN;
+    {}
     COMMIT;
-"""
+""".format("".join([x[2] + ";\n" for x in SQL_CREATE_COMMANDS]))
 
-EXPORT_TABLES = ("asset_types", "standard_asset", "accounts", "interest_accounts", "postings", "posting_extras",
-                 "prices", "start_date", "end_date", "statements", "start_balance", "start_values", "start_stats",
-                 "start_assets", "end_values", "end_stats", "end_assets", "external_flows", "income_and_expenses",
-                 "portfolio_stats", "flow_stats", "share_trades", "share_stats", "return_on_shares", "interest_stats",
-                 "interest_rates", "periods_cash_flows")
+EXPORT_TABLES = [x[0] for x in SQL_CREATE_COMMANDS if x[1] != "index"]
+
+EXCLUDED_TABLES = ("sqlite_sequence",)
 
 DATE_COLUMNS = {("postings", "trade_date"), ("prices", "price_date"), ("start_date", "val"), ("end_date", "val")}
 
@@ -457,21 +486,68 @@ def integrity_check(con):
         ("check_standard_prices", "Standard assets should not have price attached but these are found:"),
         ("check_interest_account", "Interest accounts should all be external but these are not:"),
         ("check_same_account", "The source and target accounts are same in these postings:"),
+        ("check_both_external", "The source and target accounts are both external in these postings:"),
         ("check_diff_asset",
          "These postings should have posting_extras attached because source asset is different from target asset:"),
         ("check_same_asset",
          "These postings should NOT have posting_extras attached because source and target assets are same:"),
+        ("check_external_asset",
+         "The external accounts in these postings contain" +
+         " neither standard asset nor the same asset as the other account:"),
         ("check_absent_price", "These (date, asset) pairs need price info in calculation:")
     )
-    all_passed = all((check_view(con, x, y) for x, y in views)) and all_passed
+    for x, y in views:
+        all_passed = check_view(con, x, y) and all_passed
 
     if all_passed:
         print("Everything is fine, no integrity breach found.")
 
 
+def strip_trivial(s):
+    return s.replace(" ", "").replace("\n", "").replace("\t", "").replace('"', "")
+
+
+def definition_check(con):
+    definitions = con.execute("SELECT * FROM sqlite_schema").fetchall()
+    removed = []
+    different = []
+    remaining = list(SQL_CREATE_COMMANDS)
+    incompatible = []
+    for item in definitions:
+        if item[1] in EXCLUDED_TABLES:
+            continue
+        current = [x for x in remaining if x[0] == item[1]]
+        if not current:
+            removed.append(item[1])
+            if item[0] != "view":
+                incompatible.append(item[1])
+        else:
+            remaining.remove(current[0])
+            if strip_trivial(item[4]) != strip_trivial(current[0][2]):
+                different.append(item[1])
+                if item[0] != "view":
+                    incompatible.append(item[1])
+                print(f"{item[1]}'s definition should be changed:\nold:\n{item[4]}\nnew:\n{current[0][2]}")
+    added = [x[0] for x in remaining]
+    if removed:
+        print(f"These definitions should be removed: {removed}")
+    if added:
+        print(f"These definitions should be added: {added}")
+    if incompatible:
+        print(f"These definitions are incompatible with current version: {incompatible}")
+    if not (removed or different or added):
+        print("All definitions are correct.")
+    return removed, different, added, incompatible
+
+
 @db_file_to_path
 def check(db_file):
     with fence(sqlite3.connect(db_file)) as con:
+        print("SQL definition check:")
+        (removed, different, added, incompatible) = definition_check(con)
+        if (removed or different or added) and not incompatible:
+            print("Use upgrade command to fix all the definitions. (But make a backup first)")
+        print("Integrity check:")
         integrity_check(con)
 
 
@@ -735,6 +811,23 @@ def execsql(db_file, cmd):
         integrity_check(con)
 
 
+@db_file_to_path
+def upgrade(db_file):
+    with fence(sqlite3.connect(db_file)) as con:
+        (removed, different, added, incompatible) = definition_check(con)
+        if incompatible:
+            print("Unable to upgrade because some definitions are incompatible.")
+            return
+        if not (removed or different or added):
+            return
+        with con:
+            for x in removed + different:
+                con.execute("DROP VIEW {}".format(x))
+            for x in different + added:
+                con.execute([s[2] for s in SQL_CREATE_COMMANDS if s[0] == x][0])
+        print("All definitions have been fixed.")
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Database operations")
     subparsers = parser.add_subparsers(required=True, help="sub-command help")
@@ -787,6 +880,10 @@ if __name__ == "__main__":
     parser_execsql.add_argument("db_file", help="db filename to operate with")
     parser_execsql.add_argument("cmd", help="the SQL command string")
     parser_execsql.set_defaults(func=execsql)
+
+    parser_upgrade = subparsers.add_parser("upgrade", help="upgrade SQL definitions in db file")
+    parser_upgrade.add_argument("db_file", help="db filename to operate with")
+    parser_upgrade.set_defaults(func=upgrade)
 
     args = parser.parse_known_args()
     func = vars(args[0]).pop("func")
