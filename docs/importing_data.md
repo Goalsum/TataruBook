@@ -172,11 +172,57 @@ title: 数据导入指南
 | | 2023/3/22 | 莫古证券资金 | -0.4 | 莫古证券_重银转债 | 兑息扣税 | 0 |
 | | 2023/3/24 | 莫古证券_传媒ETF | -73200 | 莫古证券资金 | 证券卖出 | 60018 |
 
+# 去除db文件中已经存在的交易
+
+有一些交易记录为两个内部账户之间的资金转移，比如例子中的第一笔交易`银行转存`会同时出现在银行的交易记录和券商的交易记录中。如果先导入了银行的交易记录，那么在之后导入券商的交易记录时，需要删除已经导入过的交易记录，否则会使这些交易记录在db文件中重复出现多次。
+
+这个步骤不是必须的，如果你导入的交易记录不可能在db文件中存在（比如它是最先被导入的，或者它与其他内部账户不会有交易），那么可以跳过这个步骤。
+{: .notice}
+
+为了过滤已经导入过的交易记录，在db文件的[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)中按`src_name`筛选正在导入的这个账户，找出与当前要导入的交易记录有重合的那些记录。在`最终结果`工作表的后面新建一个工作表，命名为`statements`，把[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)中找到的那些有重合的记录粘贴到`statements`工作表中。注意表头行也一起粘贴过来。
+
+接下来需要在`中间结果`工作表中找出对应的交易记录并标记。但是注意，记账数据需要在多个方面满足一致性：
+
+- `statements`工作表中的每一条记录，在`中间结果`工作表中都应该有对应的记录。否则说明一个账户记录了交易但另一个账户没有，两边的交易数据不一致。
+- `中间结果`工作表中所有的与已经导入过的内部账户之间的交易，在`statements`工作表中都应该有对应的记录。原因同上。
+
+由于同一天同一金额的交易可能有多笔，用普通的VLOOKUP等公式会出现重复匹配，需要用更特殊的公式来保证记录之间的一一对应。
+
+为了说明这个问题，这里构造一个比较复杂的例子，它和前面使用的例子中的数据不太一样。假设`中间结果`工作表的内容如下：
+
+| trade_date | this_account | amount | other_account | comment | other_change |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 2023/1/3 | 莫古证券资金 | 8000 | 莫古证券_加隆德炼铁厂 | 证券卖出 | 400 |
+| 2023/1/3 | 莫古证券资金 | 8000 | 萨雷安银行活期 | 银行转存 | |
+| 2023/1/3 | 莫古证券资金 | 8000 | 萨雷安银行活期 | 银行转存 | |
+
+`statements`工作表的内容如下：
+
+| posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| 102 | 2023/1/3 | 1 | 8000 | 3 | 银证转账 | 莫古证券资金 | 1 | 0 | 萨雷安银行活期 | 18000 |
+| 103 | 2023/1/3 | 1 | 8000 | 3 | 银证转账 | 莫古证券资金 | 1 | 0 | 萨雷安银行活期 | 26000 |
+
+`statements`工作表中的两条记录分别对应`中间结果`工作表中的第二和第三条记录。但是`中间结果`工作表中的第一条记录恰好也在同一天，且交易金额也相同。这就需要一些处理来防止误匹配。
+
+首先在`中间结果`工作表和`statements`工作表中最右侧新增一列`key_info`，把日期和金额拼接起来，公式为：`中间结果`：`=CONCAT(A2," ",C2)`；`statements`：`=CONCAT(B2," ",D2)`。
+
+然后在`中间结果`工作表的`key_info`列（G列）右边再新增一列`force_align`（H列），这一列没有公式，是用于让用户手工指定某条记录对应`statements`工作表中的某条记录。现在这列的内容都是空的。
+
+接着在`statements`工作表的`key_info`列（L列）右边再新增一列（M列），在第一行（表头那一行）输入数字`1`。第二行输入公式：`=IF(COUNTIF(中间结果!H:H,ROW())>0,MATCH(ROW(),中间结果!H:H,0),MATCH(L2,OFFSET(中间结果!G$1,M1,0,9999),0)+M1)`
+
+这条公式较为复杂，它先判断`force_align`中有没有手工指定对应关系，如果有就优先用指定的对应记录；否则，在`中间结果`中，从上一条已经匹配过的记录的下一条记录开始，查找与`statements`工作表这一行对应的记录。这样就保证了不会有两条`中间结果`的记录匹配同一条`statements`的记录。
+
+把`statements`工作表的M列都填充该公式后，可以发现M列现在对两条记录分别找到的匹配是`2`和`3`，也就是`中间结果`工作表的第2行和第3行，即前两条记录。
+
+显然这个匹配关系是不正确的，因为`中间结果`的第一条记录不应该参与匹配。因此，我们手工干预一下，在`中间结果`工作表的H3单元格中输入数字`2`，表示指定`中间结果`的第2条记录（位于第3行）匹配`statements`的第1条记录（位于第2行）。
+
+输入以后，`statements`工作表两条记录分别找到的匹配是`3`和`4`，即`中间结果`工作表的第3行和第4行，这个关系就正确了。
+
+最后在`最终结果`工作表中最右侧新增一列`skip`，第2行的公式为：`=COUNTIF(statements!M:M,ROW())`。这条公式用于展示对应的交易记录是否在`statements`中有匹配，如果有就为`1`，否则为`0`。拷贝数据到csv文件时，只筛选出`0`对应的列，就去除了db文件中已经存在的交易记录。
+
 # 保存为csv文件并导入数据
 
 `最终结果`工作表中的数据已经符合TataruBook的交易记录导入要求了。把这些数据保存成`postings.csv`文件并使用[import命令]({{ site.baseurl }}/commands.html#import)导入，所有的工作就完成了。
 
-但是还要注意两个问题：
-
-- 有一些交易记录为两个内部账户之间的资金转移，比如例子中的第一笔交易`银行转存`会同时出现在银行的交易记录和券商的交易记录中。注意不要重复导入这些交易。每次导入csv文件前，应该先检查下TataruBook的[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)，看看有哪些交易已经在db文件中存在了，并将这些记录从csv文件中删除。
-- 有一些交易记录所涉及的账户可能在TataruBook中还没有创建。比如例子中的`证券买入`如果是第一次买入`中概互联网ETF`这个证券品种，那么有可能在导入时[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中找不到这个品种，导致导入失败。不过，TataruBook在任一条记录导入失败时会触发自动回滚而不影响已有数据。因此可以多次尝试导入，并根据每次提示的失败信息补充[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)的记录，直到整个`postings.csv`文件导入成功。在转换模板的`中间结果`工作表中，可以新增几列来抓取[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)所需要的字段，用于当导入失败时在这两个表中添加需要的记录。
+但是要注意：有一些交易记录所涉及的账户可能在TataruBook中还没有创建。比如例子中的`证券买入`如果是第一次买入`中概互联网ETF`这个证券品种，那么有可能在导入时[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中找不到这个品种，导致导入失败。不过，TataruBook在任一条记录导入失败时会触发自动回滚而不影响已有数据。因此可以多次尝试导入，并根据每次提示的失败信息补充[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)的记录，直到整个`postings.csv`文件导入成功。在转换模板的`中间结果`工作表中，可以新增几列来抓取[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)和[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)所需要的字段，用于当导入失败时在这两个表中添加需要的记录。
