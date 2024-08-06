@@ -1,37 +1,37 @@
 ---
-title: 快速入门
+title: Quick Start
 ---
-本页是为刚开始使用TataruBook的人提供的上手教程。此教程通过一个连贯的使用案例来由浅入深的展示TataruBook的常用功能。
+This page is an introductory tutorial for people who are new to using TataruBook. This tutorial shows you how to use TataruBook's common features from start to finish, through a series of use cases.
 
-# 初始化db文件
+# Initialize the db file
 
-首先下载和安装TataruBook，如果你还不知道如何下载和安装，见[这里]({{ site.baseurl }}/index.html#如何下载和安装tatarubook)。
+Start by downloading and installing TataruBook, if you don't already know how, see [here]({{ site.baseurl }}/index.html#how-to-download-and-install-tatarubook).
 
-为了方便起见，下文中假设用第二种安装方式——可执行文件方式安装了TataruBook。如果用户使用的是第一种安装方式——Python脚本方式，需要把下文中所有命令行开头的`tatarubook`换成`python tatarubook.py`。比如，创建db文件的命令需要从`tatarubook init accounting.db`改为`python tatarubook.py init accounting.db`。
+For convenience, it is assumed in the following that TataruBook was installed using the second installation approach - the executable file approach. if the user is using the first installation approach - the Python script approach, he/she will need to replace all the command-lines in the following beginning with `tatarubook` to beginning with `python tatarubook.py`. For example, the command to create the db file needs to be changed from `tatarubook init accounting.db` to `python tatarubook.py init accounting.db`.
 
-安装完成后，打开操作系统的命令行终端，切换到TataruBook程序所在的目录，然后执行命令：
+Once the installation is complete, open your operating system's command-line terminal, switch to the directory where the TataruBook program is located, and execute the command:
 
 ~~~
 tatarubook init accounting.db
 ~~~
 
-执行完成后该目录下会多出一个`accounting.db`文件，这就是保存记账数据的**db文件**。
+After the execution is completed, there will be an additional `accounting.db` file in the directory, which is the **db file** where the bookkeeping data is stored.
 
-接下来，用[insert命令]({{ site.baseurl }}/commands.html#insert)添加一种货币类型：
+Next, add a currency type using the [insert]({{ site.baseurl }}/commands.html#insert) command:
 
 ~~~
 tatarubook insert accounting.db asset_types NULL Gil 0
 ~~~
 
-这会在[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中插入一条记录，包含3个字段：`asset_index`字段值为`NULL`，表示由系统自动生成索引；`asset_name`字段值为`Gil`，表示资产（货币）的名字；`asset_order`字段值为`0`，表示资产序号——TataruBook在展示多种资产时会用资产序号进行排序。
+This will insert a record in the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table containing three fields: `asset_index` field is `NULL`, which means that the index will be automatically generated; `asset_name` field is `Gil`, which means the name of the asset (currency); `asset_order` field is `0`, which means the serial number of the asset - TataruBook will use the serial number to sort the assets when displaying multiple assets.
 
-[insert命令]({{ site.baseurl }}/commands.html#insert)可以向任一张表插入一条记录，命令中需包含表名和待插入的记录里各个字段的值。
+The [insert]({{ site.baseurl }}/commands.html#insert) command inserts a record into any table, with the name of the table and the values of the fields in the record to be inserted.
 {: .notice}
 
-TataruBook文档中的很多例子借用了《最终幻想14》游戏里的背景设定。在《最终幻想14》中，主要货币为`Gil`，所以本文用这种货币来示例。在实际记账的时候，你可以使用任何货币名字，如人民币、美元、日元等等。
+Many of the examples in the TataruBook documentation are borrowed from the **Final Fantasy 14** game setting. In Final Fantasy 14, the primary currency is `Gil`, so this article uses that currency for its examples. When it comes to actual bookkeeping, you can use any currency name, such as USD, JPY, RMB, etc.
 {: .notice}
 
-刚才的命令执行时会显示一些奇怪的信息：
+The command just executed displays some strange messages:
 
 ~~~
 Integrity check after insertion:
@@ -40,145 +40,145 @@ end_date should contain exactly 1 row but 0 row(s) are found.
 standard_asset should contain exactly 1 row but 0 row(s) are found.
 ~~~
 
-这是TataruBook进行**数据一致性检查**后报告的问题。TataruBook包含很多分析财务状况的**视图**，其中不少视图需要特定的数据存在才能进行计算。因此，如果TataruBook发现缺失了需要的数据，就会进行提示。通常通过信息文本就足以理解它所报告的问题是什么。
+This is a problem reported by TataruBook after performing a **Data Consistency Check**. TataruBook contains a number of **Views** that analyze financials, many of which require specific data to exist in order to perform calculations. Therefore, if TataruBook finds that the required data is missing, it will prompt for it. Often the message text is enough to understand what problem it is reporting.
 
-让我们逐个解决提示信息中的问题：
+Let's solve the problems in the prompt message one by one:
 
-首先把唯一的货币`Gil`设置为记账**本位币**，解决[standard_asset表]({{ site.baseurl }}/tables_and_views.html#standard_asset)中需要有一条记录的问题：
+First set the only currency `Gil` as the bookkeeping **home currency** to solve the problem of needing a record in the [standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) table:
 
 ~~~
 tatarubook overwrite accounting.db standard_asset Gil
 ~~~
 
-然后设置**统计周期**的开始时间和结束时间，解决[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)中各需要有一条记录的问题：
+Then set the start time and end time of the **statistics period** to solve the problem of [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_ views.html#end_date) table each need to have a record in them:
 
 ~~~
 tatarubook overwrite accounting.db start_date 2022-12-31
 tatarubook overwrite accounting.db end_date 2023-12-31
 ~~~
 
-注意：统计周期的起点是`start_date`那天的**结束**时刻，所以如果希望统计2023年一整年的数据，不要把`start_date`写成`2023-1-1`，否则统计时将会漏掉`2023-1-1`这一天的数据。
+Note: The starting point of the statistics period is the **end** moment of the day of `start_date`, so if you want to count the whole year of 2023, don't write `start_date` as `2023-1-1`, otherwise the data of the day of `2023-1-1` will be omitted from the statistics.
 
-TataruBook中绝大多数视图的内容都是由[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)所定义的统计周期决定的。比如，[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)展示`start_date`这天结束时的账户余额和价值；[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)展示`end_date`这天结束时的账户余额和价值；投资收益率相关视图展示统计周期内的收益情况，等等。通过修改`start_date`和`end_date`，可以修改统计周期来观察指定的某段历史时期的财务状况。
+The content of the vast majority of views in TataruBook is determined by the statistics period defined by [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_ views.html#end_date) table. For example, [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view displays the account balances and values at the end of the day `start_date`; [end_stats]({{ site.baseurl }}/ tables_and_views.html#end_stats) view shows the account balances and values at the end of the day `end_date`; the ROI related view shows the returns over the statistics period, and so on. By modifying `start_date` and `end_date`, you can modify the statistics period to look at the financials for a specified historical period.
 {: .notice}
 
-现在数据一致性的问题都解决了，TataruBook报告：
+Now that the data consistency issues are out of the way, TataruBook reports:
 
 ~~~
 Integrity check after overwrite:
 Everything is fine, no integrity breach found.
 ~~~
 
-# 开始记账
+# Start bookkeeping
 
-让我们先添加一个银行账户：
-
-~~~
-tatarubook insert accounting.db accounts NULL 萨雷安银行活期 Gil 0
-~~~
-
-这条命令表示账户的名字是`萨雷安银行活期`，对应的资产（货币）是`Gil`，最后一个字段的值为`0`表示该账户为**内部账户**。
-
-你可能会疑惑“内部账户”是什么？——这个问题的答案很快就会出现。
-
-假设在开始记账前，`萨雷安银行活期`账户里面的余额不为$$ 0 $$，现在我们希望把这笔余额输入TataruBook。但是，TataruBook使用[复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，**要向某个账户增加资产，一定要有另一个账户减少等量的资产**。为了满足这个要求，我们添加一个名为`历史结余`的**外部账户**（注意最后一个字段值为`1`）：
+Let's start by adding a bank account:
 
 ~~~
-tatarubook insert accounting.db accounts NULL 历史结余 Gil 1
+tatarubook insert accounting.db accounts NULL "Sharlayan Bank current" Gil 0
 ~~~
 
-现在可以从`历史结余`账户向`萨雷安银行活期`账户转移资产了。用下面这条命令给`萨雷安银行活期`账户添加$$ 5000 $$Gil的余额：
+This command means that the name of the account is `Sharlayan Bank current`, the corresponding asset (currency) is `Gil`, and the last field has a value of `0` which means that the account is an **internal account**.
+
+You may be wondering what is "internal account"? --The answer to this question will come soon.
+
+Let's say that the balance inside the `Sharlayan Bank current` account is not $$ 0 $$ before we start bookkeeping, and now we want to enter this balance into TataruBook. However, TataruBook uses [double-entry bookkeeping]({{ site.baseurl }}/tables_and_views.html#simplified-double-entry-bookkeeping). So, **to add value to an account, there must be another account that reduces the value by an equal amount**. To fulfill this requirement, we add an **external account** named `Opening balance` (note that the last field value is `1`):
 
 ~~~
-tatarubook insert accounting.db postings NULL 2022-12-31 历史结余 -5000 萨雷安银行活期 初始余额
+tatarubook insert accounting.db accounts NULL "Opening balance" Gil 1
 ~~~
 
-执行完这条命令后，TataruBook认为在`2022-12-31`这天，`历史结余`账户中减少了$$ 5000 $$Gil，`萨雷安银行活期`账户中增加了$$ 5000 $$Gil。
-
-接下来我们要记录餐饮消费，先添加一个名为`餐饮费`的外部账户：
+Value can now be transferred from the `Opening balance` account to the `Sharlayan Bank current` account. Add a balance of $$ 5000 $$ Gil to the `Sharlayan Bank current` account with this command:
 
 ~~~
-tatarubook insert accounting.db accounts NULL 餐饮费 Gil 1
+tatarubook insert accounting.db postings NULL 2022-12-31 "Opening balance" -5000 "Sharlayan Bank current" "Brought forward"
 ~~~
 
-然后，添加两笔消费：
+After executing this command, TataruBook believes that on the day `2022-12-31`, the `Opening balance` account was decreased by $$ 5000 $$ Gil and the `Sharlayan Bank current` account was increased by $$ 5000 $$ Gil.
+
+Next we want to record food and beverage spendings by first adding an external account named `Food and Beverages`:
 
 ~~~
-tatarubook insert accounting.db postings NULL 2023-1-5 萨雷安银行活期 -20 餐饮费 旅店早餐
-tatarubook insert accounting.db postings NULL 2023-1-7 萨雷安银行活期 -45 餐饮费 背水咖啡厅晚餐
+tatarubook insert accounting.db accounts NULL "Food and Beverages" Gil 1
 ~~~
 
-执行完成后，使用[export命令]({{ site.baseurl }}/commands.html#export)导出[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)：
+Then, add two purchases:
+
+~~~
+tatarubook insert accounting.db postings NULL 2023-1-5 "Sharlayan Bank current" -20 "Food and Beverages" "Breakfast at Inn"
+tatarubook insert accounting.db postings NULL 2023-1-7 "Sharlayan Bank current" -45 "Food and Beverages" "Dinner at the Last Stand"
+~~~
+
+After execution is complete, export the [statements]({{ site.baseurl }}/commands.html#statements) view using [export]({{ site.baseurl }}/tables_and_views.html#export) command:
 
 ~~~
 tatarubook export accounting.db --table statements
 ~~~
 
-这条命令会使目录中出现`statements.csv`文件，用Excel打开它，看到的内容如下：
+This command causes the `statements.csv` file to appear in the directory. Open it in Excel and see the following:
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2022-12-31 | 1 | 5000.0 | 2 | 初始余额 | 萨雷安银行活期 | 1 | 0 | 历史结余 | 5000.0 |
-| 2 | 2023-01-05 | 1 | -20.0 | 3 | 旅店早餐 | 萨雷安银行活期 | 1 | 0 | 餐饮费 | 4980.0 |
-| 3 | 2023-01-07 | 1 | -45.0 | 3 | 背水咖啡厅晚餐 | 萨雷安银行活期 | 1 | 0 | 餐饮费 | 4935.0 |
-| 1 | 2022-12-31 | 2 | -5000.0 | 1 | 初始余额 | 历史结余 | 1 | 1 | 萨雷安银行活期 | -5000.0 |
-| 2 | 2023-01-05 | 3 | 20.0 | 1 | 旅店早餐 | 餐饮费 | 1 | 1 | 萨雷安银行活期 | 20.0 |
-| 3 | 2023-01-07 | 3 | 45.0 | 1 | 背水咖啡厅晚餐 | 餐饮费 | 1 | 1 | 萨雷安银行活期 | 65.0 |
+| 1 | 2022/12/31 | 1 | 5000 | 2 | Brought forward | Sharlayan Bank current | 1 | 0 | Opening balance | 5000 |
+| 1 | 2022/12/31 | 2 | -5000 | 1 | Brought forward | Opening balance | 1 | 1 | Sharlayan Bank current | -5000 |
+| 2 | 2023/1/5 | 1 | -20 | 3 | Breakfast at Inn | Sharlayan Bank current | 1 | 0 | Food and Beverages | 4980 |
+| 2 | 2023/1/5 | 3 | 20 | 1 | Breakfast at Inn | Food and Beverages | 1 | 1 | Sharlayan Bank current | 20 |
+| 3 | 2023/1/7 | 1 | -45 | 3 | Dinner at the Last Stand | Sharlayan Bank current | 1 | 0 | Food and Beverages | 4935 |
+| 3 | 2023/1/7 | 3 | 45 | 1 | Dinner at the Last Stand | Food and Beverages | 1 | 1 | Sharlayan Bank current | 65 |
 
-这些数据和我们平时常见的交易明细账单类似。使用Excel对`src_name`进行筛选，可以以不同视角来观察：当筛选内部账户`萨雷安银行活期`时，看到的是该账户按时间排列的交易记录和余额；当按照外部账户`餐饮费`筛选时，看到的是所有以`餐饮费`的名义发生的交易。所以，**外部账户是对收支的分类**。在TataruBook中，你可以用任何自己喜欢的方式来分类统计收入和支出——只要添加对应的外部账户即可。
+This data is similar to the usual transaction ledger statements that we see all the time. Filtering on `src_name` using Excel gives a different perspective: when filtering on the internal account `Sharlayan Bank current`, you see a chronological record of transactions and balances for that account; when filtering by the external account `Food and Beverages`, you see all transactions that occurred in the name of `Food and Beverages`. So, **external accounts are categorization of income and expenses**. In TataruBook, you can categorize your income and expenses statistics any way you like - just add the corresponding external accounts.
 
-# 批量导入数据
+# Bulk import data
 
-在前面的基础上，我们继续输入更多记账数据。先添加一些内部账户和外部账户：
+Building on the previous section, let's move on to importing more bookkeeping data. Start by adding some internal and external accounts:
 
 ~~~
-tatarubook insert accounting.db accounts NULL 萨雷安银行信用卡 Gil 0
-tatarubook insert accounting.db accounts NULL 购物 Gil 1
-tatarubook insert accounting.db accounts NULL 房租 Gil 1
-tatarubook insert accounting.db accounts NULL 工资 Gil 1
+tatarubook insert accounting.db accounts NULL "Sharlayan Bank credit card" Gil 0
+tatarubook insert accounting.db accounts NULL Shopping Gil 1
+tatarubook insert accounting.db accounts NULL Rent Gil 1
+tatarubook insert accounting.db accounts NULL Salary Gil 1
 ~~~
 
-然后，我们希望输入一批交易记录。要想高效的输入数据，我们希望把银行等机构提供的交易明细记录批量的导入到记账软件中。对此，TataruBook提供了[import命令]({{ site.baseurl }}/commands.html#import)。
+We then wish to enter a batch of transaction records. For efficient data entry, we would like to batch import the transaction details provided by banks or other organizations. For this, TataruBook provides [import]({{ site.baseurl }}/commands.html#import) command.
 
-首先把数据用Excel处理成下面的格式，并保存为`postings.csv`文件（`posting_index`这一列中的数据是故意留为空的，因为它会在导入时自动生成。见[自动生成的索引字段]({{ site.baseurl }}/commands.html#自动生成的索引字段)）：
+First, process the data in Excel into the following format and save it as a `postings.csv` file (The data in the column `posting_index` is intentionally left empty because it will be automatically generated on import. See [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields)):
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| | 2023/2/10 | 工资 | -8000 | 萨雷安银行活期 | 月工资 |
-| | 2023/2/13 | 萨雷安银行信用卡 | -190 | 购物 | 买衣服 |
-| | 2023/2/26 | 萨雷安银行信用卡 | -140 | 购物 | 买生活用品 |
-| | 2023/3/2 | 萨雷安银行信用卡 | -9000 | 房租 | 半年租金 |
-| | 2023/3/10 | 工资 | -8000 | 萨雷安银行活期 | 月工资 |
-| | 2023/3/10 | 萨雷安银行信用卡 | -43 | 餐饮费 | 背水咖啡厅午餐 |
-| | 2023/3/20 | 萨雷安银行活期 | -9300 | 萨雷安银行信用卡 | 还信用卡 |
+| | 2023/2/10 | Salary | -8000 | Sharlayan Bank current | Monthly salary |
+| | 2023/2/13 | Sharlayan Bank credit card | -190 | Shopping | Clothes shopping |
+| | 2023/2/26 | Sharlayan Bank credit card | -140 | Shopping | Buying Household Items |
+| | 2023/3/2 | Sharlayan Bank credit card | -9000 | Rent | Half-yearly rent |
+| | 2023/3/10 | Salary | -8000 | Sharlayan Bank current | Monthly salary |
+| | 2023/3/10 | Sharlayan Bank credit card | -43 | Food and Beverages | Lunch at the Last Stand |
+| | 2023/3/20 | Sharlayan Bank current | -9300 | Sharlayan Bank credit card | Pay off credit card |
 
-然后用这条命令，把csv文件中的所有记录导入[postings表]({{ site.baseurl }}/tables_and_views.html#postings)：
+Then use this command to import all the records from the csv file into the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table:
 
 ~~~
 tatarubook import accounting.db postings.csv
 ~~~
 
-在实际记账时，[import命令]({{ site.baseurl }}/commands.html#import)可能比[insert命令]({{ site.baseurl }}/commands.html#insert)更常用，因为记账的数据常常来自银行、券商等机构提供的交易明细记录。由于TataruBook对插入的数据有很多校验，在批量导入时可能会遇到某条记录插入失败。这种情况下，`import`命令会触发**回滚**——把db文件恢复到`import`执行之前的状态。然后，用户可以修改csv文件内容中的错误，并重新执行导入。自动回滚的特性让用户不需要担心导入庞大的csv文件时出现部分插入成功而使db文件的状态难以确定。
+When it comes to actual bookkeeping, the [import]({{ site.baseurl }}/commands.html#import) command may be more commonly used than the [insert]({{ site.baseurl }}/commands.html#insert) command, because the data for bookkeeping often comes from banks, brokerage firms, and other organizations that provide transaction detail records. Since TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch import. In this case, the `import` command triggers a **rollback** - restoring the db file to the state it was in before the `import` was executed. The user can then modify the errors in the contents of the csv file and re-execute the `import` command. The automatic rollback feature eliminates the need for users to worry about importing huge csv files with partially successful inserts that make the state of the db file difficult to determine.
 {: .notice}
 
-现在我们想看看收支的分类统计。先用[export命令]({{ site.baseurl }}/commands.html#export)导出[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)：
+Now we want to look at the breakdown statistics of income and expenses. Start by exporting the [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view using the [export]({{ site.baseurl }}/commands.html#export) command:
 
 ~~~
 tatarubook export accounting.db --table income_and_expenses
 ~~~
 
-然后打开生成的`income_and_expenses.csv`文件，其内容如下：
+Then open the generated `income_and_expenses.csv` file, the contents are:
 
 | asset_order | account_index | account_name | total_amount | asset_index | asset_name | total_value |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 3 | 餐饮费 | 108.0 | 1 | Gil | 108.0 |
-| 0 | 5 | 购物 | 330.0 | 1 | Gil | 330.0 |
-| 0 | 6 | 房租 | 9000.0 | 1 | Gil | 9000.0 |
-| 0 | 7 | 工资 | -16000.0 | 1 | Gil | -16000.0 |
+| 0 | 3 | Food and Beverages | 108.0 | 1 | Gil | 108.0 |
+| 0 | 5 | Shopping | 330.0 | 1 | Gil | 330.0 |
+| 0 | 6 | Rent | 9000.0 | 1 | Gil | 9000.0 |
+| 0 | 7 | Salary | -16,000.0 | 1 | Gil | -16,000.0 |
 
-这些数据展示了统计周期内每一类收支的统计结果。注意：由于外部账户的交易数额是内部账户的相反数，所以这些数据中正值表示开支，负值表示收入。
+These data show the statistics for each type of income and expense during the statistics period. Note: Since the amount changed in the external account is the opposite of the internal account when they are both contained in one transaction, therefore positive values in these data indicate expenses and negative values indicate income.
 
-[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)展示的是所有内部账户在某类收支上的交易额之和。如果想看细分到每个内部账户的统计数据，可以查看[flow_stats视图]({{ site.baseurl }}/tables_and_views.html#flow_stats)：
+The [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view shows the sum of the transaction amounts of all the internal accounts on a particular type of income and expense. If you want to see the statistics broken down to each internal account, you can check out the [flow_stats]({{ site.baseurl }}/tables_and_views.html#flow_stats) view:
 
 ~~~
 tatarubook export accounting.db --table flow_stats
@@ -186,15 +186,15 @@ tatarubook export accounting.db --table flow_stats
 
 | flow_index | flow_name | account_index | account_name | amount |
 |:-:|:-:|:-:|:-:|:-:|
-| 3 | 餐饮费 | 1 | 萨雷安银行活期 | 65.0 |
-| 3 | 餐饮费 | 4 | 萨雷安银行信用卡 | 43.0 |
-| 5 | 购物 | 4 | 萨雷安银行信用卡 | 330.0 |
-| 6 | 房租 | 4 | 萨雷安银行信用卡 | 9000.0 |
-| 7 | 工资 | 1 | 萨雷安银行活期 | -16000.0 |
+| 3 | Food and Beverages | 1 | Sharlayan Bank current | 65.0 |
+| 3 | Food and Beverages | 4 | Sharlayan Bank credit card | 43.0 |
+| 5 | Shopping | 4 | Sharlayan Bank credit card | 330.0 |
+| 6 | Rent | 4 | Sharlayan Bank credit card | 9000.0 |
+| 7 | Salary | 1 | Sharlayan Bank current | -16000.0 |
 
-在[flow_stats视图]({{ site.baseurl }}/tables_and_views.html#flow_stats)中，可以看到`萨雷安银行活期`和`萨雷安银行信用卡`两个内部账户分别产生了多少`餐饮费`。
+In the [flow_stats]({{ site.baseurl }}/tables_and_views.html#flow_stats) view, you can see how many `Food and Beverages` have been incurred by each of the `Sharlayan Bank current` and `Sharlayan Bank credit card` internal accounts.
 
-如果想知道经过这些交易后，每个内部账户最后的余额是多少，可以查看[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)：
+If you want to know what the final balance of each internal account is after these transactions, you can check the [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats) view:
 
 ~~~
 tatarubook export accounting.db --table end_stats
@@ -202,39 +202,39 @@ tatarubook export accounting.db --table end_stats
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 11635.0 | 1 | Gil | 1.0 | 11635.0 | 1.006 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.006 |
+| 0 | 2023-12-31 | 1 | Sharlayan Bank current | 11635.0 | 1 | Gil | 1.0 | 11635.0 | 1.006 |
+| 0 | 2023-12-31 | 4 | Sharlayan Bank credit card | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.006 |
 
-注意信用卡的余额是负值——这是大多数信用卡账户的常态。
+Note that the credit card has a negative balance - this is the norm for most credit card accounts.
 
-TataruBook不允许手工指定账户余额（之前输入初始余额的操作其实录入的是一笔交易），所有账户的余额都是根据交易记录自动计算出来的。在记账时，通过核对TataruBook展示的余额和实际账户余额是否一致，可以有效的校验输入的数据是否完整、准确。
+TataruBook does not allow account balances to be specified manually (the previous operation of entering an opening balance actually enters a transaction), and the balances of all accounts are calculated automatically from the transaction history. During bookkeeping, the data entered can be effectively verified for completeness and accuracy by checking whether the balance displayed by TataruBook and the actual account balance are the same.
 {: .notice}
 
-# 利息收益
+# Interest earnings
 
-银行账户上的资金往往有利息收益。为了记录利息，先加入表示利息的外部账户：
+Funds in a bank account often have interest earnings. In order to record the interest, first add the external account that represents the interest:
 
 ~~~
-tatarubook insert accounting.db accounts NULL Gil利息 Gil 1
+tatarubook insert accounting.db accounts NULL "Gil interest" Gil 1
 ~~~
 
-如果有多种不同货币在使用，需要按不同货币来设立不同外部账户。利息账户的名字叫`Gil利息`是出于这个准备：如果以后增加了其他货币，其他货币的利息对应的外部账户可以和`Gil利息`区分开。当然，如果你只使用一种货币，则不需要考虑这些。
+If there are many different currencies in use, you need to set up different external accounts by different currencies. The interest account is named `Gil interest` for this reason: if other currencies are added later, the external accounts corresponding to the interest in the other currencies can be distinguished from `Gil interest`. Of course, if you only use one currency, you don't need to take this into account.
 {: .notice}
 
-TataruBook对于利息有额外的统计功能，为了利用这些功能，需要把利息账户加入到[interest_accounts表]({{ site.baseurl }}/tables_and_views.html#interest_accounts)中：
+TataruBook has additional statistics for interest, and in order to take advantage of these, interest accounts need to be added to the [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) table:
 
 ~~~
-tatarubook insert accounting.db interest_accounts Gil利息
+tatarubook insert accounting.db interest_accounts "Gil interest"
 ~~~
 
-现在可以添加利息收入了：
+Now you can add the interest earnings:
 
 ~~~
-tatarubook insert accounting.db postings NULL 2023-3-30 Gil利息 -30 萨雷安银行活期 账户结息
-tatarubook insert accounting.db postings NULL 2023-6-30 Gil利息 -35 萨雷安银行活期 账户结息
+tatarubook insert accounting.db postings NULL 2023-3-30 "Gil interest" -30 "Sharlayan Bank current" "Interest payment"
+tatarubook insert accounting.db postings NULL 2023-6-30 "Gil interest" -35 "Sharlayan Bank current" "Interest payment"
 ~~~
 
-然后，通过[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)可以查看以当前数据计算出的账户利率：
+The [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view then allows you to view the account interest rate calculated with the current data:
 
 ~~~
 tatarubook export accounting.db --table interest_rates
@@ -242,56 +242,59 @@ tatarubook export accounting.db --table interest_rates
 
 | account_index | account_name | asset_index | avg_balance | interest | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 11278.38 | 65.0 | 0.00576 |
+| 1 | Sharlayan Bank current | 1 | 11278.38 | 65.0 | 0.00576 |
 
-这些数据表示：统计周期内`萨雷安银行活期`的平均每日账户余额是$$ 11278.38 $$Gil，利率大约是$$ 0.576\% $$。如果想知道详细的计算过程，可参考[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)。
+These figures indicate that the average daily account balance of `Sharlayan Bank current` during the statistics period was $$ 11278.38 $$ Gil, and the interest rate was about $$ 0.576\% $$. For a detailed description on this calculation, see the [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method).
 
-检查每个账户的利率有助于避免记账中的错误——如果计算出的利率不合理，那表明记账数据可能存在差错。
+Checking the interest rate for each account helps to avoid errors in bookkeeping - if the calculated interest rate doesn't make sense, it's an indication that there may be an error in the bookkeeping data.
 {: .notice}
 
-# 股票投资
+# Stock Investments
 
-要记录股票投资，首先需要添加某只股票的**资产**。对TataruBook来说，股票和货币并没有本质的区别，它们都是特定的资产。因此，在[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中添加股票资产的方法和添加一种货币一样：
-
-~~~
-tatarubook insert accounting.db asset_types NULL 加隆德炼铁厂股份 1
-~~~
-
-我们把最后一个字段`asset_order`的值写为`1`，这样在[end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats)等视图中，股票资产会排在货币资产的后面。如果你不关心各个视图中资产排列的顺序，可以把所有资产的`asset_order`都设置为`0`。
-
-接下来添加持有这只股票的内部账户。TataruBook允许多个内部账户持有同一只股票，但是我们现在暂时只用添加一个股票账户：
+To record a stock investment, you first need to add an **asset** representing a particular stock. For TataruBook, stocks and currencies are not fundamentally different; they are both specific assets. Therefore, adding a stock asset to the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table is the same as adding a currency:
 
 ~~~
-tatarubook insert accounting.db accounts NULL 莫古证券_加隆德股份 加隆德炼铁厂股份 0
+tatarubook insert accounting.db asset_types NULL "Garlond Ironworks shares" 1
 ~~~
 
-TataruBook中的股票交易只不过是内部账户之间的资产转移。但是现在出现一个问题：之前的每笔交易中，源账户（即转出账户）减少的数额总是等于目标账户（即转入账户）增加的数额。所以记录交易时，我们只用写一个数字，TataruBook就会同时完成源账户和目标账户的余额变更。但是现在，现金和股票账户包含的资产不同：现金账户中的余额是货币的数量，而股票账户中的余额是股份的数量。所以交易中现金账户的变动数额并不等于股票账户的变动数额的相反数（除非股价恰好为$$ 1 $$）。
+We write the value of the last field `asset_order` as `1` so that the stock asset will come after the currency asset in views like [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats). If you don't care about the order in which the assets are listed in the various views, you can set the `asset_order` to `0` for all assets.
 
-为了解决这个问题，TataruBook规定：**当一笔交易记录中两个账户包含的资产不同时，必须同时提供源账户和目标账户的变动数额**。体现到命令上，就是插入命令的结尾要多出一个数字来表示目标账户的变动数额：
-
-~~~
-tatarubook insert accounting.db postings NULL 2023-7-3 萨雷安银行活期 -2000 莫古证券_加隆德股份 买入股票 200
-~~~
-
-命令最后的$$ 200 $$表示该笔交易购入了$$ 200 $$股。如果使用[import命令]({{ site.baseurl }}/commands.html#import)导入记录，也需要在该行（记录）最后加一个字段来表示目标账户的变动数额。
-
-添加交易时不需要提供实时交易价格，因为两个账户的变动数额已经反映了当时的交易价格。如果希望记录交易的手续费/佣金/税，那么可以添加对应的外部账户，并把一笔交易拆分为多笔录入。
-
-添加这笔交易后，TataruBook又报告数据一致性问题：
+Next add the internal account that holds this stock. tataruBook allows multiple internal accounts to hold the same stock, but we'll just add a stock account for now:
 
 ~~~
-Integrity check after insertion:
-These (date, asset) pairs need price info in calculation:
-(2, '加隆德炼铁厂股份', 1, '2023-12-31')
+tatarubook insert accounting.db accounts NULL "Moogle:Garlond Ironworks shares" "Garlond Ironworks shares" 0
 ~~~
 
-这是因为在计算净资产时需要知道其他资产换算为本位币的价值，所以需要输入特定日期的股价。我们向[prices表]({{ site.baseurl }}/tables_and_views.html#prices)添加记录来满足这个要求：
+Stock trading in TataruBook is nothing more than a transfer of assets between internal accounts. But now a problem arises: in every previous transaction, the decrease in the source account (i.e. the transfer out account) is always equal to the increase in the target account (i.e. the transfer in account). So when recording a transaction, we only had to write a single number, and TataruBook would complete the balance change for both the source and target accounts. Now, however, the cash and stock accounts contain different assets: the balance in the cash account is the amount of money, while the balance in the stock account is the amount of shares. So the amount of change in the cash account in a transaction does not equal the opposite of the amount of change in the stock account (unless the share price happens to be $$ 1 $$).
+
+To solve this problem, TataruBook specifies that **when two accounts in a transaction record contain different assets, the change amounts for both the source and target accounts must be provided**. This is reflected in the command by having an extra number at the end of the insert command to indicate the amount of change in the target account:
 
 ~~~
-tatarubook insert accounting.db prices 2023-12-31 加隆德炼铁厂股份 12
+tatarubook insert accounting.db postings NULL 2023-7-3 "Sharlayan Bank current" -2000 "Moogle:Garlond Ironworks shares" "Buy shares" 200
 ~~~
 
-现在可以通过[end_stats视图]({{ site.baseurl }}/tables_and_views.html#end_stats)来查看在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)日期的所有账户余额和市场价值：
+The $$ 200 $$ at the end of the command indicates that the transaction purchased $$ 200 $$ shares. If importing records using the [import]({{ site.baseurl }}/commands.html#import) command, it is also necessary to add a field at the end of the line (record) to indicate the amount of change in the target account.
+
+It is not necessary to provide the real-time transaction price when adding the transaction, as the amount of change for both accounts already reflects the transaction price at that time. If you wish to record the fees/commissions/taxes for a transaction, then you can add the corresponding external account and split a transaction into multiple entries.
+
+After adding this transaction, TataruBook again reports data consistency issues:
+
+~~~
+Integrity check after insertion.
+These (date, asset) pairs need price info in calculation.
+(2, 'Garlond Ironworks shares', 1, '2023-12-31')
+~~~
+
+This is because TataruBook needs to know the value of the other assets measured in the home currency when calculating the net assets, so you need to enter the share price on a specific date. We add records to the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table to fulfill this requirement:
+
+~~~
+tatarubook insert accounting.db prices 2023-12-31 "Garlond Ironworks shares" 12
+~~~
+
+It is now possible to view all records on [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats) view to see all account balances and market values on the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date):
+
+If you follow this tutorial all along, now there is already an `end_stats.csv` file existing in this folder because we've exported it before. In this circumstance, when you execute the command below, that file will not be updated - because TataruBook avoids accidentally damaging existing files. So you need to delete the `end_stats.csv` file first, and then run the command below.
+{: .notice--warning}
 
 ~~~
 tatarubook export accounting.db --table end_stats
@@ -299,44 +302,44 @@ tatarubook export accounting.db --table end_stats
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 9700.0 | 1 | Gil | 1.0 | 9700.0 | 0.8065 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0061 |
-| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 | 0.1996 |
+| 0 | 2023-12-31 | 1 | Sharlayan Bank current | 9700.0 | 1 | Gil | 1.0 | 9700.0 | 0.8065 |
+| 0 | 2023-12-31 | 4 | Sharlayan Bank credit card | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0061 |
+| 1 | 2023-12-31 | 9 | Moogle:Garlond Ironworks shares | 200.0 | 2 | Garlond Ironworks shares | 12.0 | 2400.0 | 0.1996 |
 
-# 投资收益率
+# Rate of return on investments
 
-除了股票以外，基金、债券、商品、期货等其他资产的交易记录方式也是类似的。我们来添加一种基金资产和相应账户：
+In addition to stocks, other assets such as funds, bonds, commodities, and futures are recorded in a similar way. Let's add a fund asset and the corresponding account:
 
 ~~~
-tatarubook insert accounting.db asset_types NULL 艾欧泽亚100指数基金 1
-tatarubook insert accounting.db accounts NULL 莫古证券_艾欧泽亚100 艾欧泽亚100指数基金 0
+tatarubook insert accounting.db asset_types NULL "Eorzea 100 Index Fund" 1
+tatarubook insert accounting.db accounts NULL "Moogle:Eorzea 100" "Eorzea 100 Index Fund" 0
 ~~~
 
-这只基金有多次交易，有申购也有赎回，我们用[import命令]({{ site.baseurl }}/commands.html#import)一次导入所有交易记录。先编写csv文件内容：
+This fund has multiple transactions, both purchases and redemptions, we use [import]({{ site.baseurl }}/commands.html#import) command to import all transaction records at once. Start by writing the contents of the csv file:
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| | 2023/8/2 | 萨雷安银行活期 | -3000 | 莫古证券_艾欧泽亚100 | 基金申购 | 1500 |
-| | 2023/8/21 | 萨雷安银行活期 | -1000 | 莫古证券_艾欧泽亚100 | 基金申购 | 450 |
-| | 2023/9/12 | 莫古证券_艾欧泽亚100 | -1000 | 萨雷安银行活期 | 基金赎回 | 2500 |
-| | 2023/9/30 | 萨雷安银行活期 | -1200 | 莫古证券_艾欧泽亚100 | 基金申购 | 630 |
+| | 2023/8/2 | Sharlayan Bank current | -3000 | Moogle:Eorzea 100 | Purchase | 1500 |
+| | 2023/8/21 | Sharlayan Bank current | -1000 | Moogle:Eorzea 100 | Purchase | 450 |
+| | 2023/9/12 | Moogle:Eorzea 100 | -1000 | Sharlayan Bank current | Redemption | 2500 |
+| | 2023/9/30 | Sharlayan Bank current | -1200 | Moogle:Eorzea 100 | Purchase | 630 |
 
-为了更清楚的示意每行最后一个字段，标题行中增加了`dst_change`列。但实际上TataruBook导入csv文件时并不关心标题行的内容，只要按照要求的顺序填写每个字段的值即可。
+The `dst_change` column has been added to the header row to more clearly illustrate the last field of each row. But actually TataruBook doesn't care about the contents of the header row when importing the csv file, it just fills in the values of each field in the required order.
 {: .notice}
 
-然后导入这个csv文件的内容：
+Then import the contents of this csv file:
 
 ~~~
 tatarubook import accounting.db postings.csv
 ~~~
 
-和之前一样，添加`艾欧泽亚100指数基金`在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)日期的价格信息：
+As before, add the price information for the `Eorzea 100 Index Fund` on the date [end_date]({{ site.baseurl }}/tables_and_views.html#end_date):
 
 ~~~
-tatarubook insert accounting.db prices 2023-12-31 艾欧泽亚100指数基金 2.35
+tatarubook insert accounting.db prices 2023-12-31 "Eorzea 100 Index Fund" 2.35
 ~~~
 
-完成后，查看在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)日期的所有账户余额和市场价值：
+When finished, view all account balances and market values as of [end_date]({{ site.baseurl }}/tables_and_views.html#end_date): (if `end_stats.csv` file already exists, delete it first)
 
 ~~~
 tatarubook export accounting.db --table end_stats
@@ -344,12 +347,12 @@ tatarubook export accounting.db --table end_stats
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-12-31 | 1 | 萨雷安银行活期 | 7000.0 | 1 | Gil | 1.0 | 7000.0 | 0.5368 |
-| 0 | 2023-12-31 | 4 | 萨雷安银行信用卡 | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0056 |
-| 1 | 2023-12-31 | 9 | 莫古证券_加隆德股份 | 200.0 | 2 | 加隆德炼铁厂股份 | 12.0 | 2400.0 | 0.1840 |
-| 1 | 2023-12-31 | 10 | 莫古证券_艾欧泽亚100 | 1580.0 | 3 | 艾欧泽亚100指数基金 | 2.35 | 3713.0 | 0.2847 |
+| 0 | 2023-12-31 | 1 | Sharlayan Bank current | 7000.0 | 1 | Gil | 1.0 | 7000.0 | 0.5368 |
+| 0 | 2023-12-31 | 4 | Sharlayan Bank credit card | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.0056 |
+| 1 | 2023-12-31 | 9 | Moogle:Garlond Ironworks shares | 200.0 | 2 | Garlond Ironworks shares | 12.0 | 2400.0 | 0.1840 |
+| 1 | 2023-12-31 | 10 | Moogle:Eorzea 100 | 1580.0 | 3 | Eorzea 100 Index Fund | 2.35 | 3713.0 | 0.2847 |
 
-除了按账户展示价值外，还可以通过[end_assets视图]({{ site.baseurl }}/tables_and_views.html#end_assets)来查看每种资产的数量和价值：
+In addition to displaying values by account, you can also view the quantity and value of each asset via [end_assets]({{ site.baseurl }}/tables_and_views.html#end_assets) view:
 
 ~~~
 tatarubook export accounting.db --table end_assets
@@ -358,23 +361,24 @@ tatarubook export accounting.db --table end_assets
 | asset_order | date_val | asset_index | asset_name | amount | price | total_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 2023-12-31 | 1 | Gil | 6927.0 | 1.0 | 6927.0 | 0.5312 |
-| 1 | 2023-12-31 | 2 | 加隆德炼铁厂股份 | 200.0 | 12.0 | 2400.0 | 0.1840 |
-| 1 | 2023-12-31 | 3 | 艾欧泽亚100指数基金 | 1580.0 | 2.35 | 3713.0 | 0.2847 |
+| 1 | 2023-12-31 | 2 | Garlond Ironworks shares | 200.0 | 12.0 | 2400.0 | 0.1840 |
+| 1 | 2023-12-31 | 3 | Eorzea 100 Index Fund | 1580.0 | 2.35 | 3713.0 | 0.2847 |
 
-虽然最终的价值计算出来了，但对于投资者来说，还关心这只基金通过这些买卖交易，整体的收益如何？通过[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)可以查看每个包含投资品的账户的收益情况（TataruBook把所有不是本位币的资产都看作投资品）：
+While the final value is calculated, the investor is also concerned about the profit or loss of this fund through these buy and sell transactions. The [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view allows you to see the returns for each account that contains investments (TataruBook treats all assets that aren't in the home currency as investments):
 
 ~~~
 tatarubook export accounting.db --table return_on_shares
 ~~~
 
+
 | asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2 | 加隆德炼铁厂股份 | 9 | 莫古证券_加隆德股份 | 0 | 0 | 200.0 | 200.0 | 2400.0 | -2000.0 | 2000.0 | 400.0 | 0.2 |
-| 1 | 3 | 艾欧泽亚100指数基金 | 10 | 莫古证券_艾欧泽亚100 | 0 | 0 | 1580.0 | 1580.0 | 3713.0 | -2700.0 | 4000.0 | 1013.0 | 0.25325 |
+| 1 | 2 | Garlond Ironworks shares | 9 | Moogle:Garlond Ironworks shares | 0 | 0 | 200.0 | 200.0 | 2400.0 | -2000.0 | 2000.0 | 400.0 | 0.2 |
+| 1 | 3 | Eorzea 100 Index Fund | 10 | Moogle:Eorzea 100 | 0 | 0 | 1580.0 | 1580.0 | 3713.0 | -2700.0 | 4000.0 | 1013.0 | 0.25325 |
 
-这些数据显示：`莫古证券_加隆德股份`账户的投资收益是$$ 400 $$Gil，收益率是$$ 20\% $$；`莫古证券_艾欧泽亚100`账户的投资收益是$$ 1013.0 $$Gil，收益率是$$ 25.325\% $$。如果想知道详细的计算过程，可参考[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
+These figures show that the `Moogle:Garlond Ironworks shares` account has an investment return of $$ 400 $$ Gil, with a rate of return of $$ 20\% $$, and the `Moogle:Eorzea 100` account has an investment return of $$ 1013.0 $$ Gil, with a rate of return of $$ 25.325\% $$. If you want to know the detailed calculation process, you can refer to [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method).
 
-TataruBook还会把所有内部账户的集合看作是一个**投资组合**，并计算这个组合整体的收益率，结果显示在[portfolio_stats视图]({{ site.baseurl }}/tables_and_views.html#portfolio_stats)中：
+TataruBook will also see the set of all internal accounts as a **portfolio** and calculate the rate of return for this portfolio as a whole, the results of which are displayed in [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view in:
 
 ~~~
 tatarubook export accounting.db --table portfolio_stats
@@ -384,16 +388,16 @@ tatarubook export accounting.db --table portfolio_stats
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 5000.0 | 13040.0 | -6562.0 | -65.0 | 1478.0 | 0.178 |
 
-这些数据显示：所有内部账户在统计周期内投资收益总计为$$ 1478 $$Gil，收益率为$$ 17.8\% $$。注意投资收益中包含利息。如果想知道详细的计算过程，可参考[简单Dietz方法]({{ site.baseurl }}/rate_of_return.html#简单dietz方法)。
+These figures show that all internal accounts had a total investment return of $$ 1478 $$ Gil over the statistics period, for a rate of return of $$ 17.8\% $$. Note that interest earnings are included in the investment return. For a detailed description on this calculation, see [simple Dietz method]({{ site.baseurl }}/rate_of_return.html#simple-dietz-method).
 
-TataruBook通常用于记录个人或者家庭的所有资产，因此[portfolio_stats视图]({{ site.baseurl }}/tables_and_views.html#portfolio_stats)的信息很重要，它展示了个人或家庭在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)日期结束时的净资产，以及这两个日期之间的净收支和投资收益情况。
+TataruBook is often used to keep track of all of an individual or family's assets, so the information in [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view is important: it shows the net worth at the end of both [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the net income and expenses and investment income between the two dates.
 {: .notice}
 
-# 用图形界面软件查看db文件
+# Viewing db files with GUI software
 
-TataruBook是命令行程序，没有图形界面。但是包含所有表和视图的db文件是**SQLite格式**文件，任何支持SQLite格式的软件都可查看db文件中的表和视图（前提是该软件支持SQLite的新特性）。以开源免费的[DB Browser for SQLite](https://sqlitebrowser.org/)软件作为例子来演示：首先下载安装`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest)（只有nightly版本才支持SQLite的新特性），然后运行`DB Browser for SQLite`，最后点击`打开数据库`按钮并选择`accounting.db`文件，就可以查看db文件里表和视图的数据了。
+TataruBook is a command-line program and does not have a graphical interface. However, the db file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the db file (provided that the software supports the new features of SQLite). Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install the [nightly version](https://nightlies.sqlitebrowser.org/latest) of `DB Browser for SQLite` (only the nightly version supports the new features of SQLite), then run `DB Browser for SQLite`, and finally click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the db file.
 
 ![DB Browser for SQLite界面]({{ site.baseurl }}/assets/images/statements.png)
 
-你还可以用这些软件来编辑db文件中的数据，但是只有TataruBook在插入数据时会进行完善的一致性校验。所以如果用别的软件编辑db文件，最好再用TataruBook做一次检查。如果你会使用SQL语言，还可以自己编写SQL命令来开发TataruBook没有提供的数据分析功能。
+You can also use software other than TataruBook to edit the data in the db file, but only TataruBook does a perfect consistency check when inserting data. So if you use other software to edit the db file, it is better to use TataruBook to do the check again. If you know how to use SQL, you can also write your own SQL commands to develop data analysis functions that TataruBook does not provide.
 {: .notice}

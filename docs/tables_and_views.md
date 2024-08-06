@@ -1,197 +1,197 @@
 ---
-title: 表和视图
+title: Tables and Views
 ---
-本页介绍db文件中包含的所有表和视图。
+This page describes all the tables and views contained in the db file.
 
-**表**包含了用户提供的财务数据，它是所有报表的数据源头。为了确保数据的完整性和一致性，在添加、修改、删除表中的数据时，TataruBook会进行各方面的校验，保证数据之间不出现冲突和逻辑矛盾。
+**Tables** contain the financial data provided by the user and they are source of data for all reports. To ensure data integrity and consistency, when adding, modifying, or deleting data from the table, TataruBook checks all aspects to ensure that there are no conflicts or logical contradictions in data.
 
-**视图**是使用表中的数据计算出的报表，包含净资产、分类收入支出、投资收益率等各种统计数据。每当任一张表中的数据发生了变化，所有视图均会立即重新计算并更新。通常来说视图更新的速度非常快，用户往往感知不到延迟。视图的更新不需要手工触发。
+**Views** are reports calculated using the data in the tables and contain various statistics such as net assets, categorized income and expenses, and ROI. Whenever the data in any table changes, all views are immediately recalculated and updated. Typically the views are updated so quickly that the user is often unaware of the delay. View updates do not need to be triggered manually.
 
-有一些视图是面向用户提供的报表，也有一些视图是供另一些视图使用的中间计算结果，用户通常不需要关注这些中间结果视图。但是，如果用户对某些报表数据有疑惑，想要检查计算过程，可以查看这些中间结果视图。另外，对于自己编写SQL查询的高级用户，中间结果视图可能也是有用的。
+Some views are user-oriented reports, and some views are intermediate calculations used by other views. Users usually don't need to pay attention to these intermediate results views. However, if you have doubts about some report data and want to check the calculation process, you can check these intermediate result views. Also, for advanced users who write their own SQL queries, intermediate result views may be useful.
 
-所有名字以`check`开头的视图都是用于检查数据一致性的。当数据一致时，这些`check`开头的视图应当不含任何记录。如果TataruBook发现某个`check`开头的视图内容不为空，则会在命令行报告相关的数据错误并提示用户修正。
+All the views whose names start with `check` are used to check data consistency. When the data is consistent, these `check` views should contain no records. If TataruBook finds that the contents of a view beginning with `check` are not empty, it will report the associated data error on the command-line and prompt the user to fix it.
 
-# 简化的复式记账法
+# Simplified double-entry bookkeeping
 
-![记账数据架构]({{ site.baseurl }}/assets/images/architecture.png)
+![Bookkeeping data architecture]({{ site.baseurl }}/assets/images/architecture.png)
 
-TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookkeeping)里“每笔交易都必须有两个账户参与”的要求，但并没有使用专业会计方法中的账户分类法，以及[每种账户约定的正负号](https://en.wikipedia.org/wiki/Debits_and_credits)。对于普通个人或家庭的记账来说，严格遵循专业会计方法会使记账太过于复杂且难以理解。因此TataruBook用了更简单直观的记账方法，只把所有账户分为两类：
+TataruBook follows the "two accounts must be involved in every transaction" requirement of [double-entry bookkeeping](https://en.wikipedia.org/wiki/Double-entry_bookkeeping). However, it does not use the professional accounting method of account categorization and the [debit and credit rules for each type of account](https://en.wikipedia.org/wiki/Debits_and_credits). Strict adherence to professional accounting methods would make bookkeeping too complex and difficult to understand for the average individual or family. TataruBook therefore uses a simpler and more intuitive method of bookkeeping, dividing all accounts into just two categories:
 
-- **内部账户**中的某笔变动数额为正表示财产变多，为负表示财产变少；余额为正时表示拥有财产，为负时表示对外负债。
-- **外部账户**中的某笔变动数额为正表示支出，为负表示收入或利息。
+- **Internal account**: A positive amount of a change means an increase in asset, a negative amount means an decrease in asset; a positive balance means asset owned, a negative balance means external liabilities.
+- **external account**: A positive amount of a change indicates an expense and a negative amount indicates income or interest.
 
-这样，每笔交易在其涉及的两个账户中的变动数额加起来总是恰好等于$$ 0 $$（当两个账户包含相同的资产时）。在任一时刻把所有内部账户的余额相加，就能得到当时的净资产。
+Thus, the sum of the changes in the two accounts involved in each transaction is always exactly equal to $$ 0 $$ (when the two accounts contain the same assets). Adding up the balances of all the internal accounts at any given moment gives you the net worth at that time.
 
-如果你学过专业的会计方法，那么要注意在TataruBook的简化的复式记账法中，有一些名词与会计专业中的术语含义并不完全相同。比如**资产（Asset）**在TataruBook中指的是单位价格不同的商品或者货币，而不是会计公式中的**负债**加**所有者权益**。
+If you have studied professional accounting methods, then be aware that in TataruBook's simplified double-entry bookkeeping, there are some terms that don't mean exactly the same thing as the terms used in the professional accounting methods. For example, **asset** in TataruBook means a commodity or currency with a separate price per unit, NOT **liabilites** plus **equity** in the **accounting equation**.
 {: .notice}
 
-在TataruBook使用的记账方法中，每笔交易涉及的两个账户可以包含不同的资产（比如两种不同的货币，或者一个是货币另一个是股票），这样的交易在两个账户上产生的变动数额相加不再等于$$ 0 $$（除非两种资产的单位价格恰好相等）。TataruBook要求指定某一种资产为**标准资产**，其他资产都会按照（某个时间）对应的单位价格转换为标准资产来进行计算。
+In the bookkeeping method used by TataruBook, the two accounts involved in each transaction can contain different assets (e.g., two different currencies, or one a currency and the other a stock), such that the amount of change in the two accounts resulting from the transaction no longer adds up to $$ 0 $$ (except when the unit prices of the two assets happen to be equal). TataruBook requires that an asset be designated as **standard asset**, and all other assets are converted to standard asset at the corresponding unit price on certain date.
 
-有一些视图的名字里会把非标准资产称为**股份（share）**，把标准资产称为**现金（cash）**，要注意这仅仅是为了方便理解所做的类比，并不严格对应现实中的股份和现金。举个例子：如果用户定义标准资产为人民币，那么他所持有的美元现金会被TataruBook看作“股份”，因为美元的价格是浮动的，持有的美元现金在以人民币计价时可能产生收益或亏损。资产的数量可以不是整数，比如$$ 0.1 $$美元或$$ 0.001 $$美元在记账中都是允许的。
+Some view names refer to non-standard assets as **shares** and standard assets as **cash**, but note that this is just an analogy for ease of understanding, and does not strictly correspond to shares and cash in reality. For example, if a user defines a standard asset as US dollar, then his Japanese yen cash holdings will be treated as "shares" by TataruBook, because the price of Japanese yen fluctuates, and Japanese yen cash holdings may generate gains or losses when valued in US dollar. The amount of asset may not be a whole number, e.g. $$ 0.1 $$ or $$ 0.001 $$ is allowed for bookkeeping purposes.
 
-# 表
+# Tables
 
 ## asset_types
 
-资产类型列表。在TataruBook中，一种**资产**是具有**独立单位价格**的一类实体，如某一种货币、某一只股票、某一只有单位净值的基金等等。
+A list of assets. In TataruBook, an **asset** is a commodity with **separate unit price**, such as a currency, a stock, a mutual fund, and so on.
 
-如果你只使用一种货币，也不持有或交易其他投资品或商品，那么你的`asset_types`表就只有一条记录：自己使用的货币。
+If you use only one currency and do not hold or trade other investments or commodities, then your `asset_types` table has only one record: the currency you use.
 
-**字段**
-- `asset_index`（整数）：自动生成的索引，无需用户输入。
-- `asset_name`（字符串）：资产名字，不允许为空。仅用于在视图中展示，不会影响计算。
-- `asset_order`（整数）：资产序号，不允许为空。仅用于在视图中展示资产时排序使用（序号小的资产排在前面），不会影响计算。如果对排序没有要求，可以把所有资产的`asset_order`都设置为$$ 0 $$。
+**Fields**
+- `asset_index` (integer): automatically generated index, need not to input.
+- `asset_name` (string): name of the asset, not allowed to be empty. Used only for display in views, does not affect calculations.
+- `asset_order` (integer): asset serial number, not allowed to be empty. It is only used for sorting the assets when displayed in views (assets with smaller serial numbers will be listed first), and does not affect calculations. If sorting is not required, you can set `asset_order` to $$ 0 $$ for all assets.
 
 ## standard_asset
 
-标准资产，作为记账**本位币**。所有其他资产都会换算成标准资产来统计市场价值。
+The standard asset, which is used as the **home currency** for bookkeeping purposes. All other assets are converted to standard asset to measure the market value.
 
-**字段**
-- `asset_index`（整数）：资产索引，不允许为空，必须是[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中存在的某个资产索引。
+**Fields**
+- `asset_index` (integer): asset index, not allowed to be empty, must be an index of one of the assets present in the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 
-**约束**
-- 该表只允许有一条记录。
-- [prices表]({{ site.baseurl }}/tables_and_views.html#prices)中任一条记录的`asset_index`不允许等于该表中的`asset_index`，因为标准资产的价格固定为$$ 1 $$。（由[check_standard_prices视图]({{ site.baseurl }}/tables_and_views.html#check_standard_prices)校验）
+**Constraints**
+- Only one record is allowed in this table.
+- The `asset_index` of any record in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is not allowed to be equal to the `asset_index` in this table because the price of standard asset is fixed at $$ 1 $$. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
 
 ## accounts
 
-账户列表。**账户**是**具有独立交易记录及余额**的实体。注意一张个人银行卡通常包含多个账户，比如活期账户、投资账户、信用账户等等，在给账户命名的时候应当注意。
+List of accounts. An **account** is an entity with **separate balance**. Note that a person can have multiple accounts in a bank, such as current account, investment account, credit account, etc., so care should be taken when naming accounts.
 
-一个账户的余额所使用的单位由它包含的资产定义。比如，如果账户包含的资产是货币，那么账户余额是货币的金额；如果账户包含的资产是某只股票，那么账户余额是股份的数量。
+The unit used for the balance of an account is defined by the asset it contains. For example, if the asset contained in the account is a currency, the account balance is the value in that currency; if the asset contained in the account is a stock, the account balance is the number of shares.
 
-账户余额并不一定是正值，当余额为负值时，表示账户中有负债。比如，大多数时候信用卡的余额就是负值，表示用户在这个账户上存在未来需要归还的负债。
+The account balance is not always positive; when the balance is negative, it means that there is a liability in the account. For example, most of the time the balance of a credit card is negative, indicating that the user has a future liability on this account that needs to be returned.
 
-账户有两种：**内部账户**和**外部账户**，见[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)。一个外部账户表示一类收入/支出，用户通过定义外部账户可自定义如何对收入/支出进行分类统计。
+There are two types of accounts: **internal accounts** and **external accounts**, see [simplified double-entry bookkeeping]({{ site.baseurl }}/tables_and_views.html#simplified-double-entry-bookkeeping). An external account represents a class of income/expenses, and the user can customize how the income/expenses are categorized by defining external accounts.
 
-**字段**
-- `account_index`（整数）：自动生成的索引，无需用户输入。
-- `account_name`（字符串）：账户名字，不允许为空。仅用于在视图中展示，不会影响计算。
-- `asset_index`（整数）：账户包含的资产的索引。不允许为空，必须是[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中存在的某个资产索引。
-- `is_external`（`0`或`1`）：为`0`表示内部账户，为`1`表示外部账户。
+**Fields**
+- `account_index` (integer): automatically generated index, need not to input.
+- `account_name` (string): account name, not allowed to be empty. Used only for display in views, does not affect calculations.
+- `asset_index` (integer): index of the assets contained in the account. Not allowed to be empty, must be an index of one of the assets present in the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `is_external` (`0` or `1`): a value of `0` indicates an internal account, a value of `1` indicates an external account.
 
 ## interest_accounts
 
-利息账户列表。**利息账户**是一类特殊的**外部账户**，这些外部账户提供存款利息、理财收益等利息收益。
+A list of interest accounts. **interest accounts** are a special class of **external accounts** that provide interest earnings such as interest on deposits and financial income.
 
-当利息账户与内部账户之间产生了交易，TataruBook认为该内部账户产生了利息收入，并计算相关的**利率**。计算时，TataruBook认为该内部账户的**平均每日余额**是利率的分母。见[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)。
+When a transaction arises between an interest account and an internal account, TataruBook assumes that the internal account generates interest earning and calculates the associated **interest rate**. For this calculation, TataruBook considers the **average daily balance** of that internal account to be the denominator of the interest rate. See [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view.
 
-为了不让利率数据失真，基金/股票的分红不应该来自利息账户（除非是价格始终为$$ 1 $$，且分红体现为份额增加的货币基金）。因为这些分红是以现金形式发放到另一个内部账户，而不是基金/股票本身所在的内部账户。要了解基金/股票的分红、拆分用什么方式记录，可见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)中的例子。
+In order not to distort the interest rate data, fund/stock distributions should not come from the interest account. This is because these distributions are paid in cash to another internal account, not to the internal account in which the fund/share itself resides. To see what way fund/share distributions and splits are recorded, see the example in [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 
-**字段**
-- `account_index`（整数）：账户索引，不允许为空，必须是[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中存在的某个账户索引。
+**Fields**
+- `account_index` (integer): the account index, not allowed to be empty, must be one of the account indexes present in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 
-**约束**
-- 所有利息账户都必须为外部账户，即对应[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中`is_external`字段为`1`。（由[check_interest_account视图]({{ site.baseurl }}/tables_and_views.html#check_interest_account)校验）
+**Constraints**
+- All interest accounts must be external, i.e., the `is_external` field corresponding to `1` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table. (checked by [check_interest_account]({{ site.baseurl }}/tables_and_views.html#check_interest_account) view)
 
 ## postings
 
-交易明细列表。根据[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)，每一笔交易都可看作价值从一个账户转移到另一个账户的过程。因此该列表中每一条交易明细记录都包含**源账户**和**目标账户**，交易使得源账户的余额变少，目标账户余额变多。
+List of transactions. According to [simplified double-entry bookkeeping]({{ site.baseurl }}/tables_and_views.html#simplified-double-entry-bookkeeping), each transaction can be viewed as a transfer of value from one account to another. Thus each transaction record in this list contains a **source account** and a **destination account**, and the transaction makes the source account's balance smaller and the destination account's balance larger.
 
-只要源账户和目标账户包含相同资产，则目标账户的变动数额等于源账户的变动数额的相反数，即两者相加等于$$ 0 $$。这种情况下，只需要输入源账户的变动数额，目标账户的变动数额会被自动计算出来。当源账户和目标账户包含不同资产时，需要辅助用[posting_extras表]({{ site.baseurl }}/tables_and_views.html#accounts)记录这笔交易中目标账户的变动数额。
+As long as the source and destination account contains the same asset, the amount of change in the destination account is equal to the opposite of the amount of change in the source account, i.e., they add up to $$ 0 $$. In this case, only the amount of change in the source account needs to be entered and the amount of change in the destination account will be calculated automatically. When the source and destination account contains different assets, it is necessary to use [posting_extras]({{ site.baseurl }}/tables_and_views.html#posting_extras) table as an aid to record the amount of destination account's change in this transaction.
 
-**字段**
-- `posting_index`（整数）：自动生成的索引，无需用户输入。通常，后输入的记录的索引比先输入的大。
-- `trade_date`（字符串）：交易日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。对于同一天内发生的交易，按照`posting_index`确定先后顺序，索引小的在前，大的在后。
-- `src_account`（整数）：源账户索引，不允许为空，必须是[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中存在的某个账户索引。
-- `src_change`（浮点数）：源账户的变动数额，不允许为空。该值必须小于等于$$ 0 $$。
-- `dst_account`（整数）：目标账户索引，不允许为空，必须是[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中存在的某个账户索引。
-- `comment`（字符串）：交易备注信息，可以为空。仅用于在视图中展示，不会影响计算。
+**Fields**
+- `posting_index` (integer): automatically generated index, need not to input. Usually, the index of the record entered later is larger than the one entered first.
+- `trade_date` (string): the date of the transaction, not allowed to be empty, fixed to ISO 8601 format: yyyy-mm-dd. For transactions occurring on the same day, the order is determined according to the `posting_index`, with smaller indexes coming first, and larger ones coming second.
+- `src_account` (integer): source account index, not allowed to be empty, must be one of the account indexes present in the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `src_change` (float): the amount of change in the source account, not allowed to be empty. The value must be less than or equal to $$ 0 $$.
+- `dst_account` (integer): the destination account index, not allowed to be empty, must be one of the account indexes present in the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `comment` (string): transaction comment information, can be empty. Used only for display in views, does not affect calculations.
 
-**约束**
-- 一条记录中，`src_account`的值不能等于`dst_account`的值。（由[check_same_account视图]({{ site.baseurl }}/tables_and_views.html#check_same_account)校验）
-- 一条记录中，源账户和目标账户不能都是外部账户。（由[check_both_external视图]({{ site.baseurl }}/tables_and_views.html#check_both_external)校验）（v1.1新增）
-- 一条记录中，源账户或者目标账户是外部账户时，该外部账户要么包含标准资产，要么和另一个账户包含相同资产。（由[check_external_asset视图]({{ site.baseurl }}/tables_and_views.html#check_external_asset)校验）（v1.1新增）
+**Constraints**
+- The value of `src_account` in a record cannot equal the value of `dst_account`. (Checked by [check_same_account]({{ site.baseurl }}/tables_and_views.html#check_same_account) view)
+- The source and destination account in a record cannot both be external account. (Checked by [check_both_external]({{ site.baseurl }}/tables_and_views.html#check_both_external) view) (New in v1.1)
+- When the source or destination account is an external account in a record, the external account must either contains standard asset or the same asset as another account. (Checked by [check_external_asset]({{ site.baseurl }}/tables_and_views.html#check_external_asset) view) (New in v1.1)
 
-刚开始记账的用户可能会疑惑如何把各个账户的现有余额导入到db文件中。建议的做法是：建立一个名为`历史结余`的外部账户，并对每个需要导入余额的内部账户，添加一笔从`历史结余`到该内部账户的交易记录。
+Users who are new to bookkeeping may be wondering how to import the existing balances for each account into a db file. The recommended approach is to create an external account called `Opening balance` and for each internal account that needs to have its balance brought forward, add a transaction record transferring value from `Opening balance` to that internal account.
 {: .notice}
 
 ## posting_extras
 
-当源账户和目标账户包含不同资产时，交易明细中目标账户的变动数额，见[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的相关描述。
+The amount of change in the destination account when the source and destination account contains different assets. See related description in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
 
-**字段**
-- `posting_index`（整数）：交易索引，不允许为空，必须是[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中存在的某个索引。
-- `dst_change`（浮点数）：目标账户的变动数额，不允许为空。该值必须大于等于$$ 0 $$。
+**Fields**
+- `posting_index` (integer): the transaction index, not allowed to be empty, must be one of the indexes present in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `dst_change` (floating point): the amount of change in the destination account, not allowed to be empty. The value must be greater than or equal to $$ 0 $$.
 
-**约束**
-- 当源账户和目标账户包含相同资产时，该交易不允许有`posting_extras`记录，此时目标账户的变动数额等于源账户的变动数额的相反数。（由[check_same_asset视图]({{ site.baseurl }}/tables_and_views.html#check_same_asset)校验）
-- 当源账户和目标账户包含不同资产时，该交易必须要有`posting_extras`记录指定目标账户的变动数额。（由[check_diff_asset视图]({{ site.baseurl }}/tables_and_views.html#check_diff_asset)校验）
+**Constraints**
+- The transaction is not allowed to have any `posting_extras` record related when the source and destination account contains the same asset. In this situation, the amount of change in the destination account is equal to the opposite of the amount of change in the source account. (Checked by [check_same_asset]({{ site.baseurl }}/tables_and_views.html#check_same_asset) view)
+- When the source and destination account contains different assets, the transaction must have a `posting_extras` record related to record the amount of change in the specified destination account. (Checked by [check_diff_asset]({{ site.baseurl }}/tables_and_views.html#check_diff_asset) view)
 
 ## prices
 
-资产的单位价格，用于在需要时将非标准资产换算成[标准资产（记账本位币）]({{ site.baseurl }}/tables_and_views.html#standard_asset)。一种资产在每一天最多只能有一个价格，该价格视为该资产在这天结束时的价格。对于股票这类有日内价格变动的资产，其资产价格是一天的收盘价。因此，如果在某一天的交易明细中买入或卖出了某种资产，那么，该笔交易中的实际交易价格（实时价）可以不等于当天`prices`表中该资产的价格（收盘价）。（见[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)的示例）
+The unit price of an asset, used to convert a non-standard asset to the [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) (home currency) when needed. An asset can have at most one price per day, which is considered to be the price of the asset at the end of that day. For assets such as stocks, which have intraday price movements, the asset price is the closing price of the day. Therefore, if an asset is bought or sold in the transaction for a given day, the actual price (real-time price) in that transaction can be unequal to the price (closing price) of that asset in the `prices` table for that day. (See [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view for an example)
 
-**字段**
-- `price_date`（字符串）：日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
-- `asset_index`（整数）：资产索引，不允许为空，必须是[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中存在的某个资产索引。
-- `price`（浮点数）：单位价格（即$$ 1 $$份该资产等于多少份标准资产），不允许为空。
+**Fields**
+- `price_date` (string): date, not allowed to be empty, fixed to ISO 8601 format: yyyy-mm-dd.
+- `asset_index` (integer): asset index, not allowed to be empty, must be one of the asset indexes present in the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `price` (floating point): the unit price (i.e., $$ 1 $$ unit of this asset is equal to how many units of standard asset), not allowed to be empty.
 
-**约束**
-- 标准资产不允许有价格。（由[check_standard_prices视图]({{ site.baseurl }}/tables_and_views.html#check_standard_prices)校验）
-- 同一资产在同一天只能有一个价格，即任两条记录的`price_date`和`asset_index`不能都相同。
-- 在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这两天，所有非标准资产都必须有价格。（由[check_absent_price视图]({{ site.baseurl }}/tables_and_views.html#check_absent_price)校验）
-- 如果两个含有非标准资产的账户发生了交易（无论是内部账户还是外部账户），该（一种或两种）非标准资产在交易当天必须要有价格。比如：如果美元是非标准资产，那么当使用美元买入美国股票时，交易当天必须要有美元的价格和该股票的价格（注意是以标准资产计价的价格）。这是因为在对这两个账户计算投资收益率时，它们在交易当天都有一次资金流入或流出，需要计算流入/流出的价值。（由[check_absent_price视图]({{ site.baseurl }}/tables_and_views.html#check_absent_price)校验）
+**Constraints**
+- Prices are not allowed for the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
+- The same asset can only have one price on the same day, i.e., the `price_date` and `asset_index` of any two records cannot both be the same.
+- On [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), all non-standard assets must have a price. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
+- If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset (or both non-standard assets) must have a price on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the price of HK dollar and the price of that stock (noting that it is a price denominated in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
 
 ## start_date
 
-统计开始日期，作为一些视图的统计周期的起始时间点。注意开始日期当天的交易并不被包含在统计周期内，统计周期是以开始日期当天结束时作为起点。比如要对2023年全年的财务数据进行统计分析，则`start_date`为`2022-12-31`，`end_date`为`2023-12-31`。
+The start date of the statistics period, which serves as the starting point of the statistics period for some views. Note that transactions on the start date are not included in the statistics, because statistics period starts at the end of the day of the start date. For example, to statistically analyze financial data for the entire year 2023, the `start_date` would be `2022-12-31` and the `end_date` would be `2023-12-31`.
 
-**字段**
-- `val`（字符串）：开始日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
+**Fields**
+- `val` (string): start date, not allowed to be empty, fixed to ISO 8601 format: yyyy-mm-dd.
 
-**约束**
-- 该表只允许有一条记录。
-- 开始日期必须小于结束日期。
+**Constraints**
+- Only one record is allowed in this table.
+- The start date must be less than the end date.
 
 ## end_date
 
-统计结束日期，作为一些视图的统计周期的结束时间点。注意结束日期当天的交易会被包含在统计周期内。比如要统计2023年全年的资产变化情况，则`start_date`为`2022-12-31`，`end_date`为`2023-12-31`。
+The end date of the statistics period, which serves as the ending point of the statistics period for some views.  Note that transactions on the end date are included in the statistics. For example, to statistically analyze financial data for the entire year 2023, the `start_date` would be `2022-12-31` and the `end_date` would be `2023-12-31`.
 
-**字段**
-- `val`（字符串）：结束日期，不允许为空，固定为ISO 8601格式：yyyy-mm-dd。
+**Fields**
+- `val` (string): end date, not allowed to be empty, fixed to ISO 8601 format: yyyy-mm-dd.
 
-**约束**
-- 该表只允许有一条记录。
-- 结束日期必须大于开始日期。
+**Constraints**
+- Only one record is allowed in this table.
+- The end date must be greater than the start date.
 
-# 视图
+# Views
 
 ## single_entries
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-把输入的复式记账交易记录转换为单式记账展示。每一条[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的记录都会变成该视图中的两条记录。
+Converts the double-entry transaction records into single-entry. Each record in the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table becomes two records in this view.
 
-**字段**
-- `posting_index`：来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`posting_index`。
-- `trade_date`：来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`trade_date`。
-- `account_index`：来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`src_account`或`dst_account`。
-- `amount`：该账户该笔交易的变动数额，来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`src_change`（或者其相反数），或者[posting_extras表]({{ site.baseurl }}/tables_and_views.html#postings)中的`dst_change`。
-- `target`：该交易的另一方账户，来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`src_account`或`dst_account`。
-- `comment`：来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`comment`。
+**Fields**
+- `posting_index`: `posting_index` from [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `trade_date`: `trade_date` from [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `account_index`: `src_account` or `dst_account` from [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `amount`: the amount of change in the transaction for this account, from `src_change` (or its opposite) in the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table; or from `dst_change` in the [posting_extras]({{ site.baseurl }}/tables_and_views.html#posting_extras) table.
+- `target`: the account of the other party in the transaction, from `src_account` or `dst_account` in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `comment`: `comment` from [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
 
 ## statements
 
-把输入的复式记账交易记录转换为单式记账展示，并且展示账户相关信息。
+Converts the double-entry bookkeeping transaction records into single-entry and displays account information related to each transaction.
 
-**字段**
-- 包含[single_entries视图]({{ site.baseurl }}/tables_and_views.html#single_entries)中的所有字段，以及：
-- `src_name`、`target_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `is_external`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`is_external`。
-- `balance`：这笔交易发生后的账户余额（根据之前的所有交易记录推导出）。对于外部账户来说，余额的相反数代表历史上该类收入/支出的总和。
+**Fields**
+- Contains all fields in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view, as well as:
+- `src_name`, `target_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `is_external`: `is_external` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `balance`: the balance of the account after this transaction (derived from all previous transaction records). For external accounts, the opposite of balance represents the sum of income/expenses for that category.
 
-**示例**
+**Examples**
 
-假设现有表内容如下：
+Assume that the existing table contents are as follows:
 
 `asset_types`
 
 | asset_index | asset_name | asset_order |
 |:-:|:-:|:-:|
 | 1 | Gil | 0 |
-| 2 | 加隆德炼铁厂股份 | 0 |
+| 2 | Garlond Ironworks shares | 0 |
 
 `standard_asset`
 
@@ -203,18 +203,18 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 0 |
-| 2 | 莫古证券_加隆德股份 | 2 | 0 |
-| 3 | 餐饮消费 | 1 | 1 |
-| 4 | 工资 | 1 | 1 |
+| 1 | Sharlayan Bank current | 1 | 0 |
+| 2 | Moogle:Garlond Ironworks shares | 2 | 0 |
+| 3 | Food and Beverages | 1 | 1 |
+| 4 | Salary | 1 | 1 |
 
 `postings`
 
-| posting_index | trade_date | src_account | src_change | dst_account | comment |
+| posting_index | trade_date | src_account | src_change | dst_account | comments |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2023-01-06 | 4 | -50000.0 | 1 | 领取工资 |
-| 2 | 2023-01-07 | 1 | -67.5 | 3 | 背水咖啡厅晚餐 |
-| 3 | 2023-01-09 | 1 | -13000.0 | 2 | 购入加隆德股份 |
+| 1 | 2023-01-06 | 4 | -50000.0 | 1 | Monthly salary |
+| 2 | 2023-01-07 | 1 | -67.5 | 3 | Dinner at the Last Stand |
+| 3 | 2023-01-09 | 1 | -13000.0 | 2 | Buy shares |
 
 `posting_extras`
 
@@ -222,58 +222,58 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|:-:|
 | 3 | 260.0 |
 
-则`statements`视图内容为：
+Then the `statements` view contents are:
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2023-01-06 | 1 | 50000.0 | 4 | 领取工资 | 萨雷安银行活期 | 1 | 0 | 工资 | 50000.0 |
-| 2 | 2023-01-07 | 1 | -67.5 | 3 | 背水咖啡厅晚餐 | 萨雷安银行活期 | 1 | 0 | 餐饮消费 | 49932.5 |
-| 3 | 2023-01-09 | 1 | -13000.0 | 2 | 购入加隆德股份 | 萨雷安银行活期 | 1 | 0 | 莫古证券_加隆德股份 | 36932.5 |
-| 3 | 2023-01-09 | 2 | 260.0 | 1 | 购入加隆德股份 | 莫古证券_加隆德股份 | 2 | 0 | 萨雷安银行活期 | 260.0 |
-| 2 | 2023-01-07 | 3 | 67.5 | 1 | 背水咖啡厅晚餐 | 餐饮消费 | 1 | 1 | 萨雷安银行活期 | 67.5 |
-| 1 | 2023-01-06 | 4 | -50000.0 | 1 | 领取工资 | 工资 | 1 | 1 | 萨雷安银行活期 | -50000.0 |
+| 1 | 2023-01-06 | 1 | 50000.0 | 4 | Monthly salary | Sharlayan Bank current | 1 | 0 | Salary | 50000.0 |
+| 1 | 2023-01-06 | 4 | -50000.0 | 1 | Monthly salary | Salary | 1 | 1 | Sharlayan Bank current | -50000.0 |
+| 2 | 2023-01-07 | 1 | -67.5 | 3 | Dinner at the Last Stand | Sharlayan Bank current | 1 | 0 | Food and Beverages | 49,932.5 |
+| 2 | 2023-01-07 | 3 | 67.5 | 1 | Dinner at the Last Stand | Food and Beverages | 1 | 1 | Sharlayan Bank current | 67.5 |
+| 3 | 2023-01-09 | 1 | -13000.0 | 2 | Buy shares | Sharlayan Bank current | 1 | 0 | Moogle:Garlond Ironworks shares | 36932.5 |
+| 3 | 2023-01-09 | 2 | 260.0 | 1 | Buy shares | Moogle:Garlond Ironworks shares | 2 | 0 | Sharlayan Bank current | 260.0 |
 
-说明：`statements`视图比较像通常人们所习惯的单式记账账单。如果只想查看某一个账户的变动记录，可以用其他软件打开db文件并按`account_index`或`src_name`筛选。比如筛选`account_index`为`1`的记录，就能看到`萨雷安银行活期`的所有历史交易和余额变化。
+Note: The `statements` view is more like the single-entry billing statements that people are usually used to. If you only want to see the movement records for a particular account, you can use other software to open the db file and filter by `account_index` or `src_name`. For example, filtering on a record with `account_index` of `1` will show all historical transactions and balance changes for `Sharlayan Bank current`.
 
 ## start_balance
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额。
+The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date).
 
-**字段**
-- `date_val`：来自[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)中的`val`。
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `balance`：通过累加`start_date`及之前所有交易记录的变动数额得到的账户余额。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
+**Fields**
+- `date_val`: `val` from [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table.
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `balance`: the balance of the account obtained by accumulating the amount of change from `start_date` and all previous transaction records.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 
 ## start_values
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值。
+The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day.
 
-**字段**
-- 包含[start_balance视图]({{ site.baseurl }}/tables_and_views.html#start_balance)中的所有字段，以及：
-- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为$$ 1 $$。
-- `market_value`：通过$$ \text{price} \times \text{balance} $$计算得到的市场价值。
+**Fields**
+- Contains all fields from [start_balance]({{ site.baseurl }}/tables_and_views.html#start_balance) view, as well as:
+- `price`: `price` from [prices]({{ site.baseurl }}/tables_and_views.html#prices) table; in the case of the standard asset, the value is $$ 1 $$.
+- `market_value`: the market value calculated by $$ \text{price} \times \text{balance} $$.
 
 ## start_stats
 
-在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。
+At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each account's value to the total value.
 
-**字段**
-- 包含[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的所有字段，以及：
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
-- `proportion`：这个账户的价值占所有账户价值总和的比例。
+**Fields**
+- Contains all fields in [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view, as well as:
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `proportion`: the proportion of this account's value to the sum of all accounts' values.
 
-**示例**
+**Examples**
 
-假设在[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)中示例已有表基础上，另外加入表：
+Assume following additional tables are added to existing tables in the example in [statements]({{ site.baseurl }}/tables_and_views.html#statements) view:
 
 `start_date`
 
@@ -287,78 +287,78 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|:-:|:-:|
 | 2023-1-9 | 2 | 51 |
 
-则`start_stats`视图内容为：
+Then the `start_stats` view contents are:
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
-| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 | 0.2642 |
+| 0 | 2023-01-09 | 1 | Sharlayan Bank current | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
+| 0 | 2023-01-09 | 2 | Moogle:Garlond Ironworks shares | 260.0 | 2 | Garlond Ironworks shares | 51.0 | 13260.0 | 0.2642 |
 
-说明：注意`balance`列的值和`statements`视图中该日期各账户的余额是一致的；外部账户不会在`start_stats`视图里出现。根据`postings`表中购买`加隆德炼铁厂股份`的交易记录可以换算当时交易的价格是$$ 13000 \div 260 = 50 $$，但是`prices`表中`2023-1-9`的价格记录是$$ 51 $$，且市场价值是根据$$ 51 $$计算的。这个例子展示了实时交易价格可以和收盘价不同。
+Note: Note that the values in the `balance` column are the same as the balances in the `statements` view for each account on that date; external accounts do not appear in the `start_stats` view. The purchase of `Garlond Ironworks shares` is at a price of $$ 13,000 \div 260 = 50 $$ for the transaction at that time, but the price record in the `prices` table on `2023-1-9` is $$ 51 $$, and the market value is based on price $$ 51 $$. This example shows that the real-time trading price can be different from the closing price.
 
 ## start_assets
 
-在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)这天结束时，每一种资产的数量，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，每种资产的价值占总价值的比例。
+At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each asset's value to the total value.
 
-**字段**
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `date_val`：来自[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)中的`val`。
-- `asset_index`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
-- `amount`：通过累加属于这种资产的所有账户的余额得到的资产数量。
-- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为$$ 1 $$。
-- `total_value`：通过$$ \text{price} \times \text{amount} $$计算得到的市场价值。
-- `proportion`：这种资产的价值占所有资产价值总和的比例。
+**Fields**
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `date_val`: `val` from [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table.
+- `asset_index`: `asset_index` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `amount`: the amount of asset calculated by accumulating the balances of all accounts containing this asset.
+- `price`: `price` from [price]({{ site.baseurl }}/tables_and_views.html#prices) table; in the case of the standard asset, the value is $$ 1 $$.
+- `total_value`: the market value calculated by $$ \text{price} \times \text{amount} $$.
+- `proportion`: the proportion of the value of this asset to the sum of the values of all assets.
 
 ## diffs
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的变动数额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。
+Statistics on the amount of change per account between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date). The transactions on `start_date` are not counted, transactions on `end_date` are counted.
 
-**字段**
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `amount`：通过累加`start_date`和`end_date`之间所有交易记录的变动数额得到的变动数额统计值。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
+**Fields**
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `amount`: the amount of change obtained by totaling the amount of change for all transaction records between `start_date` and `end_date`.
+- `asset_index`: `asset_index` from the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 
 ## comparison
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)的期初余额，[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)的期末余额，以及两个日期之间的变动数额统计。
+The balance of each account at the end of [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), and the amount of change between the two dates.
 
-**字段**
-- 包含[diffs视图]({{ site.baseurl }}/tables_and_views.html#diffs)中的`account_index`、`account_name`、`asset_index`字段，以及：
-- `start_amount`：来自[start_balance视图]({{ site.baseurl }}/tables_and_views.html#start_balance)中的`balance`。
-- `diff`：来自[diffs视图]({{ site.baseurl }}/tables_and_views.html#diffs)中的`amount`；或者，如果账户余额在统计周期内没有变化，则为$$ 0 $$。
-- `end_amount`：通过$$ \text{start_amount} + \text{diff} $$计算得到的期末余额。
+**Fields**
+- Contains the `account_index`, `account_name`, and `asset_index` fields from [diffs]({{ site.baseurl }}/tables_and_views.html#diffs) view, as well as:
+- `start_amount`: from `balance` in [start_balance]({{ site.baseurl }}/tables_and_views.html#start_balance) view.
+- `diff`: `amount` from [diffs]({{ site.baseurl }}/tables_and_views.html#diffs) view; or $$ 0 $$ if the account balance has not changed between the two dates.
+- `end_amount`: the ending balance calculated by $$ \text{start_amount} + \text{diff} $$.
 
 ## end_values
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，以及按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值。
+The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day.
 
-**字段**
-- 所有字段均与[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
+**Fields**
+- All fields are the same as in [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view, but the statistics are taken for [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
 ## end_stats
 
-在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。。
+At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each account's value to the total value.
 
-注意：[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)必须各有一条记录，才能使`end_stats`视图显示正确的内容。
+Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table must each have one record for the `end_stats` view to display correctly.
 {: .notice--warning}
 
-**字段**
-- 所有字段均与[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
+**Fields**
+- All fields are the same as in [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view, but the statistics are taken for [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
-**示例**
+**Examples**
 
-假设在[statements视图]({{ site.baseurl }}/tables_and_views.html#statements)中示例已有表基础上，另外加入表：
+Assume following additional tables are added to existing tables in the example in [statements]({{ site.baseurl }}/tables_and_views.html#statements) view:
 
 `start_date`
 
@@ -378,64 +378,64 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|:-:|:-:|
 | 2023-1-9 | 2 | 51 |
 
-则`end_stats`视图内容为：
+Then the `end_stats` view contents are:
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2023-01-09 | 1 | 萨雷安银行活期 | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
-| 0 | 2023-01-09 | 2 | 莫古证券_加隆德股份 | 260.0 | 2 | 加隆德炼铁厂股份 | 51.0 | 13260.0 | 0.2642 |
+| 0 | 2023-01-09 | 1 | Sharlayan Bank current | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
+| 0 | 2023-01-09 | 2 | Moogle:Garlond Ironworks shares | 260.0 | 2 | Garlond Ironworks Shares | 51.0 | 13260.0 | 0.2642 |
 
-说明：可以看到`end_stats`视图的内容与[start_stats视图]({{ site.baseurl }}/tables_and_views.html#start_stats)几乎一样，仅统计日期为`end_date`这一点有区别。
+Note: You can see that the content of the `end_stats` view is almost the same as the [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view, with the only difference being that the statistics date is `end_date`.
 
 ## end_assets
 
-在[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时，每一种资产的数量，按当天价格换算成[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)的市场价值，每种资产的价值占总价值的比例。
+At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each asset's value to the total value.
 
-注意：[start_date表]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date表]({{ site.baseurl }}/tables_and_views.html#end_date)必须各有一条记录，才能使`end_assets`视图显示正确的内容。
+Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table must each have one record for the `end_assets` view to display the correct content.
 {: .notice--warning}
 
-**字段**
-- 所有字段均与[start_assets视图]({{ site.baseurl }}/tables_and_views.html#start_assets)中的字段相同，只是统计时间点变为[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)这天结束时。
+**Fields**
+- All fields are the same as in [start_assets]({{ site.baseurl }}/tables_and_views.html#start_assets) view, but the statistics are taken for [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
 ## external_flows
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个**外部账户**在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的每笔交易，以及交易当天该资产的价格。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意每个外部账户（除利息账户外）代表收入和支出的特定类别。
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each **external account**, and the price of the according asset on the day of the transaction. Transactions on the day of `start_date` are not counted, transactions on the day of `end_date` are counted. Note that each external account (other than the interest account) represents a specific category of income and expenses.
 
-虽然视图名字是**外部资金流**，但和[收益率计算方法]({{ site.baseurl }}/rate_of_return.html)中对**外部资金流**的定义不同的是，该视图包含了利息交易。
+Although the view name is **external flows**, unlike the definition of **external flows** in [Rate of Return]({{ site.baseurl }}/rate-of-return.html), this view includes interests.
 {: .notice}
 
-**字段**
-- `trade_date`：来自[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中的`trade_date`。
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `amount`：来自[single_entries表]({{ site.baseurl }}/tables_and_views.html#single_entries)中的`amount`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_name`。
-- `price`：来自[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中的`price`；如果是标准资产，则值为`1`。
+**Fields**
+- `trade_date`: `trade_date` from [postings]({{ site.baseurl }}/tables_and_views.html#postings) table.
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `amount`: `amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `price`: `price` from [price]({{ site.baseurl }}/tables_and_views.html#prices) table; value `1` if standard asset.
 
 ## income_and_expenses
 
-每个**外部账户**在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的交易记录的变动数额统计，以及换算的总市场价值。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意外部账户（除利息账户外）代表收入和支出的特定类别，因此这个视图可看作在统计周期内对收入、支出、利息的分类统计。
+The total amount of change with transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) per each **external account**, as well as the corresponding market value measured in standard asset. Transactions on the `start_date` are not counted, transactions on the `end_date` are counted. Note that external accounts (other than interest accounts) represent specific categories of income and expenses, so this view can be viewed as a categorized count of income, expenses, and interest over the statistics period.
 
-**字段**
-- 包含[external_flows视图]({{ site.baseurl }}/tables_and_views.html#external_flows)中的`asset_order`、`account_index`、`account_name`、`asset_index`、`asset_name`字段，以及：
-- `total_amount`：通过累加`start_date`和`end_date`之间该外部账户所有交易记录的变动数额得到的交易额统计（未换算成标准资产）。
-- `total_value`：把每笔交易的变动数额按当天资产价格换算成标准资产，并累加得到的总市场价值。假设某外部账户一共有$$ n $$笔交易，每笔交易变动数额分别为$$ a_1 \dots a_n $$，该账户包含的资产在每笔交易当天的单位价格分别为$$ p_1 \dots p_n $$，则总价值为：$$ \displaystyle\sum_{i=1}^{n} p_ia_i $$。
+**Fields**
+- Contains `asset_order`, `account_index`, `account_name`, `asset_ index`, `asset_name` fields in [external_flows]({{ site.baseurl }}/tables_and_views.html#external_flows) view, as well as:
+- `total_amount`: the total amount of change (not converted to standard asset) obtained by accumulating the amount of change in all transaction records for this external account between `start_date` and `end_date`.
+- `total_value`: the total market value obtained by converting the amount of change in each transaction to standard assets at the asset price of the day and adding it up. Assuming that there are a total of $$ n $$ transactions in an external account, and the amount of change in each transaction is $$ a_1 \dots a_n $$ respectively, and the unit price of the asset contained in the account on the day of each transaction is $$ p_1 \dots p_n $$ respectively, then the total value will be: $$ \displaystyle\sum_{i=1}^{n} p_ia_i $$.
 
-**示例**
+**Examples**
 
-假设现有表内容如下：
+Assume that the existing table contents are as follows:
 
 `asset_types`
 
 | asset_index | asset_name | asset_order |
 |:-:|:-:|:-:|
 | 1 | Gil | 0 |
-| 2 | 金碟币 | 0 |
+| 2 | MGP | 0 |
 
 `standard_asset`
 
@@ -447,19 +447,19 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 0 |
-| 2 | 金碟钱包 | 2 | 0 |
-| 3 | 工资 | 1 | 1 |
-| 4 | 金碟消费 | 2 | 1 |
+| 1 | Sharlayan Bank current | 1 | 0 |
+| 2 | Manderville Gold Saucer account | 2 | 0 |
+| 3 | Salary | 1 | 1 | 1 | 1
+| 4 | MGP spending | 2 | 1 |
 
 `postings`
 
-| posting_index | trade_date | src_account | src_change | dst_account | comment |
+| posting_index | trade_date | src_account | src_change | dst_account | comments |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2023-02-06 | 3 | -50000.0 | 1 | 领取工资 |
-| 2 | 2023-02-07 | 1 | -30000.0 | 2 | 购买金碟币 |
-| 3 | 2023-02-12 | 2 | -30.0 | 4 | 游戏娱乐 |
-| 4 | 2023-02-15 | 2 | -100.0 | 4 | 购买饰品 |
+| 1 | 2023-02-06 | 3 | -50000.0 | 1 | Monthly salary |
+| 2 | 2023-02-07 | 1 | -30000.0 | 2 | Purchase MGP |
+| 3 | 2023-02-12 | 2 | -30.0 | 4 | Gaming entertainment |
+| 4 | 2023-02-15 | 2 | -100.0 | 4 | Purchase accessories |
 
 `posting_extras`
 
@@ -474,136 +474,133 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 | 2023-02-12 | 2 | 90.0 |
 | 2023-02-15 | 2 | 110.0 |
 
-则`income_and_expenses`视图内容为：
+Then the content of the `income_and_expenses` view is:
 
 | asset_order | account_index | account_name | total_amount | asset_index | asset_name | total_value |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 3 | 工资 | -50000.0 | 1 | Gil | -50000.0 |
-| 0 | 4 | 金碟消费 | 130.0 | 2 | 金碟币 | 13700.0 |
+| 0 | 3 | Salary | -50000.0 | 1 | Gil | -50000.0 |
+| 0 | 4 | MGP spending | 130.0 | 2 | MGP | 13700.0 |
 
-说明：注意外部账户的变动数额等于内部账户变动数额的相反数，比如`工资`账户`total_amount`为$$ -50000.0 $$，代表内部账户共有$$ 50000.0 $$的工资收入。
+Note: Note that the amount of change in the external account is equal to the opposite of the amount of change in the internal account, e.g., the `Salary` account's `total_amount` is $$ -50000.0 $$, which means that the internal account has a total of $$ 50000.0 $$ in salary income.
 
-对于外部账户包含的资产为标准资产（如例子中的`Gil`）的，统计市场价值等于变动数额累加；但是当外部账户包含的资产为非标准资产时（如例子中的`金碟币`），会按交易发生当天的价格依次换算为标准资产再累加。在这个例子中，`金碟消费`的`total_value`计算过程为$$ 30 \times 90 + 100 \times 110 = 13700 $$。
+For external accounts that contain standard asset (such as `Gil` in the example), the total market value is equal to the amount of the change accrued; however, when an external account contains non-standard asset (such as `MGP` in the example), they are converted to standard asset and accrued sequentially at the price on the day the transaction occurred. In this example, the `total_value` of `MGP` is calculated as $$ 30 \times 90 + 100 \times 110 = 13700 $$.
 
 ## portfolio_stats
 
-只有一条记录：把所有内部账户的集合看作一个**投资组合**，展示该投资组合在统计周期开始和结束时的净资产、统计周期内的总收入支出、总投资收益。
+There is only one record: consider the set of all internal accounts as a **portfolio**, showing the portfolio's net assets at the beginning and ending of the statistics period, as well as total income and expenses, investment profit or loss during the statistics period.
 
-**字段**
-- `start_value`：期初净资产，从[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的`market_value`累加得到。
-- `end_value`：期末净资产，从[end_values视图]({{ site.baseurl }}/tables_and_views.html#end_values)中的`market_value`累加得到。
-- `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中非[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负值。
-- `interest`：统计周期内发生的利息收入总计，从[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)的`total_value`累加得到。
-- `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
-- `rate_of_return`：使用[简单Dietz方法]({{ site.baseurl }}/rate_of_return.html#简单dietz方法)计算的投资收益率。
+**Fields**
+- `start_value`: market value at the beginning of the statistics period, obtained by accumulating `market_value` from [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view.
+- `end_value`: market value at the ending of the statistics period, obtained by accumulating `market_value` from [end_values]({{ site.baseurl }}/tables_and_views.html#end_values) view.
+- `net_outflow`: the value of net outflow during the statistical period, obtained by accumulating `total_value` from all external accounts other than [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) in [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view. Note that interest is not an inflow or outflow. If there is a net inflow during the statistics period, then this value is negative.
+- `interest`: the total amount of interest earnings incurred during the statistics period, obtained  by accumulating `total_value` from all [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) in [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view.
+- `net_gain`: the total gain (or total loss) generated by the investments during the statistics period, calculated as $$ \text{end_value} + \text{net_outflow} - \text{start_value} $$. That is, all changes in net assets are considered investment income (or loss) except for changes in net assets resulting from income and expenses. Interest earnings are part of investment income.
+- `rate_of_return`: the rate of return on investments calculated using the [simple Dietz method]({{ site.baseurl }}/rate_of_return.html#simple-dietz-method).
 
 ## flow_stats
 
-每个内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间与**外部账户**发生的交易额统计。`start_date`当天的交易不统计，`end_date`当天的交易会统计。注意外部账户（除利息账户外）代表收入和支出的特定类别，因此这个视图可看作在统计周期内按每个内部账户分别进行的对收入、支出、利息的分类统计。
+The amount of change in all transactions which involves **external account** between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) per each internal account. Transactions on the day of `start_date` are not counted, transactions on the day of `end_date` are counted. Note that external accounts (other than interest accounts) represent specific categories of income and expenses, so this view can be viewed as a categorized count of income, expenses, and interest by each internal account separately during the statistics period.
 
-注意该视图和[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)相比有两个区别：
-1. `flow_stats`中不同内部账户会分开进行统计，但`income_and_expenses`中不同内部账户和同一外部账户交易的数额会被累加合并；
-1. `flow_stats`只展示按相应资产变动数额累加的统计值，但`income_and_expenses`还按照资产价格换算成了标准资产。
+Note that there are two differences between this view compared to [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view:
+1. In `flow_stats`, different internal accounts are counted separately, but in `income_and_expenses` the amounts of transactions from different internal accounts and the same external account are added up and combined;
+1. `flow_stats` only shows statistics that are aggregated by the amount of change in the corresponding asset, but `income_and_expenses` also shows market values converted to standard asset based on the price of the asset.
 
-**字段**
-- `flow_index`：外部账户索引，来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `flow_name`：外部账户名字，来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `account_index`：内部账户索引，来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：内部账户名字，来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `amount`：通过累加`start_date`和`end_date`之间该内部账户与该外部账户所有交易记录的变动数额得到的交易额统计（未换算成标准资产）。
+**Fields**
+- `flow_index`: external account index from `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `flow_name`: external account name from `account_name` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_index`: internal account index from `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: internal account name from `account_name` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `amount`: total amount (not converted to standard asset) obtained by accumulating the amount of change in all transaction records between `start_date` and `end_date` for this internal account and this external account.
 
-**示例**
+**Example**
 
-假设在[income_and_expenses视图]({{ site.baseurl }}/tables_and_views.html#income_and_expenses)中示例已有表基础上，在这两个表中加入额外的记录：
+Assume that on the base of existing tables in the example in [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view, the following additional records are added to these two tables:
 
 `accounts`
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 5 | 萨雷安个人养老金 | 1 | 0 |
+| 5 | Sharlayan workplace pension | 1 | 0 |
 
 `postings`
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 5 | 2023-02-06 | 3 | -10000.0 | 5 | 随工资发放养老金 |
+| 5 | 2023-02-06 | 3 | -10000.0 | 5 | Workplace pension contribution |
 
-则`flow_stats`视图内容为：
+Then the `flow_stats` view contents are:
 
 | flow_index | flow_name | account_index | account_name | amount |
 |:-:|:-:|:-:|:-:|:-:|
-| 3 | 工资 | 1 | 萨雷安银行活期 | -50000.0 |
-| 3 | 工资 | 5 | 萨雷安个人养老金 | -10000.0 |
-| 4 | 金碟消费 | 2 | 金碟钱包 | 130.0 |
+| 3 | Salary | 1 | Sharlayan Bank current | -50000.0 |
+| 3 | Salary | 5 | Sharlayan workplace pension | -10000.0 |
+| 4 | MGP spending | 2 | Manderville Gold Saucer account | 130.0 |
 
-说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`income_and_expenses`视图只会显示一条`工资`记录（所有内部账户累加到一起）。此外，`金碟消费`统计的是以`金碟币`为单位的数量，而不是标准资产`Gil`。
+Note: `Salary` has separate statistics for the two different internal accounts, compared to the `income_and_expenses` view which will only show one `salary` record (all internal accounts totaled together). In addition, `MGP spending` counts quantities in `MGP`, not the standard asset `Gil`.
 
 ## share_trades
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account which contains non-standard asset, as well as the market values of the change in these transactions measured in standard asset. This data is used to calculate the ROI on non-standard asset.
 
-如果把非标准资产看成股票，那么这个视图可以理解为每一笔交易的买入成本或卖出收入。
+If you think of non-standard assets as stocks, then this view can be interpreted as the cost of buying or the income from selling in each stock trade.
 
-**字段**
-- 包含[single_entries视图]({{ site.baseurl }}/tables_and_views.html#single_entries)中的所有字段，以及：
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_name`。
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `cash_flow`：该笔交易的变动数额按照当天价格换算成标准资产后的市场价值。
+**Fields**
+- Contains all the fields in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view, as well as:
+- `account_name`: the `account_name` from the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `cash_flow`: the amount of change in the transaction converted to the market value of standard asset at that day's price.
 
 ## share_stats
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间的所需最小资金净流入，以及通过交易和持有该内部账户中的资产获得的净现金（以标准资产计价）增量。请参见[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)的介绍来理解该视图的数据。
+The required minimum net inflow between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each internal account containing non-standard asset, as well as the incremental amount of cash (measured in standard asset) obtained by trading and holding the asset in that internal account. See the introduction to the [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method) to understand the data in this view.
 
-**字段**
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_name`。
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `min_inflow`：该非标准资产在统计周期内所需要的最小资金净流入。如果不需要流入，那么为$$ 0 $$。
-- `cash_gained`：交易该非标准资产获得的净现金（标准资产）增量。
+**Fields**
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `min_inflow`: the required minimum net inflow for this account during the statistics period. If no inflow is required, then $$ 0 $$.
+- `cash_gained`: the incremental amount of cash (measured in standard asset) obtained by trading and holding the asset in this account.
 
 ## return_on_shares
 
-每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间，以标准资产计算市场价值得到的投资收益率。`start_date`当天的交易不统计，`end_date`当天的交易会统计。计算收益率采用的是[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)。
+The rate of return on investment for each internal account containing non-standard asset between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the market value is measured in standard asset. Transactions on the day of `start_date` are not counted, transactions on the day of `end_date` are counted. The rate of return is calculated using the [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method).
 
-注意：利息收入不会被计入该视图展示的投资收益率，而是在[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)中展示。如果不希望利息收益被剥离计算，那么可以把利息收入记录为成本为$$ 0 $$的买入操作（类似股份的拆分或送股）。
-{: .notice}
+**Fields**
+- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `start_amount`: the balance at the start of the statistics period. From `start_amount` in [comparison]({{ site.baseurl }}/tables_and_views.html#comparison) view.
+- `start_value`: the market value at the start of the statistics period. From `market_value` in [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view, or $$ 0 $$ if this account is not present in `start_values`.
+- `diff`: amount of change during the statistics period. From `diff` in [comparison]({{ site.baseurl }}/tables_and_views.html#comparison) view.
+- `end_amount`: the balance at the end of the statistics period. From `end_amount` in [comparison]({{ site.baseurl }}/tables_and_views.html#comparison) view.
+- `end_value`: the market value at the end of the statistics period. From `market_value` in [end_values]({{ site.baseurl }}/tables_and_views.html#end_values) view, or $$ 0 $$ if this account is not present in `end_values`.
+- `cash_gained`: realized gain. From `cash_gained` in [share_stats]({{ site.baseurl }}/tables_and_views.html#share_stats) view, or $$ 0 $$ (if this account is not present in `share_stats`).
+- `min_inflow`: the required minimum net inflow. From `min_inflow` in [share_stats]({{ site.baseurl }}/tables_and_views.html#share_stats) view, or $$ 0 $$ (if this account is not present in `share_stats`).
+- `profit`: the profit (or loss) on the investment in this account, calculated as $$ \text{cash_gained} + \text{end_value} - \text{start_value} $$.
+- `rate_of_return`: the rate of return on investment in this account, calculated using the [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method).
 
-**字段**
-- `asset_order`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#asset_types)中的`asset_order`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `asset_name`：来自[asset_types表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_name`。
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `start_amount`：期初余额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`start_amount`。
-- `start_value`：期初市场价值。来自[start_values视图]({{ site.baseurl }}/tables_and_views.html#start_values)中的`market_value`，或者$$ 0 $$（如果`start_values`中没有此账户）。
-- `diff`：期间变动数额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`diff`。
-- `end_amount`：期末余额。来自[comparison视图]({{ site.baseurl }}/tables_and_views.html#comparison)中的`end_amount`。
-- `end_value`：期末市场价值。来自[end_values视图]({{ site.baseurl }}/tables_and_views.html#end_values)中的`market_value`，或者$$ 0 $$（如果`end_values`中没有此账户）。
-- `cash_gained`：已实现收益。来自[share_stats视图]({{ site.baseurl }}/tables_and_views.html#share_stats)中的`cash_gained`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
-- `min_inflow`：最小资金净流入。来自[share_stats视图]({{ site.baseurl }}/tables_and_views.html#share_stats)中的`min_inflow`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
-- `profit`：该非标准资产的投资利润（或亏损），计算方法为$$ \text{cash_gained} + \text{end_value} - \text{start_value} $$。
-- `rate_of_return`：使用[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)计算的该非标准资产的投资收益率。
+**Example 1**
 
-**示例1**
-
-假设现有表内容如下：
+Assume that the existing table contents are as follows:
 
 `asset_types`
 
 | asset_index | asset_name | asset_order |
 |:-:|:-:|:-:|
 | 1 | Gil | 0 |
-| 2 | 加隆德炼铁厂股份 | 0 |
+| 2 | Garlond Ironworks shares | 0 |
 
 `standard_asset`
 
@@ -615,19 +612,19 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 0 |
-| 2 | 莫古证券_加隆德股份 | 2 | 0 |
-| 3 | Gil历史结余 | 1 | 1 |
-| 4 | 加隆德股份历史结余 | 2 | 1 |
+| 1 | Sharlayan Bank current | 1 | 0 |
+| 2 | Moogle:Garlond Ironworks shares | 2 | 0 |
+| 3 | Opening balance in Gil | 1 | 1 |
+| 4 | Opening balance in Garlond Ironworks shares | 2 | 1 |
 
 `postings`
 
-| posting_index | trade_date | src_account | src_change | dst_account | comment |
+| posting_index | trade_date | src_account | src_change | dst_account | comments |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2022-12-31 | 3 | -10000.0 | 1 | Gil历史结余 |
-| 2 | 2022-12-31 | 4 | -10.0 | 2 | 股份历史结余 |
-| 3 | 2023-02-08 | 1 | -60.0 | 2 | 买入股份 |
-| 4 | 2023-03-08 | 2 | -6.0 | 1 | 卖出股份 |
+| 1 | 2022-12-31 | 3 | -10000.0 | 1 | Brought forward |
+| 2 | 2022-12-31 | 4 | -10.0 | 2 | Brought forward |
+| 3 | 2023-02-08 | 1 | -60.0 | 2 | Buy shares |
+| 4 | 2023-03-08 | 2 | -6.0 | 1 | Sell shares |
 
 `posting_extras`
 
@@ -655,24 +652,24 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|
 | 2023-06-30 |
 
-则`return_on_shares`视图内容为：
+Then the `return_on_shares` view contents are:
 
 | asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2 | 加隆德炼铁厂股份 | 2 | 莫古证券_加隆德股份 | 10.0 | 100.0 | -1.0 | 9.0 | 99.0 | 30.0 | 60.0 | 29.0 | 0.18125 |
+| 0 | 2 | Garlond Ironworks shares | 2 | Moogle:Garlond Ironworks shares | 10.0 | 100.0 | -1.0 | 9.0 | 99.0 | 30.0 | 60.0 | 29.0 | 0.18125 |
 
-说明：这个例子与[最小初始资金法]({{ site.baseurl }}/rate_of_return.html#最小初始资金法)中的**举例1**非常像，只是资金流入流出的时间间隔不一样，所以计算出的收益率和那个例子是相同的。注意`prices`表中只需要提供统计周期开始和结束时的价格就行了，不需要提供每笔交易发生时的价格，因为交易本身已经体现了价格信息。
+Note: This example is very similar to **Example 1** in [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method), except that the intervals between inflows and outflows are different, so the resulting rate of return is the same as in that example. Note that the `prices` table only needs to provide the prices at the beginning and end of the statistics period, not the price at the time of each transaction, since the transaction itself already reflects the price information.
 
-**示例2**
+**Example 2**
 
-假设现有表内容如下：
+Assume that the existing table contents are as follows:
 
 `asset_types`
 
 | asset_index | asset_name | asset_order |
 |:-:|:-:|:-:|
 | 1 | Gil | 0 |
-| 2 | 金碟币 | 0 |
+| 2 | MGP | 0 |
 
 `standard_asset`
 
@@ -684,16 +681,22 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 1 | 金碟钱包 | 2 | 0 |
-| 2 | 金碟币历史结余 | 2 | 1 |
-| 3 | 金碟币利息 | 2 | 1 |
+| 1 | Manderville Gold Saucer account | 2 | 0 |
+| 2 | Opening balance in MGP | 2 | 1 |
+| 3 | Interest in MGP | 2 | 1 |
+
+`interest_accounts`
+
+| account_index |
+|:-:|
+| 3 |
 
 `postings`
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2022-12-31 | 2 | -1000.0 | 1 | 金碟币历史结余 |
-| 2 | 2023-06-21 | 3 | -10.0 | 1 | 利息 |
+| 1 | 2022-12-31 | 2 | -1000.0 | 1 | Brought forward |
+| 2 | 2023-06-21 | 3 | -10.0 | 1 | Interest payment |
 
 `prices`
 
@@ -715,79 +718,44 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|
 | 2023-06-30 |
 
-则`return_on_shares`视图内容为：
+Then the `return_on_shares` view contents are:
 
 | asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2 | 金碟币 | 1 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | -110.0 | 110.0 | 2010.0 | 0.199 |
+| 0 | 2 | 金碟币 | 1 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | 0 | 0 | 2120.0 | 0.212 |
 
-说明：`金碟币`是非标准资产，但同时又有利息收益。这种情况下，利息收益会被剥离计算并单独展示在[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)中。`return_on_shares`视图计算收益时，把利息收益看作按照利息发放当天的资产价格进行了一次加仓买入。所以虽然看起来统计周期内没有显式的买入卖出操作，但计算出的收益率并不等于资产价格的增长率。
-
-如果不希望利息收益被剥离计算，那么可以把利息收益记为一次成本为$$ 0 $$的加仓，见示例3。
-
-**示例3**
-
-以示例2中的表为基础，但是`standard_asset`表内容为空，`accounts`表内容修改如下：
-
-| account_index | account_name | asset_index | is_external |
-|:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 0 |
-| 2 | 金碟钱包 | 2 | 0 |
-| 3 | 金碟币历史结余 | 2 | 1 |
-
-`postings`表修改如下：
-
-| posting_index | trade_date | src_account | src_change | dst_account | comment |
-|:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2022-12-31 | 3 | -1000.0 | 2 | 金碟币历史结余 |
-| 2 | 2023-06-21 | 1 | 0.0 | 2 | 利息 |
-
-`posting_extras`表如下（示例2中这个表为空）：
-
-| posting_index | dst_change |
-| 2 | 10.0 |
-
-则`return_on_shares`视图内容为：
-
-| asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
-|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2 | 金碟币 | 2 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | 0.0 | 0 | 2120.0 | 0.212 |
-
-说明：和示例2对比，实际的财务状态都是一致的，仅仅只是记账方法不同。`金碟币`的利息收益在本例中不再视为利息，而是看作了一次成本为$$ 0 $$的加仓（类似送股），合并计入`return_on_shares`视图中的收益。由于原来的利息交易变成了普通交易，所以示例2中`2023-06-21`的价格信息在本例中可以删除。当然，多余的价格信息也不会产生什么影响。
-
-实际应用中，采用示例2还是示例3的记账方式，取决于用户自己的喜好。如果用户很关心利息收益率，那么把利息收益剥离展示会很有用；如果用户更关心一个账户整体的收益或者希望少输入一些价格信息，那么利息收益与其他收益合并展示会更合适。
-{: .notice}
+Description: `MGP` is a non-standard asset, and it has interest earned. In this case, the `return_on_shares` view calculates the overall return including interest earnings. The separate interest earnings can be checked in the [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view. Remember to add interest account to `interest_accounts` table. In this example, if the record in `interest_accounts` is missing, things will become very differenet.
 
 ## interest_stats
 
-这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间获得的利息。
+The interest earned by each internal account between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
-**字段**
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `amount`：该账户在统计周期内获得的利息（未换算成标准资产）。
+**Fields**
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `amount`: interest earned on this account (not converted to standard asset) during the statistics period.
 
 ## interest_rates
 
-每个有利息收入的内部账户在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间获得的利息、平均每日余额，以及按照[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)计算出的**利率**（投资收益率）。
+The interest earned by each internal account between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the average daily balance, and the **interest rate** calculated according to the [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method) for each account.
 
-该视图展示的收益率仅仅为利息部分的收益率，并不包含资产价格变动产生的收益。
+The rate of return shown in this view is only the rate of return on the interest component and does not include the return generated by changes in the price of the asset.
 
-**字段**
-- `account_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_index`。
-- `account_name`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`account_name`。
-- `asset_index`：来自[accounts表]({{ site.baseurl }}/tables_and_views.html#accounts)中的`asset_index`。
-- `avg_balance`：该账户在统计周期内的平均每日余额（未换算成标准资产）。
-- `interest`：来自[interest_stats视图]({{ site.baseurl }}/tables_and_views.html#interest_stats)中的`amount`。
-- `rate_of_return`：使用[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)计算的投资收益率（即利率）。
+**Fields**
+- `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `avg_balance`: the average daily balance (not converted to standard asset) of the account over the statistics period.
+- `interest`: `amount` from [interest_stats]({{ site.baseurl }}/tables_and_views.html#interest_stats) view.
+- `rate_of_return`: the return on investment (i.e., the interest rate) calculated using the [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method).
 
-**示例**
+**Examples**
 
-假设现有表内容如下：
+Assume that the existing table contents are as follows:
 
 `asset_types`
 
@@ -805,10 +773,10 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 0 |
-| 2 | 工资 | 1 | 1 |
-| 3 | 消费 | 1 | 1 |
-| 4 | Gil利息 | 1 | 1 |
+| 1 | Sharlayan Bank current | 1 | 0 |
+| 2 | Salary | 1 | 1 |
+| 3 | Spending | 1 | 1 |
+| 4 | Gil interest | 1 | 1 |
 
 `interest_accounts`
 
@@ -818,11 +786,11 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 `postings`
 
-| posting_index | trade_date | src_account | src_change | dst_account | comment |
+| posting_index | trade_date | src_account | src_change | dst_account | comments |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 2023-03-31 | 2 | -10000.0 | 1 | 领取工资 |
-| 2 | 2023-09-30 | 1 | -10000.0 | 3 | 大件消费 |
-| 3 | 2023-12-21 | 4 | -100.0 | 1 | 利息 |
+| 1 | 2023-03-31 | 2 | -10000.0 | 1 | Monthly salary |
+| 2 | 2023-09-30 | 1 | -10000.0 | 3 | Big-ticket Spending |
+| 3 | 2023-12-21 | 4 | -100.0 | 1 | Interest payment |
 
 `start_date`
 
@@ -836,59 +804,59 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 |:-:|
 | 2023-12-31 |
 
-则`interest_rates`视图内容为：
+Then the `interest_rates` view contents are:
 
 | account_index | account_name | asset_index | avg_balance | interest | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| 1 | 萨雷安银行活期 | 1 | 5016.44 | 100.0 | 0.02 |
+| 1 | Sharlayan Bank current | 1 | 5016.44 | 100.0 | 0.02 |
 
-说明：利率计算方法见[改良的Dietz方法]({{ site.baseurl }}/rate_of_return.html#改良的dietz方法)。注意`interest_rates`表计算的利率是以这个账户包含的资产进行的，不会换算成标准资产，因此资产价格的变化不会体现在利率中。如果想查看由于资产价格变化产生的收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
+Note: See [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method) for interest rate calculation. Note that the `interest_rates` table calculates rate on the asset included in this account and does not convert to standard asset, so changes in asset prices are not reflected in the rate. To see the overall rate of return including changes in asset prices, see [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 
 ## periods_cash_flows
 
-把所有内部账户的集合看作一个**投资组合**，展示该投资组合在[start_date]({{ site.baseurl }}/tables_and_views.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views.html#end_date)之间每天的资金净流入/流出。`start_date`当天的资金流不统计，`end_date`当天的资金流会统计。利息收入作为投资收益，不会被计入资金流入/流出；除利息账户以外的其他外部账户和内部账户之间的交易都会被计入资金流入/流出。在周期的开始，投资组合的净资产被视作一次净流入；在周期的结束，投资组合的净资产被视作一次净流出。
+Consider the set of all internal accounts as a **portfolio** and show everyday's net inflow/outflow value into/from that portfolio between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_ and_views.html#end_date), only days that the net inflow/outflow value of which is not $$ 0 $$ are shown. The flows on the day of `start_date` are not counted, the flows on the day of `end_date` are counted. Interest earnings, as investment income, are not counted as inflows/outflows; transactions between external and internal accounts other than interest accounts are counted as inflows/outflows. At the beginning of the cycle, the net assets of the portfolio are treated as a net inflow; at the end of the cycle, the net assets of the portfolio are treated as a net outflow.
 
-该视图为计算[内部收益率（IRR）]({{ site.baseurl }}/rate_of_return.html#内部收益率irr)所需要的数据。
+This view is the data needed to calculate the [internal rate of return (IRR)]({{ site.baseurl }}/rate_of_return.html#internal-rate-of-return-irr).
 
-**字段**
-- `trade_date`：资金净流入/流出的日期。
-- `period`：该日期相对于周期的开始日期所经过的天数。
-- `cash_flow`：在该日期的资金净流入/流出，已换算成标准资产。注意根据[内部收益率（IRR）]({{ site.baseurl }}/rate_of_return.html#内部收益率irr)的定义，流入为负值，流出为正值，这和通常的定义不一样。
+**Fields**
+- `trade_date`: the date of the net inflow/outflow.
+- `period`: the number of days that have elapsed since the start date.
+- `cash_flow`: the net inflow/outflow on that date, converted to standard asset. Note that according to the definition of [internal rate of return (IRR)]({{ site.baseurl }}/rate_of_return.html#internal-rate-of-return-irr), inflows are negative and outflows are positive, which is different from the usual definition.
 
 ## check_standard_prices
 
-正常情况下这个视图没有记录。如果出现了记录，说明在[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中出现了标准资产的价格，违反了约束。
+Normally this view has no records. If a record appears, it means that the price of the standard asset is present in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, violating the constraint.
 
 ## check_interest_account
 
-正常情况下这个视图没有记录。如果出现了记录，说明有[利息账户]({{ site.baseurl }}/tables_and_views.html#interest_accounts)是内部账户，违反了约束。
+Normally this view has no records. If a record appears, it means that there are [interest accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) that are internal accounts, violating the constraint.
 
 ## check_same_account
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有`src_account`和`dst_account`相同的记录，违反了约束。
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are the same, violating the constraint.
 
 ## check_both_external
 
-这是v1.1版本新增的视图。
+This is a new view in v1.1.
 {: .notice}
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有`src_account`和`dst_account`同时都是外部账户，违反了约束。
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are both external accounts, violating the constraint.
 
 ## check_diff_asset
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含不同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却没有对应记录，违反了约束。
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains different assets, but the [posting_extras table]({{ site.baseurl }}/tables_ and_views.html#posting_extras) has no corresponding records, violating the constraint.
 
 ## check_same_asset
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户和目标账户包含相同资产，但[posting_extras表]({{ site.baseurl }}/tables_and_views.html#posting_extras)却有对应记录，违反了约束。
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains the same asset, but the [posting_extras table]({{ site.baseurl }}/tables_ and_views.html#posting_extras) has corresponding records, violating the constraint.
 
 ## check_external_asset
 
-这是v1.1版本新增的视图。
+This is a new view added in v1.1.
 {: .notice}
 
-正常情况下这个视图没有记录。如果出现了记录，说明[postings表]({{ site.baseurl }}/tables_and_views.html#postings)中有源账户或者目标账户是外部账户，且该外部账户既不包含标准资产，也没有和另一个账户包含相同资产，违反了约束。
+Normally this view has no records. If a record appears, it means that there is at least a record in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, of which the source or destination account is an external account, and the external account neither contains standard asset nor the same asset as another account, violating the constraint.
 
 ## check_absent_price
 
-正常情况下这个视图没有记录。如果出现了记录，说明[prices表]({{ site.baseurl }}/tables_and_views.html#prices)中缺少某些资产在某些日期需要被用到的价格，违反了约束。
+Normally this view has no records. If a record appears, it means that the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is missing prices for certain assets that need to be used on certain dates, violating the constraint.

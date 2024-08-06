@@ -1,86 +1,83 @@
 ---
-title: 收益率计算方法
+title: The Calculation Methods of Rate of Return
 ---
-本页介绍一些常见的投资收益率计算方法。
+This page describes some common methods of calculating the rate of return on investments.
 
-# 一些基本概念
+# Some basic concepts
 
-投资收益率是一个特定**投资组合（portfolio）**在特定的**统计周期**中的投资业绩表现。
+The rate of return is the investment performance of a particular **portfolio** over a particular **statistics period**.
 
-**投资组合**可以只包含一个投资标的（账户），也可以包含多个投资标的。现金可能是投资组合的一部分——现金作为投资标的看起来似乎违反直觉，但组合中的现金占比往往对投资业绩有着重要影响，计算收益率时不应当忽略现金仓位。如果投资组合只包含一个账户，该组合的投资收益率也被叫做该账户的投资收益率。
+A **portfolio** may contain only one underlying investment (account) or multiple underlying investments. Cash may be part of the portfolio - cash as an investment may seem counter-intuitive, but the percentage of cash in a portfolio often has a significant impact on investment performance, and cash positions should not be ignored when calculating the rate of return. If the portfolio contains only one account, the rate of return on the portfolio is also called the rate of return on that account.
 
-**统计周期**是指定的一段时间周期，周期开始的时间点称为**期初**，周期结束的时间点称为**期末**。常见的统计周期是整年度或整半年度。当统计周期不是整年度时，有一些计算方法可以把收益率换算为**年化收益率**。TataruBook允许以天为单位指定任意一段时间为统计周期，而且不会对收益率进行年化换算。
+A **statistics period** is a specified period of time, with the point in time at which the period begins called the **start** and the point in time at which the period ends called the **end**. Common statistics periods are full or half years. When the statistics period is not a full year, there are calculations that convert returns to **annualized returns**. TataruBook allows specifying any period of time in days as the statistics period and does not annualize the rate of returns.
 
-投资组合的**市场价值**（或**价值**）是对组合中所有资产按照某种货币计价计算出来的。用于计价的货币在TataruBook中称为[标准资产]({{ site.baseurl }}/tables_and_views.html#standard_asset)。
+The **market value** (or **value**) of a portfolio is calculated for all assets in the portfolio denominated in a currency. The currency used for denomination is referred to in TataruBook as [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset).
 
-**外部资金流（external flows）**指的是投资组合与外部因为**非投资衍生收益**而产生的价值流动。从外部流到组合中称为**资金流入**；从组合中流到外部称为**资金流出**。比如，如果把整个家庭的所有资产看作一个投资组合，家庭成员的工资收入、日常消费支出就是常见的外部资金流。投资组合内部各个账户之间的价值流动不属于外部资金流，比如家庭成员之间的转账或者使用投资组合中的现金购买股票等等。投资衍生收益，如利息、票息、分红等也不属于外部资金流，它们被视为投资收益的一部分，且在产生后会被保留在投资组合中。外部资金流在计算收益率的时候是需要被补偿的，否则会导致收益率失真。
+**External flows** refers to the flows of value between the portfolio and the outside which are **not results of investments**. Flows from the outside to the portfolio are called **inflows**; flows from the portfolio to the outside are called **outflows**. For example, if all the assets of a family are viewed as a portfolio, the paychecks and daily consumption expenditures of family members are common external flows. Flows of value between accounts within the portfolio are not external flows, such as transfers between family members or the use of cash from the portfolio to purchase stocks, etc. Derivative income from investments, such as interest, coupons, dividends, etc., are also not external flows, they are considered investment gains and are retained in the portfolio as they are generated. External flows need to be compensated for in the calculation of the rate of return, otherwise it will result in a distorted rate of return.
 
-# 无外部资金流时的计算
+# Calculation in the absence of external flows
 
-假设在期初，投资组合的市场价值为$$ V_s $$；期末，投资组合的市场价值为$$ V_e $$，那么收益率$$ R $$为：
+Assuming that at the start of the period, the market value of the portfolio is $$ V_s $$; and at the end of the period, the market value of the portfolio is $$ V_e $$, then the rate of return $$ R $$ is:
 
 $$ R = \frac{V_e - V_s}{V_s} $$
 
-注意$$ V_e $$包括了投资组合在统计周期内获得的所有利息、票息、分红等收益，而不仅仅是投资品在期末的市场价值。
+Note that $$ V_e $$ includes all interest, coupons, dividends, etc. earned by the portfolio during the statistics period, not just the market value of the investments at the end of the period.
 
-TataruBook在计算一个账户的投资收益率时，如果该账户包含的资产不是标准资产，且在统计周期内存在利息收益（这种情况通常出现于非本位币的银行存款），那么，TataruBook既可以把利息收益合并计算，也可以剥离利息收益单独展示。当利息收益被剥离计算时，每次该账户获得利息都会被视作资金流入。见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)的说明。
-{: .notice}
+Example: Suppose that there is only one stock in the portfolio and that $$ 100 $$ shares of the stock are held at the start of the period at a price of $$ 10 $$ per share, so that the start value of the portfolio is $$ 10 \times 100 = 1000 $$. During the statistics period, the stock made a dividend of $$ 0.5 $$ per share, and at the end of the period the stock was priced at $$ 9.8 $$ per share, so the total dividends received were $$ 0.5 \times 100 = 50 $$, and the value of the stock held at the end of the period was $$ 9.8 \times 100 = 980 $$. Therefore, $$ V_e = 980 + 50 = 1030 $$ with a return of $$ \displaystyle R = \frac{30}{1000} = 3\% $$.
 
-举例：假设投资组合中只有一只股票，期初持有该股票$$ 100 $$股，每股价格$$ 10 $$元，那么投资组合的期初价值为$$ 10 \times 100 = 1000 $$元。在统计周期内，该股票进行了每股$$ 0.5 $$元的分红，期末时该股票价格为每股$$ 9.8 $$元，则获得的分红总计为$$ 0.5 \times 100 = 50 $$元，期末持有的股票价值为$$ 9.8 \times 100 = 980 $$元。因此，$$ V_e = 980 + 50 = 1030 $$元，收益率$$\displaystyle R = \frac{30}{1000} = 3\% $$。
+This algorithm is simple and easy to understand, but it is only applicable when there are no external flows during the statistics period. In the example above, if the investor buys an additional $$ 100 $$ shares during the statistics period, and the purchase price remains at $$ 10 $$, then the portfolio market value at the end of the period is $$ 2060 $$ (twice the original example), at which point the return along the lines of the original formula would be calculated as $$\displaystyle R = \frac{2060 - 1000}{1000} = 106\% $$, which is obviously an inaccurate rate of return.
 
-这种算法简单易懂，但是只适用于统计周期内没有外部资金流的情况。在上面这个例子中，如果投资者在统计周期内追加买入了$$ 100 $$股，买入价格仍是$$ 10 $$元，那么期末时投资组合市场价值为$$ 2060 $$元（原例子的两倍），这时沿用原公式算出的收益率为$$\displaystyle R = \frac{2060 - 1000}{1000} = 106\% $$，显然这个收益率是不准确的。
+One might wonder: is it feasible to add the value of the inflows over the statistics period to the start value of the $$ V_s $$? It's fine for this example because there are only inflows and no outflows in this example. However, the actual situation may be much more complicated than that, for example, a short term trader may have large inflows and outflows every day, and the rate of return would be inaccurate if only the value of all inflows were added.
 
-有人可能会想：把统计周期内的资金流入价值加到期初价值$$ V_s $$中去是否可行呢？——对于这个例子来说没问题，因为这个例子里只有资金流入没有资金流出。但实际情况可能比这复杂得多，比如一个短线交易者可能每天都有大笔资金流入和流出，如果只累加所有的资金流入价值，收益率计算结果也是不准确的。
+Obviously, we need some way to compensate for the impact caused by external flows. A few common methods are described below.
 
-显然，我们需要一些方法来补偿外部资金流所造成的影响。下面介绍几种常见的方法。
+# Simple Dietz method
 
-# 简单Dietz方法
-
-[简单Dietz方法](https://en.wikipedia.org/wiki/Simple_Dietz_method)把统计周期内所有资金流入和流出的价值累加（资金流入的符号为正，资金流出的符号为负），计算出**净流入**$$ F $$（如果实际为净流出，则值为负数），然后把期初的价值加上净流入的一半，即：
+[Simple Dietz method](https://en.wikipedia.org/wiki/Simple_Dietz_method) accumulates the value of all inflows and outflows during the statistics period (the sign of inflows is positive, the sign of outflows is negative), calculates the **net inflow** $$ F $$ (negative to indicate a net outflow), and then add the value at the start of the period to half of the net inflow, i.e:
 
 $$ R = \frac{V_e - V_s - F}{V_s + \displaystyle \frac{F}{2}} $$
 
-简单Dietz方法基于这样的假设：资金流入和流出在整个统计周期中是大致平均的发生的，因此可以看作在统计周期**中点**发生了一次净流入。
+The simple Dietz method is based on the assumption that inflows and outflows occur roughly evenly throughout the statistics period, and can therefore be viewed as a net inflow occurring at the **midpoint** of the statistics period.
 
-举例：假设投资组合中只有一只股票，统计周期有$$ 3 $$天，每天的股价和资金流入流出如下：
+Example: Assuming that there is only one stock in the portfolio and the statistics period has $$ 3 $$ days, the stock price and inflows and outflows for each day are as follows:
 
-| 天 | 股价 | 新增股数 | 资金流入 | 持有股数 | 市场价值 |
+| Days | Stock Price | Number of Shares Added | Inflows | Number of Shares Held | Market Value |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 10 | 0 | 0 | 10 | 100 |
 | 1 | 12 | 5 | 60 | 15 | 180 |
 | 2 | 11 | 0 | 0 | 15 | 165 |
 
-则简单Dietz方法计算的收益率为：
+Then the rate of return calculated by the simple Dietz method is:
 
 $$ R = \frac{V_e - V_s - F}{V_s + \displaystyle \frac{F}{2}} = \frac{165 - 100 - 60}{100 + \displaystyle \frac{60}{2}} = \frac{5}{130} \approx 3.85\% $$
 
-简单Dietz方法的缺点是：如果资金流入和流出在整个统计周期中并不是平均分布的，那么计算结果会不准确。假设一种极端情况：在一年的统计周期中，初始市场价值为$$ 0 $$；在第$$ 2 $$天，大笔资金流入并买入股票；在第$$ 364 $$天，和之前差不多价值的资金流出。由于整个统计周期中资金净流入的绝对值很小（甚至可能为$$ 0 $$），故公式里分母的值非常小（或者为$$ 0 $$），导致收益率产生很大偏差。
+The disadvantage of the simple Dietz method is that the calculations will be inaccurate if the inflows and outflows are not evenly distributed throughout the statistics period. Suppose an extreme case: in a one-year statistics period, the initial market value is $$ 0 $$; on day $$ 2 $$, a large inflow comes in and buys the stock; on day $$ 364 $$, an outflow of about the same value as the inflow happens. Since the absolute value of the net inflow over the entire statistics period is very small (perhaps even $$ 0 $$), the value of the denominator in the formula is very small (or $$ 0 $$), resulting in a large bias in the return.
 
-尽管简单Dietz方法存在缺点，但个人或家庭的整体资金流入流出往往很接近简单Dietz方法的假设（即资金流入和流出在时间上大致分布均匀）。因此TataruBook在计算包含所有内部账户的投资组合的收益率时使用简单Dietz方法。（见[portfolio_stats视图]({{ site.baseurl }}/tables_and_views.html#portfolio_stats)）。
+Despite the shortcomings of the simple Dietz method, the overall inflows and outflows to and from individuals or families tend to be very close to the assumptions of the simple Dietz method (i.e., that inflows and outflows are roughly evenly distributed over time). TataruBook therefore uses the simple Dietz method in calculating the rate of return on a portfolio that includes all internal accounts. (see [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view).
 {: .notice}
 
-# 改良的Dietz方法
+# Modified Dietz method
 
-为了解决简单Dietz方法的缺点，[改良的Dietz方法](https://en.wikipedia.org/wiki/Modified_Dietz_method)不再假设只在统计周期的中点产生一次净流入，而是按实际的资金流入流出情况计算出统计周期内的**平均资本**，再用平均资本作为分母：
+To address the shortcomings of the simple Dietz method, the [modified Dietz method](https://en.wikipedia.org/wiki/Modified_Dietz_method) no longer assumes that a net inflow is generated only once at the midpoint of the statistics period, but instead calculates the **average** capital over the statistics period based on actual inflows and outflows, and then use the average capital as the denominator:
 
 $$ R = \frac{V_e - V_s - F}{V_s + \displaystyle \sum_{i=1}^{n} W_i \times F_i} $$
 
-其中，$$ F = \displaystyle \sum_{i=1}^{n} F_i $$，是整个统计周期的净流入；$$ n $$是资金流入和流出的次数之和；$$ F_i $$是第$$ i $$次资金流入或流出的价值（流入为正值，流出为负值）；$$ W_i $$是第$$ i $$次资金流入或流出的**权重**，权重是根据流入或流出发生的时间计算出来的，即：
+Where $$ F = \displaystyle \sum_{i=1}^{n} F_i $$, is the net inflow over the entire statistics period; $$ n $$ is the sum of the number of inflows and outflows; $$ F_i $$ is the value of the $$ i $$th inflow or outflow (inflows are positive, outflows are negative); $$ W_i $$ is the **weight** of the $$ i $$th inflow or outflow, the weight is calculated based on when the inflow or outflow occurs, i.e.:
 
 $$ W_i = \frac{T - t_i}{T} $$
 
-其中$$ T $$为统计周期的时间长度；$$ t_i $$为第$$ i $$次资金流入或流出发生的时间距离期初的时间长度。流入或流出发生得越早，其权重越高，对于收益率的影响越大。
+Where $$ T $$ is the length of the statistics period; $$ t_i $$ is the length of time from the start of the period when the $$ i $$th inflow or outflow occurs. The earlier the inflow or outflow occurs, the higher its weight and the greater the impact on the return.
 
-举例：假设统计周期有$$ 365 $$天，每天的股价和资金流入流出如下（中间没有变化的天省略掉）：
+Example: Assuming a statistics period of $$ 365 $$ days, the stock price and inflows/outflows for each day would be as follows (omitting days with no change in between):
 
-| 天 | 股价 | 新增股数 | 资金流入 | 持有股数 | 市场价值 |
+| Days | Stock Price | Number of Shares Added | Inflows | Number of Shares Held | Market Value |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 10 | 0 | 0 | 0 | 0 |
 | 1 | 10 | 1100 | 11000 | 1100 | 11000 |
 | 364 | 11 | -1000 | -11000 | 100 | 1100 |
 | 365 | 11 | 0 | 0 | 100 | 1100 |
 
-则改良的Dietz方法计算收益率的过程为：
+Then the modified Dietz method for calculating the rate of return is:
 
 $$ W_0 = \frac{365 - 1}{365} \approx 0.997 $$
 
@@ -88,121 +85,121 @@ $$ W_1 = \frac{365 - 364}{365} \approx 0.003 $$
 
 $$ R = \frac{V_e - V_s - F}{V_s + \displaystyle \sum_{i=1}^{n} W_i \times F_i} \approx \frac{1100 - 0 - 0}{0 + 0.997 \times 11000 - 0.003 \times 11000} \approx 10\% $$
 
-这个计算结果是符合直觉的，因为股价从$$ 10 $$涨到$$ 11 $$正好上涨了$$ 10\% $$。如果用简单Dietz方法对这个例子进行计算，会因为分母为$$ 0 $$而无法计算。
+This calculation is intuitive because the stock price rises from $$ 10 $$ to $$ 11 $$ by exactly $$ 10\% $$. If the simple Dietz method were to be used for this example, it would not work because the denominator is $$ 0 $$.
 
-一般来说，如果投资的收益是随着时间稳定增长的（如存款利息、货币基金收益），那么改良的Dietz方法计算的收益率往往非常准确。但是，如果投资品的价格剧烈变化，那么改良的Dietz方法计算的结果可能出现不小的偏差。在上面的例子中，如果资金流入不是在第$$ 1 $$天而是在第$$ 363 $$天，那么计算出的平均资本会很小，导致收益率为一个巨大的数字，和实际不符。
+In general, if the return on an investment grows steadily over time (e.g., interest on deposits, money market mutual funds), then the rate of return calculated by the modified Dietz method tends to be very accurate. However, if the price of the investment changes drastically, then the results calculated by the modified Dietz method can be significantly biased. In the above example, if the inflow of capital was not on day $$ 1 $$ but on day $$ 363 $$, then the calculated average capital would be small, resulting in a huge number for the rate of return, which is not in line with reality.
 
-由于改良的Dietz方法计算利息收益的准确性，TataruBook在计算每个账户的利息收益率时使用改良的Dietz方法。（见[interest_rates视图]({{ site.baseurl }}/tables_and_views.html#interest_rates)）。
+Because of the accuracy of the modified Dietz method of calculating interest earnings, TataruBook uses the modified Dietz method in calculating the interest rate for each account. (See [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view.)
 {: .notice}
 
-# 内部收益率（IRR）
+# Internal rate of return (IRR)
 
-[内部收益率](https://en.wikipedia.org/wiki/Internal_rate_of_return)是使得所有资金流入和流出的[净现值](https://en.wikipedia.org/wiki/Net_present_value)恰好等于$$ 0 $$的收益率。通俗的讲，假设投资组合的价值一直以固定的速率$$ R $$增长，在此假设下，如果该投资组合的期初价值、资金流入流出、期末价值都刚好能和实际匹配上，则满足该假设的$$ R $$就是内部收益率。
+The [internal rate of return](https://en.wikipedia.org/wiki/Internal_rate_of_return) is the rate of return that sets the [net present value](https://en.wikipedia.org/wiki/Net_present_value) (NPV) of all cash flows (both positive and negative) from the investment equal to zero. In other words, assuming that the value of a portfolio has been growing at a fixed rate $$ R $$, the $$ R $$ that satisfies this assumption is the IRR: the start value, inflows, outflows, and end value of the portfolio all happen to match the actual.
 
-内部收益率的计算有一些特别的要求：资金流入或流出必须以固定的时间间隔发生，且计算出的收益率$$ R $$只能是这个时间间隔长度的收益率。假设每间隔时间$$ T $$有一次资金流入或流出$$ F_i $$，那么在统计周期$$ T $$的内部收益率$$ R $$是下面这个方程的解：
+The calculation of the IRR has some special requirements: the inflows or outflows must occur at fixed intervals, and the calculated rate of return $$ R $$ can only be the rate of return for the length of this interval. Assuming that there is an inflow or outflow $$ F_i $$ every interval of time $$ T $$, then the IRR $$ R $$ over the statistics period $$ T $$ is a solution to the following equation:
 
 $$ \sum_{i=0}^{n} \frac{F_i}{(1 + R)^i} = 0 $$
 
-注意：计算内部收益率时，资金流入的$$ F_i $$为负数，资金流出的$$ F_i $$为正数，这和其它方法中定义的符号相反。$$ F_0 $$为期初的价值的相反数，即$$ F_0 = -V_s $$；$$ F_n $$为期末的价值，即$$ F_n = V_e $$。也就是说，把期初的价值看成一次资金流入，期末的价值看成一次资金流出。
+Note: When calculating the IRR, $$ F_i $$ for inflows is negative and $$ F_i $$ for outflows is positive, contrary to the sign defined in the other methods. $$ F_0 $$ is the opposite of the value at the start of the period, i.e., $$ F_0 = -V_s $$; $$ F_n $$ is the value at the end of the period, i.e., $$ F_n = V_e $$. In other words, consider the value at the start of the period as an inflow and the value at the end of the period as an outflow.
 
-举例：假设统计周期为$$ 3 $$年，投资组合每隔一年有一笔资金流出，如下：
+Example: Assuming a statistics period of $$ 3 $$ years, the portfolio has an outflow after each year as follows:
 
-| 年 | 资金流 |
+| Year | Outflow |
 |:-:|:-:|
 | 0 | -123400 |
 | 1 | 36200 |
 | 2 | 54800 |
 | 3 | 48100 |
 
-那么，内部收益率是下面这个方程的解：
+Then, the IRR is the solution to the following equation:
 
 $$ \sum_{i=0}^{n} \frac{F_i}{(1 + R)^i} = -123400 + \frac{36200}{(1 + R)} + \frac{54800}{(1 + R)^2} + \frac{48100}{(1 + R)^3} = 0 $$
 
-从该方程可解出**一年**的内部收益率$$ R \approx 5.96\% $$
+From this equation, the IRR for **one year** can be solved $$ R \approx 5.96\% $$
 
-内部收益率在现实中有广泛的应用。比如，对于每月需要归还固定金额的贷款，内部收益率代表该贷款的真实利率。但是，内部收益率也存在很多缺点，比如，当资金流入流出不是以固定的时间间隔发生时，计算会遇到麻烦。虽然计算时可以粗糙的以天为时间间隔来处理资金流入流出，并把没有资金流入流出的天看成$$ F_i = 0 $$，但这样计算出来的内部收益率是一天的收益率，而不是原始统计周期的收益率。如果按年化的方法把一天的收益率换算成一年的收益率，又可能出现很大的偏差。
+The IRR has a wide range of applications in reality. For example, for a loan that requires a fixed amount of money to be returned each month, the IRR represents the true interest rate on that loan. However, IRR has many drawbacks, for example, the calculation can be troublesome when inflows and outflows do not occur at fixed intervals. Although the calculation can be crudely done by treating inflows and outflows as intervals of days and treating days with no inflows or outflows as $$ F_i = 0 $$, the IRR calculated in this way is a one-day return, not a return on the original statistics period. If one day's return is converted to a year's return on an annualized basis, again there can be a significant bias.
 
-举个例子：某投资组合的统计周期为一年，期初价值为$$ 100 $$，在第一天末流出了$$ 101 $$，之后没有任何流入和流出，期末价值为$$ 0 $$。对该投资组合，计算出来的内部收益率是**一天**$$ 1\% $$。如果把收益率简单换算成年化，那么年化收益率为$$ (1 + 0.01)^365 \approx 37.78 $$倍。显然这个年化收益率是严重失真的。
+For example, a portfolio with a one-year statistics period has a start value of $$ 100 $$, an outflow of $$ 101 $$ at the end of the first day, and no inflows or outflows after that, with an ending value of $$ 0 $$. For this portfolio, the calculated IRR is $$ 1\% $$ per **day**. If the rate of return is simply annualized, then the annualized rate of return is $$ (1 + 0.01)^{365} \approx 37.78 $$ times. Obviously this annualized rate of return is grossly distorted.
 
-内部收益率的另一个缺点是计算时需要解高次方程，计算量大，手工几乎无法计算，只能编程求解。
+Another disadvantage of IRR is that the calculation requires solving high order equations, which is so computationally intensive that it is almost impossible to calculate by hand and can only be solved programmatically.
 
-由于SQLite数据库和Python标准库都没有提供计算内部收益率的功能，为了不增加软件的依赖，且避免软件响应时间过长，TataruBook并没有直接提供计算内部收益率功能。但是，TataruBook提供了[periods_cash_flows视图]({{ site.baseurl }}/tables_and_views.html#periods_cash_flows)，这个视图展示了所有内部账户集合在每天的资金净流入/流出价值。把该视图中的数据复制到Excel，并用**XIRR函数**就可以计算所有内部账户集合作为投资组合的内部收益率。
+Since neither the SQLite database nor the Python standard library provides a function for calculating IRR, TataruBook does not directly provide a function for calculating IRR in order not to increase the dependency of the software and to avoid a long response time of the operation. However, TataruBook provides the [periods_cash_flows]({{ site.baseurl }}/tables_and_views.html#periods_cash_flows) view, which shows the value of net inflows/outflows for all the internal accounts on a daily basis. By copying the data from this view to Excel and using the **XIRR** function, you can calculate the IRR of all internal accounts as a portfolio.
 {: .notice}
 
-# 时间加权收益
+# Time-weighted return
 
-[时间加权收益](https://en.wikipedia.org/wiki/Time-weighted_return)基于这样的思路：在任意两次资金流入流出之间的时间段里是没有资金流入流出的，那么对于每段没有资金流入流出的**子周期**可以应用[无外部资金流时的计算方法]({{ site.baseurl }}/rate_of_return.html#无外部资金流时的计算)来计算收益率。然后，可以把所有子周期的收益率相乘来得到总收益率。
+The [time-weighted return](https://en.wikipedia.org/wiki/Time-weighted_return) is based on the idea that there is no inflow or outflow in the time period between any two flows, so for each **sub-period** where there is no inflow or outflow, one can apply the [calculation in the absence of external flows]({{ site.baseurl }}/rate_of_return.html#calculation-in-the-absence-of-external-flows) to calculate the rate of return. The rate of return for all subperiods can then be multiplied together to get the total rate of return.
 
-要计算时间加权收益，仅仅知道投资组合的期初价值和期末价值是不够的，还必须知道每次资金流入流出时的投资组合价值。假设有$$ n - 1 $$次资金流入流出，那么$$ V_0 = V_s $$为期初价值；$$ V_n = V_e $$为期末价值；$$ V_i $$为在第$$ i $$次资金流入流出$$ F_i $$后的价值。则时间加权收益率$$ R $$为这个方程的解：
+To calculate the time-weighted return, it is not enough to know the start and end value of the portfolio; one must also know the value of the portfolio at each inflow and outflow. Assuming that there are $$ n - 1 $$ inflows and outflows, then $$ V_0 = V_s $$ is the start value; $$ V_n = V_e $$ is the end value; and $$ V_i $$ is the value after the $$ i $$th inflow or outflow $$ F_i $$. Then the time-weighted rate of return $$ R $$ is the solution to this equation:
 
 $$ 1 + R = \frac{V_1 - F_1}{V_0} \times \frac{V_2 - F_2}{V_1} \times \frac{V_3 - F_3}{V_2} \times \dots \times \frac{V_{n-1} - F_{n-1}}{V_{n-2}} \times \frac{V_{n} - F_{n}}{V_{n-1}} $$
 
-举例：假设投资组合中只有一只股票，统计周期为$$ 2 $$年，初始和每年末的股价及资金流入流出如下：
+Example: Assuming that there is only one stock in the portfolio and the statistics period is $$ 2 $$ years, the initial and end-of-year stock prices and inflows and outflows are as follows:
 
-| 年 | 股价 | 新增股数 | 资金流入 | 持有股数 | 市场价值 |
+| Year | Share Price | Number of New Shares | Inflows | Number of Shares Held | Market Value |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 10 | 0 | 0 | 50 | 500 |
 | 1 | 20 | 50 | 1000 | 100 | 2000 |
 | 2 | 15 | 0 | 0 | 100 | 1500 |
 
-那么，时间加权收益率为：
+Then the time-weighted return is:
 
 $$ \frac{V_1 - F_1}{V_0} \times \frac{V_2 - F_2}{V_1} - 1 = \frac{2000 - 1000}{500} \times \frac{1500 - 0}{2000} - 1 = 2 \times 0.75 - 1 = 50\% $$
 
-这个收益率实际上是股价本身的变化率，并没有体现资金流入流出对真实收益的影响。如果观察这项投资的实际利润，会发现期初价值$$ 500 $$，中间增加投入$$ 1000 $$，期末价值$$ 1500 $$，实际收益为$$ 0 $$，与时间加权收益率不符。
+This rate of return is actually the rate of change of the share price itself and does not reflect the effect of the inflow and outflow on the real return. If you look at the actual profit on this investment, you will see that with a start value of $$ 500 $$, an intermediate increase in inputs of $$ 1000 $$, and an end value of $$ 1500 $$, the real return is $$ 0 $$, which is not consistent with a time-weighted rate of return.
 
-但这正是时间加权收益的特点，它把整个组合看成一只**基金**，资金流入和流出相当于**基金份额**的**申购**和**赎回**，时间加权收益希望剔除申购和赎回造成的影响，只体现基金本身的投资绩效。因此，有时候时间加权收益也被叫做**基金净值法**。
+However, this is the characteristic of time-weighted return, which views the entire portfolio as a **fund**, with inflows and outflows equivalent to **purchases** and **redemptions** of **fund shares**. Time-weighted return wants to exclude the impact caused by purchases and redemptions, and only reflect the investment performance of the fund itself. For this reason, sometimes time-weighted returns are also called the **fund NAV method**.
 
-如果投资组合的资金流入流出是不受投资组合的管理人控制的，那么时间加权收益很好的体现了管理人的投资水平。但是如果管理人本身控制着投资组合的资金流入流出，那么就像上面的例子那样，时间加权收益并没有反映真实的收益情况。
+If the inflows and outflows of a portfolio are not controlled by the portfolio's manager, then the time-weighted return is a good indicator of the manager's investment performance. But if the manager itself controls the inflows and outflows of the portfolio, then as in the example above, the time-weighted returns do not reflect the true returns.
 
-TataruBook没有提供计算时间加权收益的功能，因为它要求每次资金流入流出时都要能计算出投资组合的价值。对于个人或家庭记账来说，这意味着每次有消费或收入时，都必须提供所有非标准资产的价格，这对普通用户不是一件容易的事。未来视情况，TataruBook可能会加入时间加权收益功能。
+TataruBook does not provide the ability to calculate time-weighted returns because it requires the ability to calculate the value of the portfolio at each time of the inflows or outflows. For personal or family bookkeeping, this means that the prices of all non-standard assets must be provided every time there is a spending or income, which is not an easy task for the average user. In the future, depending on the situation, TataruBook may include a time-weighted income feature.
 {: .notice}
 
-# 最小初始资金法
+# Minimum initial cash method
 
-如果投资组合中只有一种投资品，那么所有的外部资金流都是对这种投资品的买入/卖出操作。假设在投资组合中加入一个虚拟的**现金账户**，且这个现金账户中的资金价值能够满足统计周期内所有的买入卖出操作，即：把每次买入看成是现金账户转移价值到投资品账户；把每次卖出看成是投资品账户转移价值到现金账户。这样，原来的外部资金流就都变成了新投资组合中投资账户和现金账户之间的内部价值流动。对这个新的投资组合来说，不再存在外部资金流，可应用[无外部资金流时的计算方法]({{ site.baseurl }}/rate_of_return.html#无外部资金流时的计算)来计算收益率。
+If there is only one investment in the portfolio, then all external flows are buy/sell operations on this investment. Suppose a virtual **cash account** is added to the portfolio, and the value of this cash account is able to satisfy all the buy/sell operations during the statistics period, i.e., each purchase is viewed as a transfer of value from the cash account to the investment account; and each sale is viewed as a transfer of value from the investment account to the cash account. In this way, all of the original external flows become internal flows between the investment and cash accounts in the new portfolio. For this new portfolio, there are no longer external flows, and the [calculation in the absence of external flows]({{ site.baseurl }}/rate_of_return.html#calculation-in-the-absence-of-external-flows) can be applied to calculate the rate of return.
 
-为了能最准确的体现实际收益率，虚拟现金账户中的期初资金价值要尽可能小，只要能刚好完成所有买入卖出操作即可。这个最小的虚拟现金账户期初价值称为**最小初始资金**$$ C_s $$。要计算出最小初始资金$$ C_s $$，可以这样考虑：先假设$$ C_s = 0 $$，这种情况下如果现金账户的价值在统计周期内不会出现负值，那么说明$$ 0 $$就是最小初始资金；如果现金账户的价值在统计周期内会出现负值，那么找到绝对值最大的那个负值，把它的绝对值作为最小初始资金$$ C_s $$，这样就能刚刚好使得现金账户的价值在统计周期内不会出现负值。
+In order to most accurately represent the actual rate of return, the start value in the virtual cash account should be as small as possible, as long as it is just enough to complete all buy and sell operations. This smallest start value of the virtual cash account is called the **minimum initial cash** $$ C_s $$. To calculate the minimum initial cash $$ C_s $$, considered in this way: first assuming that $$ C_s = 0 $$, in this case if the value of the cash account in the statistics period will not be negative, then it means that $$ 0 $$ is the minimum initial cash; if the value of the cash account in the statistics period will be negative, then to find the largest absolute value among all negative values, and make that absolute value as the minimum initial cash $$ C_s $$, which is just enough so that the value of the cash account will not go negative during the statistics period.
 
 $$ C_s = \text{max}(0, F_1, F_1 + F_2, F_1 + F_2 + F_3, \dots, \sum_{i=1}^{n}F_i) $$
 
-上面公式中，$$ F_i $$是第$$ i $$次资金流入或流出的价值（流入为正值，流出为负值）。注意流入流出是从原始投资组合的视角看的，从新投资组合看，资金流入是从现金账户转移价值到投资账户，会使得现金账户价值减少。所以现金账户的价值余额已经是$$ F_i $$累加后的相反数，不需要再次取反。
+In the above equation, $$ F_i $$ is the value of the $$ i $$th inflow or outflow (positive for inflows and negative for outflows). Note that inflows and outflows are viewed from the perspective of the original portfolio, and from the perspective of the new portfolio, inflows are transferring value from the cash account to the investment account, which causes the cash account value to decrease. So the balance of the cash account is already the opposite of $$ F_i $$ accrued and does not need to be inverted again.
 
-使用最小初始资金推算，到期末时虚拟现金账户中的价值为$$ C_e $$。
+After calculated using the minimum initial cash above, the value in the virtual cash account at the end of the period is $$ C_e $$.
 
 $$ C_e = C_s - \sum_{i=1}^{n}F_i $$
 
-收益率$$ R $$计算方法为：
+The rate of return $$ R $$ is calculated as:
 
 $$ R = \frac{(V_e + C_e) - (V_s + C_s)}{V_s + C_s} $$
 
-举例1：假设原始的投资组合中只有一只股票，统计周期有$$ 4 $$天，每天的股价和资金流入流出如下：
+Example 1: Assuming that there is only one stock in the original portfolio and there are $$ 4 $$ days in the statistics period, the daily stock prices and inflows and outflows are as follows:
 
-| 天 | 股价 | 股数变动 | 资金流入/流出 | 持有股数 | 市场价值 |
+| Days | Stock Price | Change in Number of Shares | Inflow/Outflow | Number of Shares Held | Market Value |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 10 | 0 | 0 | 10 | 100 |
 | 1 | 12 | 5 | 60 | 15 | 180 |
 | 2 | 15 | -6 | -90 | 9 | 135 |
 | 3 | 11 | 0 | 0 | 9 | 99 |
 
-由于在第$$ 1 $$天产生了价值$$ 60 $$的资金流入，因此虚拟现金账户最小初始资金$$ C_s = 60 $$。在第$$ 2 $$天有价值$$ 90 $$的资金流出，所以期末时虚拟现金账户中的价值$$ C_e = 90 $$。计算收益率：
+Since an inflow worth $$ 60 $$ is generated on day $$ 1 $$, the virtual cash account has a minimum initial cash of $$ C_s = 60 $$. There is an outflow worth $$ 90 $$ on day $$ 2 $$, so the value in the virtual cash account at the end of the period $$ C_e = 90 $$. Calculate the rate of return:
 
 $$ R = \frac{(99 + 90) - (100 + 60)}{100 + 60} = 18.125\% $$
 
-需要注意的是，如果这个例子中的两次资金流入流出顺序交换，那么虚拟现金账户最小初始资金就不是这个数值了。
+Note that if the order of the two inflows and outflows were exchanged in this example, the minimum initial cash of the virtual cash account would not be this value.
 
-举例2：在上面例子中，交换第$$ 1 $$天和第$$ 2 $$天的数据，得到每天的股价和资金流入流出如下：
+Example 2: In the above example, exchange the data of day $$ 1 $$ and day $$ 2 $$ to get the daily stock price and inflow/outflow as follows:
 
-| 天 | 股价 | 股数变动 | 资金流入/流出 | 持有股数 | 市场价值 |
+| Day | Stock Price | Change in Number of Shares | Inflow/Outflow | Number of Shares Held | Market Value |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 10 | 0 | 0 | 10 | 100 |
 | 1 | 15 | -6 | -90 | 4 | 60 |
 | 2 | 12 | 5 | 60 | 9 | 108 |
 | 3 | 11 | 0 | 0 | 9 | 99 |
 
-因为第$$ 1 $$天有价值$$ 90 $$的资金流出，所以虚拟现金账户会多出$$ 90 $$的价值。第$$ 2 $$天虽然有$$ 60 $$的资金流入，但此时虚拟现金账户的价值已经足够覆盖这些流入，且在流入后还剩下$$ 30 $$的价值。因此，虚拟现金账户在期初并不需要有价值，最小初始资金为$$ 0 $$。收益率：
+Because there is an outflow of $$ 90 $$ on day $$ 1 $$, the virtual cash account will have an extra $$ 90 $$ value in it. On day $$ 2 $$ there is an inflow of $$ 60 $$, but the value of the virtual cash account is sufficient to cover the inflow and there is $$ 30 $$ left after the inflow. Therefore, the virtual cash account does not need to have a value at the start of the period, and the minimum initial cash is $$ 0 $$. Rate of return:
 
 $$ R = \frac{(99 + 30) - (100 + 0)}{100 + 0} = 29\% $$
 
-对于价格浮动的单只投资品来说，最小初始资金法计算的收益率在各种不同的资金流入流出情况下都能得到看起来比较合理的结果。因此，TataruBook对于单个非标准资产账户采用最小初始资金法来计算收益率，见[return_on_shares视图]({{ site.baseurl }}/tables_and_views.html#return_on_shares)。
+For a single investment with a floating price, the rate of return calculated by the minimum initial cash method yields results that look reasonable under a variety of different inflow and outflow scenarios. Therefore, TataruBook uses the minimum initial cash method for accounts that contain non-standard asset to calculate the rate of return of a single account, see [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 {: .notice}

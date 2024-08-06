@@ -1,58 +1,61 @@
 ---
-title: 总体介绍
+title: Introduction
 ---
-这是TataruBook的帮助文档。
+This is the documentation for TataruBook.
 
-# TataruBook是什么？
+# What is TataruBook?
 
-TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_and_views.html#简化的复式记账法)的、基于SQL表和视图的、以命令行方式执行的、面向个人或家庭的记账和理财收益计算工具软件。该工具可辅助用户把资产、账户、交易明细等数据输入[db文件]({{ site.baseurl }}/index.html#什么是db文件)，并计算出净资产、分类收入支出、投资收益率等各种统计数据。
+TataruBook is an individual or family-oriented bookkeeping and financial income calculation tool using [simplified double-entry bookkeeping]({{ site.baseurl }}/tables_and_views.html#simplified-double-entry-bookkeeping), based on SQL tables and views, and executed from the command-line. The tool assists users in entering data such as assets, accounts, and transaction details into a [db file]({{ site.baseurl }}/index.html#what-is-a-db-file) and calculates various statistics such as net worth, categorized income and expenses, and ROI.
 
-# 如何下载和安装TataruBook？
+# How to download and install TataruBook?
 
-有2种方式：
+There are 2 approaches:
 
-1. （推荐）首先安装[Python 3.8或以上版本](https://www.python.org/downloads/)，然后从[Github仓库](https://github.com/Goalsum/TataruBook)或者[Gitee仓库](https://gitee.com/goalsum/tatarubook)上下载`tatarubook.py`脚本，之后使用`python tatarubook.py`运行该脚本即可。这种方式可用于任何能够支持Python的操作系统。
-1. 从[Github发布页面](https://github.com/Goalsum/TataruBook/releases)或者[Gitee发布页面](https://gitee.com/goalsum/tatarubook/releases)下载`tatarubook.zip`包，解压缩到任何一个文件夹，然后运行其中的`tatarubook.exe`程序。这种方式不需要安装Python，但是只适用于Windows 10或以上版本的Windows操作系统。
+1. (Recommended) First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `TataruBook` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), then download the `tatarubook.py` script, and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
+1. Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `tatarubook.exe` program from it. This approach does not require Python to be installed, but is only available for Windows operating systems with Windows 10 or above.
 
-第一种方式是推荐的，因为采用这种方式的`tatarubook.py`运行脚本直接使用运行环境中最新的Python解释器、SQLite等依赖库，占用的磁盘空间极小。如果用第二种方式，则Python解释器、SQLite以及其他依赖的Python库都会被下载并占用磁盘空间，但好处是如果运行环境中这些库缺失或者有问题，不会影响TataruBook软件的运行。
-
-**注意：**采用第二种方式安装软件后，`tatarubook.exe`程序运行时需要依赖压缩包中的其他文件。因此，请确保在同一目录解压`tatarubook.zip`中的所有文件，且保持压缩包里的目录结构。
+TataruBook is a **command-line program**, that means if you double-click the `tatarubook.exe` file directly on Windows, most likely you'll see a flash of a black window and then nothing else happens. The correct way to run a command-line program is to open a command-line terminal first (on windows, run `Command Prompt`), and then type (or paste) the program name with specified subcommand and proper arguments.
 {: .notice--warning}
 
-# 如何使用TataruBook进行记账？
+The first approach is recommended because when run `tatarubook.py` script with this approach, it directly uses the latest Python interpreter, SQLite and other dependent libraries in the runtime environment, so it only takes up very little disk space. With the second approach, the Python interpreter, SQLite, and other dependent Python libraries are downloaded and take up disk space, but the advantage is that if these libraries are missing or faulty in the runtime environment, it will not affect the operation of the TataruBook software.
 
-你需要先了解一些概念：
+**Note:** After installing the software using the second approach, the `tatarubook.exe` program depends on other files in the zip package to run. Therefore, please make sure to extract all files in `tatarubook.zip` in the same directory and keep the directory structure the same as in the archive.
+{: .notice--warning}
 
-TataruBook只是一个程序（严格地说，是一个Python脚本），它自身并不包含任何财务数据，所有的数据都被保存在**db文件**中，db文件是由用户命名且后缀名为`.db`的文件。TataruBook可以对命令行中指定的db文件进行操作。
+# How to use TataruBook for bookkeeping?
 
-## 什么是db文件？
+You need to understand some concepts first:
 
-db文件是保存了财务数据和相关报表的文件。每个db文件都是[SQLite格式](https://sqlite.com/)的数据库文件，可以使用任何支持SQLite文件格式的软件进行查看和修改。
+TataruBook is just a program (technically a Python script), it doesn't contain any financial data itself, all the data is stored in **db files**, which are files named by the user and have the suffix `.db`. TataruBook can operate on db files specified on the command-line.
 
-如果使用其他软件来查看和修改TataruBook生成的db文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开db文件，则必须用`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
+## What is a db file?
+
+A db file is a file that holds financial data and related reports. Each db file is a [SQLite format](https://sqlite.com/) database file that can be viewed and modified using any software that supports the SQLite file format.
+
+If you use other software to view and modify the db files generated by TataruBook, make sure that these software support some of the new features of SQLite (such as the STRICT attribute). For example, to open a db file using [DB Browser for SQLite](https://sqlitebrowser.org/), you must use the [nightly version](https://nightlies.sqlitebrowser.org/latest/) of `DB Browser for SQLite` to support the STRICT attribute.
 {: .notice}
 
-**注意：**使用其他软件修改db文件时，只能添加、删除、修改记录，不可修改表和视图的定义！否则，TataruBook将无法保证以后还能正确操作这个db文件。
+**NOTICE:** When using other software to modify the db file, you can only add, delete, and modify records, you cannot modify the table and view definitions! Otherwise, TataruBook will not be able to guarantee that it will be able to operate this db file correctly in the future.
 {: .notice--warning}
 
-通常来说，一个用户或家庭/组织的所有历史财务数据都放在同一个db文件中。db文件中有一些报表会把该db文件中所有的内部账户看作一个**投资组合（portfolio）**，并展示这个投资组合的净资产、收益率和资金流入流出情况。因此，希望参与统计的账户数据都应当放在同一个db文件中，TataruBook不支持跨db文件进行计算。
+Typically, all the historical financial data of a user or family/organization is placed in the same db file. db file has some reports that will consider all the internal accounts in that db file as a **portfolio** and show the net worth, rate of return, and inflows and outflows of that portfolio. Therefore, it is expected that the account data involved in the statistics should all be in the same db file. TataruBook does not support calculations across db files.
 
-有些用户习惯于按时间周期分割财务数据，比如把每一年的财务数据放在一个独立的db文件中。使用TataruBook时没有必要做这种分割，因为TataruBook支持展示任意历史时间段（精确到天）的财务报表。把所有历史财务数据存放在一个db文件中可以保持连贯而准确的财务记录，省去新建db文件时需要导入每个账户历史余额的麻烦。
+Some users are accustomed to splitting financial data by time period, such as putting each year's financial data in a separate db file. There is no need to do this when using TataruBook, because TataruBook supports displaying financial statements for any specified time period (down to the day). Storing all historical financial data in a single db file maintains a consistent and accurate financial record and eliminates the need to carry forward balances for each account when creating a new db file.
 
-## 我该从哪儿开始？
+## Where do I start?
 
-对于第一次使用TataruBook的用户，推荐阅读[快速入门]({{ site.baseurl }}/quick_start.html)。这篇教程通过由浅入深的使用案例帮助新用户快速掌握TataruBook的主要用法。
+For first time users of TataruBook, we recommend reading [quick start]({{ site.baseurl }}/quick_start.html). This tutorial helps new users to quickly grasp the main usage of TataruBook by going from simple to deep use cases.
 
-[表和视图]({{ site.baseurl }}/tables_and_views.html)介绍了db文件中所有的表和视图，以及它们之间的关系。当你对某些表或视图的字段有疑问时，可参阅此文档。
+[Tables and views]({{ site.baseurl }}/tables_and_views.html) describes all the tables and views in the db file and how they are related to each other. When you have questions about certain table or view fields, refer to this document.
 
-[命令行手册]({{ site.baseurl }}/commands.html)介绍了TataruBook的所有命令用法和注意事项。
+[Command-line manual]({{ site.baseurl }}/commands.html) describes all the command usage and notes of TataruBook.
 
-如果你觉得db文件中的现有视图还不能满足自己，并且你知道如何使用SQL语言，那么，你可以使用其他支持SQLite格式的软件（需确保这些软件支持SQLite的一些新特性）来打开db文件，并自己编写SQL语句对数据进行查询和编辑（但是不要修改已有表和视图的定义）。
+If you feel that the existing views in the db file are not enough for you and you know how to use the SQL language, you can use other software that supports the SQLite format (make sure that they support some of the new features of SQLite) to open the db file and write your own SQL statements to query and edit the data (but do not modify the definitions of the existing tables and views).
 
-对于投资者来说，投资收益率是倍受关注的。TataruBook中有多个视图从各个角度呈现投资收益率。[收益率计算方法]({{ site.baseurl }}/rate_of_return.html)中详细介绍了各种收益率的计算方法，以及其在TataruBook的视图中是如何被使用的。
+For investors, the return on investment is of great interest, and TataruBook has several views that present the return on investment from various perspectives. [Rate of return]({{ site.baseurl }}/rate_of_return.html) describes in detail how the various rates of return are calculated and how they are used in TataruBook's views.
 
-怎样提升外部数据的导入效率是实际记账中的一个关键难题，[数据导入指南]({{ site.baseurl }}/importing_data.html)给出了可重用的、自动化的数据处理和导入方法供参考。
+How to improve the efficiency of importing external data is a key challenge in actual bookkeeping, [Data importing guide]({{ site.baseurl }}/importing_data.html) gives reusable and automated data processing and importing methods for reference.
 
-# 如何反馈问题和需求？
+# How do I give feedback on issues and requirements?
 
-请在[Github仓库](https://github.com/Goalsum/TataruBook)或者[Gitee仓库](https://gitee.com/goalsum/tatarubook)上提交issue，我会查看并进行回复。
+Please submit an issue on [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository](https://gitee.com/goalsum/tatarubook) and I'll check it out and respond.
