@@ -11,7 +11,7 @@ The following describes some features that are relevant to multiple commands:
 
 ## Character encoding format
 
-By default, TataruBook reads and writes files using the operating system's default character encoding format. However, note that the default character encoding format for a non-English Windows operating system is not UTF-8, so TataruBook may encounter decoding errors when reading UTF-8 csv files on Windows. To work around this problem, TataruBook will try to decode in UTF-8 again when decoding in default format fails.
+By default, TataruBook reads and writes files using the operating system's default character encoding format. However, note that the default character encoding format for a non-English Windows operating system is not UTF-8, so TataruBook may encounter decoding errors when reading UTF-8 CSV files on Windows. To work around this problem, TataruBook will try to decode in UTF-8 again when decoding in default format fails.
 
 If you want TataruBook to read and write files using other character encoding formats, you can specify the character encoding format using the `--encoding` option in the relevant command; a list of supported encoding formats can be found [here](https://docs.python.org/3/library/codecs.html#standard-encodings).
 
@@ -46,7 +46,7 @@ Now we want to insert a record into the [postings]({{ site.baseurl }}/tables_and
 
 However, writing this record manually requires finding the `account_index` of the `Sharlayan Bank current` to be `1` and filling that in the `src_account` field, and finding the `account_index` of the `Food and Beverages` to be `2` and filling that in the `dst_account` field. This lookup process is cumbersome - especially when the `accounts` table has dozens of records.
 
-To solve this problem, TataruBook allows filling in **names** in certain places where indexes need to be filled in. For example, to insert the above record into the `postings` table, you can write this in the csv file (if you don't understand why the cell below `posting_index` is empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields)):
+To solve this problem, TataruBook allows filling in **names** in certain places where indexes need to be filled in. For example, to insert the above record into the `postings` table, you can write this in the CSV file (if you don't understand why the cell below `posting_index` is empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields)):
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -86,7 +86,7 @@ A records of the [posting_extras]({{ site.baseurl }}/tables_and_views.html#posti
 
 This process is obviously cumbersome. To simplify the insertion of transaction records, TataruBook supports **automatically inserting into the associated table**. When inserting a record into the `postings` table, if you write an extra field at the end, TataruBook assumes that this is a request to insert into the `posting_extras` table, and that the extra field is the value of the `dst_change` field of the `posting_extras` table.
 
-For example: Importing a csv file like the one below with [import]({{ site.baseurl }}/commands.html#import) command inserts a record into both the `postings` table and the `posting_extras` table with the same `posting_index` for both records. (If you don't understand why the values of `src_account` and `dst_account` are not numbers, see [lookup index by name]({{ site.baseurl }}/commands.html#lookup-index-by-name); if you don't understand why the cells below `posting_index` are empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields))
+For example: Importing a CSV file like the one below with [import]({{ site.baseurl }}/commands.html#import) command inserts a record into both the `postings` table and the `posting_extras` table with the same `posting_index` for both records. (If you don't understand why the values of `src_account` and `dst_account` are not numbers, see [lookup index by name]({{ site.baseurl }}/commands.html#lookup-index-by-name); if you don't understand why the cells below `posting_index` are empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields))
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -98,9 +98,9 @@ The [insert]({{ site.baseurl }}/commands.html#insert) command also supports this
 tatarubook insert example.db postings NULL 2023-05-22 "Sharlayan Bank current" -10000 "Garlond Ironworks shares" "Buy shares" 500
 ~~~
 
-Note that the `dst_change` field must be placed at the end. TataruBook only recognizes fields based on position, it doesn't care about the contents of the header row of the csv file.
+Note that the `dst_change` field must be placed at the end. TataruBook only recognizes fields based on position, it doesn't care about the contents of the header row of the CSV file.
 
-The [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table also supports associative insertion: if a record of `accounts` table as well as an associated record of `asset_types` table both needs to be inserted, the two records can be inserted using a single [import]({{ site.baseurl }}/commands.html#import) command, the csv file contents are as follows:
+The [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table also supports associative insertion: if a record of `accounts` table as well as an associated record of `asset_types` table both needs to be inserted, the two records can be inserted using a single [import]({{ site.baseurl }}/commands.html#import) command, the CSV file contents are as follows:
 
 | account_index | account_name | asset_index | is_external | asset_name | asset_order |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -158,7 +158,7 @@ Since data consistency has an impact on the correctness of many reports, TataruB
 
 ## export
 
-Exports the contents of the specified table/view or all tables/views to a csv file.
+Exports the contents of the specified table/view or all tables/views to a CSV file.
 
 **Command Format**:
 
@@ -192,7 +192,7 @@ The insert operation has some special handling, as described in [general feature
 
 ## import
 
-Batch import (add) a batch of records from a csv file into a specified table, records that already exist in the table are not affected.
+Batch import (add) a batch of records from a CSV file into a specified table, records that already exist in the table are not affected.
 
 **Command Format**:
 
@@ -204,11 +204,11 @@ tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 - `--table TABLE` (optional): specifies a table with the name `TABLE`. If this parameter is not present, determine which table to import based on the filename of `csv_file`.
 - `--encoding ENCODING` (optional): specifies the character encoding. See the description in [character encoding format]({{ site.baseurl }}/commands.html#character-encoding-format).
 - `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
-- `csv_file`: csv file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `csv_file`: CSV file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
-TataruBook will automatically determine if the csv file has a header row or not, the judgment is: if no column of the first row of the csv contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
+TataruBook will automatically determine if the CSV file has a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
 
-If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `import` command was executed, even if other rows in the csv file can be inserted successfully.
+If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `import` command was executed, even if other rows in the CSV file can be inserted successfully.
 
 The import operation has some special handling, see the description in [general features]({{ site.baseurl }}/commands.html#general-features).
 
@@ -250,7 +250,7 @@ When a record in the `postings` table is being deleted, if there is a correspond
 
 ## prune
 
-Deletes a batch of records in the specified table corresponding to one or more indexes given by the csv file.
+Deletes a batch of records in the specified table corresponding to one or more indexes given by the CSV file.
 
 **Command Format**:
 
@@ -262,15 +262,15 @@ tatarubook prune [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 - `--table TABLE` (optional): specifies a table with the name `TABLE`. If this parameter is not present, determine which table to operate on based on the filename of `csv_file`.
 - `--encoding ENCODING` (optional): specifies the character encoding. See the description in [character encoding format]({{ site.baseurl }}/commands.html#character-encoding-format).
 - `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
-- `csv_file`: csv file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `csv_file`: CSV file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
-TataruBook will automatically determine if the csv file has a header row or not, the judgment is: if no column of the first row of the csv contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
+TataruBook will automatically determine if the CSV file has a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
 
-Be careful that each row in the csv file should contain only the values of the index fields and no other fields.
+Be careful that each row in the CSV file should contain only the values of the index fields and no other fields.
 
 When a record in the `postings` table is being deleted, if there is a corresponding record in the `posting_extras` table, that record in the `posting_extras` table will also be deleted.
 
-If the process fails when deleting an index, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `prune` command was executed, even if other indexes in the csv file can be deleted successfully.
+If the process fails when deleting an index, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `prune` command was executed, even if other indexes in the CSV file can be deleted successfully.
 
 ## execsql
 
@@ -288,7 +288,7 @@ tatarubook execsql [-h] db_file cmd
 
 TataruBook does not perform any checks and constraints on SQL commands. The user takes the responsibility of the consequences of executing customized SQL commands. If the SQL command modifies the definition of a table/view, it may result in the db file not being able to be processed correctly by TataruBook in the future.
 
-Since TataruBook does not have a query command, if you want to query the contents of a table/view directly from the command line (instead of exporting to a csv file), you can use the `execsql` command to do so. For example, the following command queries the contents of the `statements` view:
+Since TataruBook does not have a query command, if you want to query the contents of a table/view directly from the command line (instead of exporting to a CSV file), you can use the `execsql` command to do so. For example, the following command queries the contents of the `statements` view:
 
 ~~~
 tatarubook execsql example.db "select * from statements"

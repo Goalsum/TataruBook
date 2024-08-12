@@ -152,13 +152,13 @@ First, process the data in Excel into the following format and save it as a `pos
 | | 2023/3/10 | Sharlayan Bank credit card | -43 | Food and Beverages | Lunch at the Last Stand |
 | | 2023/3/20 | Sharlayan Bank current | -9300 | Sharlayan Bank credit card | Pay off credit card |
 
-Then use this command to import all the records from the csv file into the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table:
+Then use this command to import all the records from the CSV file into the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table:
 
 ~~~
 tatarubook import accounting.db postings.csv
 ~~~
 
-When it comes to actual bookkeeping, the [import]({{ site.baseurl }}/commands.html#import) command may be more commonly used than the [insert]({{ site.baseurl }}/commands.html#insert) command, because the data for bookkeeping often comes from banks, brokerage firms, and other organizations that provide transaction detail records. Since TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch import. In this case, the `import` command triggers a **rollback** - restoring the db file to the state it was in before the `import` was executed. The user can then modify the errors in the contents of the csv file and re-execute the `import` command. The automatic rollback feature eliminates the need for users to worry about importing huge csv files with partially successful inserts that make the state of the db file difficult to determine.
+When it comes to actual bookkeeping, the [import]({{ site.baseurl }}/commands.html#import) command may be more commonly used than the [insert]({{ site.baseurl }}/commands.html#insert) command, because the data for bookkeeping often comes from banks, brokerage firms, and other organizations that provide transaction detail records. Since TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch import. In this case, the `import` command triggers a **rollback** - restoring the db file to the state it was in before the `import` was executed. The user can then modify the errors in the contents of the CSV file and re-execute the `import` command. The automatic rollback feature eliminates the need for users to worry about importing huge CSV files with partially successful inserts that make the state of the db file difficult to determine.
 {: .notice}
 
 Now we want to look at the breakdown statistics of income and expenses. Start by exporting the [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view using the [export]({{ site.baseurl }}/commands.html#export) command:
@@ -315,7 +315,7 @@ tatarubook insert accounting.db asset_types NULL "Eorzea 100 Index Fund" 1
 tatarubook insert accounting.db accounts NULL "Moogle:Eorzea 100" "Eorzea 100 Index Fund" 0
 ~~~
 
-This fund has multiple transactions, both purchases and redemptions, we use [import]({{ site.baseurl }}/commands.html#import) command to import all transaction records at once. Start by writing the contents of the csv file:
+This fund has multiple transactions, both purchases and redemptions, we use [import]({{ site.baseurl }}/commands.html#import) command to import all transaction records at once. Start by writing the contents of the CSV file:
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -324,10 +324,10 @@ This fund has multiple transactions, both purchases and redemptions, we use [imp
 | | 2023/9/12 | Moogle:Eorzea 100 | -1000 | Sharlayan Bank current | Redemption | 2500 |
 | | 2023/9/30 | Sharlayan Bank current | -1200 | Moogle:Eorzea 100 | Purchase | 630 |
 
-The `dst_change` column has been added to the header row to more clearly illustrate the last field of each row. But actually TataruBook doesn't care about the contents of the header row when importing the csv file, it just fills in the values of each field in the required order.
+The `dst_change` column has been added to the header row to more clearly illustrate the last field of each row. But actually TataruBook doesn't care about the contents of the header row when importing the CSV file, it just fills in the values of each field in the required order.
 {: .notice}
 
-Then import the contents of this csv file:
+Then import the contents of this CSV file:
 
 ~~~
 tatarubook import accounting.db postings.csv
