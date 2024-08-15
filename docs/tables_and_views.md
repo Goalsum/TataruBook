@@ -1,7 +1,7 @@
 ---
 title: Tables and Views
 ---
-This page describes all the tables and views contained in the db file.
+This page describes all the tables and views contained in the DB file.
 
 **Tables** contain the financial data provided by the user and they are source of data for all reports. To ensure data integrity and consistency, when adding, modifying, or deleting data from the table, TataruBook checks all aspects to ensure that there are no conflicts or logical contradictions in data.
 
@@ -102,7 +102,7 @@ As long as the source and destination account contains the same asset, the amoun
 - The source and destination account in a record cannot both be external account. (Checked by [check_both_external]({{ site.baseurl }}/tables_and_views.html#check_both_external) view) (New in v1.1)
 - When the source or destination account is an external account in a record, the external account must either contains standard asset or the same asset as another account. (Checked by [check_external_asset]({{ site.baseurl }}/tables_and_views.html#check_external_asset) view) (New in v1.1)
 
-Users who are new to bookkeeping may be wondering how to import the existing balances for each account into a db file. The recommended approach is to create an external account called `Opening balance` and for each internal account that needs to have its balance brought forward, add a transaction record transferring value from `Opening balance` to that internal account.
+Users who are new to bookkeeping may be wondering how to import the existing balances for each account into a DB file. The recommended approach is to create an external account called `Opening balance` and for each internal account that needs to have its balance brought forward, add a transaction record transferring value from `Opening balance` to that internal account.
 {: .notice}
 
 ## posting_extras
@@ -233,7 +233,7 @@ Then the `statements` view contents are:
 | 3 | 2023-01-09 | 1 | -13000.0 | 2 | Buy shares | Sharlayan Bank current | 1 | 0 | Moogle:Garlond Ironworks shares | 36932.5 |
 | 3 | 2023-01-09 | 2 | 260.0 | 1 | Buy shares | Moogle:Garlond Ironworks shares | 2 | 0 | Sharlayan Bank current | 260.0 |
 
-Note: The `statements` view is more like the single-entry billing statements that people are usually used to. If you only want to see the movement records for a particular account, you can use other software to open the db file and filter by `account_index` or `src_name`. For example, filtering on a record with `account_index` of `1` will show all historical transactions and balance changes for `Sharlayan Bank current`.
+Note: The `statements` view is more like the single-entry billing statements that people are usually used to. If you only want to see the movement records for a particular account, you can use other software to open the DB file and filter by `account_index` or `src_name`. For example, filtering on a record with `account_index` of `1` will show all historical transactions and balance changes for `Sharlayan Bank current`.
 
 ## start_balance
 

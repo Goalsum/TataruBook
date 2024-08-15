@@ -3,11 +3,11 @@ title: Quick Start
 ---
 This page is an introductory tutorial for people who are new to using TataruBook. This tutorial shows you how to use TataruBook's common features from start to finish, through a series of use cases.
 
-# Initialize the db file
+# Initialize the DB file
 
 Start by downloading and installing TataruBook, if you don't already know how, see [here]({{ site.baseurl }}/index.html#how-to-download-and-install-tatarubook).
 
-For convenience, it is assumed in the following that TataruBook was installed using the second installation approach - the executable file approach. if the user is using the first installation approach - the Python script approach, he/she will need to replace all the command-lines in the following beginning with `tatarubook` to beginning with `python tatarubook.py`. For example, the command to create the db file needs to be changed from `tatarubook init accounting.db` to `python tatarubook.py init accounting.db`.
+For convenience, it is assumed in the following that TataruBook was installed using the second installation approach - the executable file approach. if the user is using the first installation approach - the Python script approach, he/she will need to replace all the command-lines in the following beginning with `tatarubook` to beginning with `python tatarubook.py`. For example, the command to create the DB file needs to be changed from `tatarubook init accounting.db` to `python tatarubook.py init accounting.db`.
 
 Once the installation is complete, open your operating system's command-line terminal, switch to the directory where the TataruBook program is located, and execute the command:
 
@@ -15,7 +15,7 @@ Once the installation is complete, open your operating system's command-line ter
 tatarubook init accounting.db
 ~~~
 
-After the execution is completed, there will be an additional `accounting.db` file in the directory, which is the **db file** where the bookkeeping data is stored.
+After the execution is completed, there will be an additional `accounting.db` file in the directory, which is the **DB file** where the bookkeeping data is stored.
 
 Next, add a currency type using the [insert]({{ site.baseurl }}/commands.html#insert) command:
 
@@ -158,7 +158,7 @@ Then use this command to import all the records from the CSV file into the [post
 tatarubook import accounting.db postings.csv
 ~~~
 
-When it comes to actual bookkeeping, the [import]({{ site.baseurl }}/commands.html#import) command may be more commonly used than the [insert]({{ site.baseurl }}/commands.html#insert) command, because the data for bookkeeping often comes from banks, brokerage firms, and other organizations that provide transaction detail records. Since TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch import. In this case, the `import` command triggers a **rollback** - restoring the db file to the state it was in before the `import` was executed. The user can then modify the errors in the contents of the CSV file and re-execute the `import` command. The automatic rollback feature eliminates the need for users to worry about importing huge CSV files with partially successful inserts that make the state of the db file difficult to determine.
+When it comes to actual bookkeeping, the [import]({{ site.baseurl }}/commands.html#import) command may be more commonly used than the [insert]({{ site.baseurl }}/commands.html#insert) command, because the data for bookkeeping often comes from banks, brokerage firms, and other organizations that provide transaction detail records. Since TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch import. In this case, the `import` command triggers a **rollback** - restoring the DB file to the state it was in before the `import` was executed. The user can then modify the errors in the contents of the CSV file and re-execute the `import` command. The automatic rollback feature eliminates the need for users to worry about importing huge CSV files with partially successful inserts that make the state of the DB file difficult to determine.
 {: .notice}
 
 Now we want to look at the breakdown statistics of income and expenses. Start by exporting the [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view using the [export]({{ site.baseurl }}/commands.html#export) command:
@@ -393,11 +393,11 @@ These figures show that all internal accounts had a total investment return of $
 TataruBook is often used to keep track of all of an individual or family's assets, so the information in [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view is important: it shows the net worth at the end of both [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the net income and expenses and investment income between the two dates.
 {: .notice}
 
-# Viewing db files with GUI software
+# Viewing DB files with GUI software
 
-TataruBook is a command-line program and does not have a graphical interface. However, the db file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the db file (provided that the software supports the new features of SQLite). Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install the [nightly version](https://nightlies.sqlitebrowser.org/latest) of `DB Browser for SQLite` (only the nightly version supports the new features of SQLite), then run `DB Browser for SQLite`, and finally click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the db file.
+TataruBook is a command-line program and does not have a graphical interface. However, the DB file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the DB file (provided that the software supports the new features of SQLite). Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install the [nightly version](https://nightlies.sqlitebrowser.org/latest) of `DB Browser for SQLite` (only the nightly version supports the new features of SQLite), then run `DB Browser for SQLite`, and finally click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the DB file.
 
 ![DB Browser for SQLite界面]({{ site.baseurl }}/assets/images/statements.png)
 
-You can also use software other than TataruBook to edit the data in the db file, but only TataruBook does a perfect consistency check when inserting data. So if you use other software to edit the db file, it is better to use TataruBook to do the check again. If you know how to use SQL, you can also write your own SQL commands to develop data analysis functions that TataruBook does not provide.
+You can also use software other than TataruBook to edit the data in the DB file, but only TataruBook does a perfect consistency check when inserting data. So if you use other software to edit the DB file, it is better to use TataruBook to do the check again. If you know how to use SQL, you can also write your own SQL commands to develop data analysis functions that TataruBook does not provide.
 {: .notice}

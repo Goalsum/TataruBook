@@ -119,7 +119,7 @@ Command help information is given when using the `-h` or `--help` parameter. The
 
 ## init
 
-Creates and initializes an empty db file.
+Creates and initializes an empty DB file.
 
 **Command Format**:
 
@@ -128,13 +128,13 @@ tatarubook init [-h] db_file
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If the file already exists, no action will be performed, only an error message will be printed. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If the file already exists, no action will be performed, only an error message will be printed. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
 ## check
 
-Checks whether the data in the db file conforms to the consistency constraints.
+Checks whether the data in the DB file conforms to the consistency constraints.
 
-**New in v1.1**: Checks if all tables, indexes, and view definitions in a db file are consistent with the current version.
+**New in v1.1**: Checks if all tables, indexes, and view definitions in a DB file are consistent with the current version.
 {: .notice}
 
 **Command Format**:
@@ -144,7 +144,7 @@ tatarubook check [-h] db_file
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
 There are two types of data consistency constraints:
 
@@ -153,7 +153,7 @@ There are two types of data consistency constraints:
 
 To see what checks are included for data consistency constraints, see the description in [tables and views]({{ site.baseurl }}/tables_and_views.html).
 
-Since data consistency has an impact on the correctness of many reports, TataruBook automatically runs a data consistency check and reports the results after performing any operation that modifies a db file.
+Since data consistency has an impact on the correctness of many reports, TataruBook automatically runs a data consistency check and reports the results after performing any operation that modifies a DB file.
 {: .notice}
 
 ## export
@@ -169,7 +169,7 @@ tatarubook export [-h] [--table TABLE] [--encoding ENCODING] db_file
 **Parameters**:
 - `--table TABLE` (optional): specifies a table or view with the name `TABLE`. Without this parameter, exports all tables and views.
 - `--encoding ENCODING` (optional): specifies the character encoding. See the description in [character encoding format]({{ site.baseurl }}/commands.html#character-encoding-format).
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
 Rules for generating filenames: the name of the corresponding table/view plus the `.csv` suffix. If a file already exists, it will be **skipped**, but other non-conflicting files (if they exist) will still be exported.
 
@@ -184,7 +184,7 @@ tatarubook insert [-h] db_file table values
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `table`: table name.
 - `values`: values of all fields, with fields separated by spaces. If a field contains spaces, it needs to be surrounded with quotes.
 
@@ -203,12 +203,12 @@ tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 **Parameters**:
 - `--table TABLE` (optional): specifies a table with the name `TABLE`. If this parameter is not present, determine which table to import based on the filename of `csv_file`.
 - `--encoding ENCODING` (optional): specifies the character encoding. See the description in [character encoding format]({{ site.baseurl }}/commands.html#character-encoding-format).
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `csv_file`: CSV file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
 TataruBook will automatically determine if the CSV file has a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
 
-If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `import` command was executed, even if other rows in the CSV file can be inserted successfully.
+If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire DB file is restored to the state it was in before this `import` command was executed, even if other rows in the CSV file can be inserted successfully.
 
 The import operation has some special handling, see the description in [general features]({{ site.baseurl }}/commands.html#general-features).
 
@@ -223,7 +223,7 @@ tatarubook overwrite [-h] db_file table content
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `table`: table name, must be one of `start_date`, `end_date`, `standard_asset`.
 - `content`: the content of the only field of the only record inserted.
 
@@ -240,7 +240,7 @@ tatarubook delete [-h] db_file table values
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `table`: table name.
 - `values`: the specified index values. If the index contains multiple fields, the fields are separated by spaces. If a field contains spaces, it needs to be surrounded with quotes.
 
@@ -261,7 +261,7 @@ tatarubook prune [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 **Parameters**:
 - `--table TABLE` (optional): specifies a table with the name `TABLE`. If this parameter is not present, determine which table to operate on based on the filename of `csv_file`.
 - `--encoding ENCODING` (optional): specifies the character encoding. See the description in [character encoding format]({{ site.baseurl }}/commands.html#character-encoding-format).
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `csv_file`: CSV file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
 TataruBook will automatically determine if the CSV file has a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
@@ -270,7 +270,7 @@ Be careful that each row in the CSV file should contain only the values of the i
 
 When a record in the `postings` table is being deleted, if there is a corresponding record in the `posting_extras` table, that record in the `posting_extras` table will also be deleted.
 
-If the process fails when deleting an index, then TataruBook performs a **rollback** and the entire db file is restored to the state it was in before this `prune` command was executed, even if other indexes in the CSV file can be deleted successfully.
+If the process fails when deleting an index, then TataruBook performs a **rollback** and the entire DB file is restored to the state it was in before this `prune` command was executed, even if other indexes in the CSV file can be deleted successfully.
 
 ## execsql
 
@@ -283,10 +283,10 @@ tatarubook execsql [-h] db_file cmd
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `cmd`: SQL command string, you need to surround this parameter with quotes.
 
-TataruBook does not perform any checks and constraints on SQL commands. The user takes the responsibility of the consequences of executing customized SQL commands. If the SQL command modifies the definition of a table/view, it may result in the db file not being able to be processed correctly by TataruBook in the future.
+TataruBook does not perform any checks and constraints on SQL commands. The user takes the responsibility of the consequences of executing customized SQL commands. If the SQL command modifies the definition of a table/view, it may result in the DB file not being able to be processed correctly by TataruBook in the future.
 
 Since TataruBook does not have a query command, if you want to query the contents of a table/view directly from the command line (instead of exporting to a CSV file), you can use the `execsql` command to do so. For example, the following command queries the contents of the `statements` view:
 
@@ -299,7 +299,7 @@ tatarubook execsql example.db "select * from statements"
 This is a new command added in v1.1.
 {: .notice}
 
-Attempts to change all table, index, and view definitions in the db file to match the current version.
+Attempts to change all table, index, and view definitions in the DB file to match the current version.
 
 **Command Format**:
 
@@ -308,11 +308,11 @@ tatarubook upgrade [-h] db_file
 ~~~
 
 **Parameters**:
-- `db_file`: db file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
-If the table, index, and view definitions of the db file do not match the current version, it's usually caused by an upgrade of the TataruBook program. If the table, index, and view definitions of the TataruBook program and the db file are inconsistent, unpredictable errors may occur during operation. It is recommended that after each TataruBook upgrade, you first use the `upgrade` command to modify the db file to match the current version.
+If the table, index, and view definitions of the DB file do not match the current version, it's usually caused by an upgrade of the TataruBook program. If the table, index, and view definitions of the TataruBook program and the DB file are inconsistent, unpredictable errors may occur during operation. It is recommended that after each TataruBook upgrade, you first use the `upgrade` command to modify the DB file to match the current version.
 
-If there are tables and indexes in the db file whose definitions do not exist in the current TataruBook, or are inconsistent with the definitions in TataruBook, the `upgrade` command will reject the upgrade and report an error. This is because deleting or modifying these table and index definitions may result in the loss of data. Usually, when upgrading, TataruBook program only modifies view definitions, not table and index definitions.
+If there are tables and indexes in the DB file whose definitions do not exist in the current TataruBook, or are inconsistent with the definitions in TataruBook, the `upgrade` command will reject the upgrade and report an error. This is because deleting or modifying these table and index definitions may result in the loss of data. Usually, when upgrading, TataruBook program only modifies view definitions, not table and index definitions.
 
-It is strongly recommended to backup the db file before using the `upgrade` command.
+It is strongly recommended to backup the DB file before using the `upgrade` command.
 {: .notice--warning}
