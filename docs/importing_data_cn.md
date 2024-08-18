@@ -163,7 +163,7 @@ sidebar:
 
 将这些公式填充到所有的行，得到计算结果如下：
 
-| posting_index | trade_date | src_account | src_amount | dst_account | comment | dst_change |
+| posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | | 2023/1/3 | 萨雷安银行活期 | -8000 | 莫古证券资金 | 银行转存 | |
 | | 2023/1/10 | 莫古证券_中辰转债 | -10 | 莫古证券资金 | 证券卖出 | 1281.17 |
