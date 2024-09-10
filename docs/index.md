@@ -11,7 +11,7 @@ TataruBook is an individual or family-oriented bookkeeping and financial income 
 
 There are 2 approaches:
 
-1. (Recommended) First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `TataruBook` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), then download the `tatarubook.py` script, and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
+1. (Recommended) First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `tatarubook.py` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
 1. Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `tatarubook.exe` program from it. This approach does not require Python to be installed, but is only available for Windows operating systems with Windows 10 or above.
 
 TataruBook is a **command-line program**, that means if you double-click the `tatarubook.exe` file directly on Windows, most likely you'll see a flash of a black window and then nothing else happens. The correct way to run a command-line program is to open a command-line terminal first (on windows, run `Command Prompt`), and then type (or paste) the program name with specified subcommand and proper arguments.
