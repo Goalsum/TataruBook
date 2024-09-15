@@ -54,7 +54,7 @@ If you feel that the existing views in the DB file are not enough for you and yo
 
 For investors, the return on investment is of great interest, and TataruBook has several views that present the return on investment from various perspectives. [Rate of return]({{ site.baseurl }}/rate_of_return.html) describes in detail how the various rates of return are calculated and how they are used in TataruBook's views.
 
-How to improve the efficiency of importing external data is a key challenge in actual bookkeeping, [Data importing guide]({{ site.baseurl }}/importing_data.html) gives reusable and automated data processing and importing methods for reference.
+How to improve the efficiency of importing external data is a key challenge in actual bookkeeping, [Data importing guide]({{ site.baseurl }}/importing_data.html) gives efficient data processing and importing methods for reference.
 
 # How do I give feedback on issues and requirements?
 
