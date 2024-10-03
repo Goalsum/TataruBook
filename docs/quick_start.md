@@ -50,7 +50,7 @@ First set the only currency `Gil` as the bookkeeping **home currency** to solve 
 tatarubook overwrite accounting.db standard_asset Gil
 ~~~
 
-Then set the start time and end time of the **statistics period** to solve the problem of [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_ views.html#end_date) table each need to have a record in them:
+Then set the start time and end time of the **statistics period** to solve the problem of [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table each need to have a record in them:
 
 ~~~
 tatarubook overwrite accounting.db start_date 2022-12-31
@@ -59,7 +59,7 @@ tatarubook overwrite accounting.db end_date 2023-12-31
 
 Note: The starting point of the statistics period is the **end** moment of the day of `start_date`, so if you want to count the whole year of 2023, don't write `start_date` as `2023-1-1`, otherwise the data of the day of `2023-1-1` will be omitted from the statistics.
 
-The content of the vast majority of views in TataruBook is determined by the statistics period defined by [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_ views.html#end_date) table. For example, [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view displays the account balances and values at the end of the day `start_date`; [end_stats]({{ site.baseurl }}/ tables_and_views.html#end_stats) view shows the account balances and values at the end of the day `end_date`; the ROI related view shows the returns over the statistics period, and so on. By modifying `start_date` and `end_date`, you can modify the statistics period to look at the financials for a specified historical period.
+The content of the vast majority of views in TataruBook is determined by the statistics period defined by [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table. For example, [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view displays the account balances and values at the end of the day `start_date`; [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats) view shows the account balances and values at the end of the day `end_date`; the ROI related view shows the returns over the statistics period, and so on. By modifying `start_date` and `end_date`, you can modify the statistics period to look at the financials for a specified historical period.
 {: .notice}
 
 Now that the data consistency issues are out of the way, TataruBook reports:
@@ -176,7 +176,7 @@ Then open the generated `income_and_expenses.csv` file, the contents are:
 | 0 | 6 | Rent | 9000.0 | 1 | Gil | 9000.0 |
 | 0 | 7 | Salary | -16,000.0 | 1 | Gil | -16,000.0 |
 
-These data show the statistics for each type of income and expense during the statistics period. Note: Since the amount changed in the external account is the opposite of the internal account when they are both contained in one transaction, therefore positive values in these data indicate expenses and negative values indicate income.
+These data show the statistics for each type of income and expense during the statistics period. Note: Since the amount changed in the external account is the opposite of the internal account when they are both contained in one transaction, therefore positive numbers in these data indicate expenses and negative numbers indicate income.
 
 The [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view shows the sum of the transaction amounts of all the internal accounts on a particular type of income and expense. If you want to see the statistics broken down to each internal account, you can check out the [flow_stats]({{ site.baseurl }}/tables_and_views.html#flow_stats) view:
 
@@ -207,7 +207,7 @@ tatarubook export accounting.db --table end_stats
 
 Note that the credit card has a negative balance - this is the norm for most credit card accounts.
 
-TataruBook does not allow account balances to be specified manually (the previous operation of entering an opening balance actually enters a transaction), and the balances of all accounts are calculated automatically from the transaction history. During bookkeeping, the data entered can be effectively verified for completeness and accuracy by checking whether the balance displayed by TataruBook and the actual account balance are the same.
+TataruBook does not allow account balances to be input directly (the previous operation of entering an opening balance actually enters a transaction), and the balances of all accounts are calculated automatically from the transaction history. During bookkeeping, the data entered can be effectively verified for completeness and accuracy by checking whether the balance displayed by TataruBook and the actual account balance are the same.
 {: .notice}
 
 # Interest earnings
@@ -221,7 +221,7 @@ tatarubook insert accounting.db accounts NULL "Gil interest" Gil 1
 If there are many different currencies in use, you need to set up different external accounts by different currencies. The interest account is named `Gil interest` for this reason: if other currencies are added later, the external accounts corresponding to the interest in the other currencies can be distinguished from `Gil interest`. Of course, if you only use one currency, you don't need to take this into account.
 {: .notice}
 
-TataruBook has additional statistics for interest, and in order to take advantage of these, interest accounts need to be added to the [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) table:
+TataruBook can calculate actual interest rate for each account. In order to perform that, interest accounts need to be added to the [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) table:
 
 ~~~
 tatarubook insert accounting.db interest_accounts "Gil interest"
@@ -234,7 +234,7 @@ tatarubook insert accounting.db postings NULL 2023-3-30 "Gil interest" -30 "Shar
 tatarubook insert accounting.db postings NULL 2023-6-30 "Gil interest" -35 "Sharlayan Bank current" "Interest payment"
 ~~~
 
-The [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view then allows you to view the account interest rate calculated with the current data:
+The [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view then allows you to view the account's interest rate calculated with the current data:
 
 ~~~
 tatarubook export accounting.db --table interest_rates

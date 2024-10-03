@@ -209,7 +209,7 @@ tatarubook export accounting.db --table end_stats
 
 注意信用卡的余额是负值——这是大多数信用卡账户的常态。
 
-TataruBook不允许手工指定账户余额（之前输入初始余额的操作其实录入的是一笔交易），所有账户的余额都是根据交易记录自动计算出来的。在记账时，通过核对TataruBook展示的余额和实际账户余额是否一致，可以有效的校验输入的数据是否完整、准确。
+TataruBook不允许直接输入账户余额（之前输入初始余额的操作其实录入的是一笔交易），所有账户的余额都是根据交易记录自动计算出来的。在记账时，通过核对TataruBook展示的余额和实际账户余额是否一致，可以有效的校验输入的数据是否完整、准确。
 {: .notice}
 
 # 利息收益
@@ -223,7 +223,7 @@ tatarubook insert accounting.db accounts NULL Gil利息 Gil 1
 如果有多种不同货币在使用，需要按不同货币来设立不同外部账户。利息账户的名字叫`Gil利息`是出于这个准备：如果以后增加了其他货币，其他货币的利息对应的外部账户可以和`Gil利息`区分开。当然，如果你只使用一种货币，则不需要考虑这些。
 {: .notice}
 
-TataruBook对于利息有额外的统计功能，为了利用这些功能，需要把利息账户加入到[interest_accounts]({{ site.baseurl }}/tables_and_views_cn.html#interest_accounts)表中：
+TataruBook可以计算每个账户的实际利率。要使用这个功能，需要把利息账户加入到[interest_accounts]({{ site.baseurl }}/tables_and_views_cn.html#interest_accounts)表中：
 
 ~~~
 tatarubook insert accounting.db interest_accounts Gil利息
@@ -366,7 +366,7 @@ tatarubook export accounting.db --table end_assets
 | 1 | 2023-12-31 | 2 | 加隆德炼铁厂股份 | 200.0 | 12.0 | 2400.0 | 0.1840 |
 | 1 | 2023-12-31 | 3 | 艾欧泽亚100指数基金 | 1580.0 | 2.35 | 3713.0 | 0.2847 |
 
-虽然最终的价值计算出来了，但对于投资者来说，还关心这只基金通过这些买卖交易，整体的收益如何？通过[return_on_shares]({{ site.baseurl }}/tables_and_views_cn.html#return_on_shares)视图可以查看每个包含投资品的账户的收益情况（TataruBook把所有不是本位币的资产都看作投资品）：
+虽然最终的价值计算出来了，但对于投资者来说，还关心这只基金通过这些买卖交易，整体的收益如何。通过[return_on_shares]({{ site.baseurl }}/tables_and_views_cn.html#return_on_shares)视图可以查看每个包含投资品的账户的收益情况（TataruBook把所有不是本位币的资产都看作投资品）：
 
 ~~~
 tatarubook export accounting.db --table return_on_shares

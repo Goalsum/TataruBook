@@ -22,7 +22,7 @@ TataruBook follows the "two accounts must be involved in every transaction" requ
 
 Thus, the sum of the changes in the two accounts involved in each transaction is always exactly equal to $$ 0 $$ (when the two accounts contain the same assets). Adding up the balances of all the internal accounts at any given moment gives you the net worth at that time.
 
-If you have studied professional accounting methods, then be aware that in TataruBook's simplified double-entry bookkeeping, there are some terms that don't mean exactly the same thing as the terms used in the professional accounting methods. For example, **asset** in TataruBook means a commodity or currency with a separate price per unit, NOT **liabilites** plus **equity** in the **accounting equation**.
+If you have studied professional accounting methods, then be aware that in TataruBook's simplified double-entry bookkeeping, there are some terms that don't mean exactly the same thing as the terms used in the professional accounting methods. For example, **asset** in TataruBook means a currency or a type of tradable ownership with a separate price per unit, NOT **liabilites** plus **equity** in the **accounting equation**.
 {: .notice}
 
 In the bookkeeping method used by TataruBook, the two accounts involved in each transaction can contain different assets (e.g., two different currencies, or one a currency and the other a stock), such that the amount of change in the two accounts resulting from the transaction no longer adds up to $$ 0 $$ (except when the unit prices of the two assets happen to be equal). TataruBook requires that an asset be designated as **standard asset**, and all other assets are converted to standard asset at the corresponding unit price on certain date.
@@ -814,7 +814,7 @@ Note: See [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modifie
 
 ## periods_cash_flows
 
-Consider the set of all internal accounts as a **portfolio** and show everyday's net inflow/outflow value into/from that portfolio between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_ and_views.html#end_date), only days that the net inflow/outflow value of which is not $$ 0 $$ are shown. The flows on the day of `start_date` are not counted, the flows on the day of `end_date` are counted. Interest earnings, as investment income, are not counted as inflows/outflows; transactions between external and internal accounts other than interest accounts are counted as inflows/outflows. At the beginning of the cycle, the net assets of the portfolio are treated as a net inflow; at the end of the cycle, the net assets of the portfolio are treated as a net outflow.
+Consider the set of all internal accounts as a **portfolio** and show everyday's net inflow/outflow value into/from that portfolio between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), only days that the net inflow/outflow value of which is not $$ 0 $$ are shown. The flows on the day of `start_date` are not counted, the flows on the day of `end_date` are counted. Interest earnings, as investment income, are not counted as inflows/outflows; transactions between external and internal accounts other than interest accounts are counted as inflows/outflows. At the beginning of the cycle, the net assets of the portfolio are treated as a net inflow; at the end of the cycle, the net assets of the portfolio are treated as a net outflow.
 
 This view is the data needed to calculate the [internal rate of return (IRR)]({{ site.baseurl }}/rate_of_return.html#internal-rate-of-return-irr).
 
@@ -844,11 +844,11 @@ Normally this view has no records. If a record appears, it means that [postings]
 
 ## check_diff_asset
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains different assets, but the [posting_extras table]({{ site.baseurl }}/tables_ and_views.html#posting_extras) has no corresponding records, violating the constraint.
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains different assets, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has no corresponding records, violating the constraint.
 
 ## check_same_asset
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains the same asset, but the [posting_extras table]({{ site.baseurl }}/tables_ and_views.html#posting_extras) has corresponding records, violating the constraint.
+Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains the same asset, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has corresponding records, violating the constraint.
 
 ## check_external_asset
 

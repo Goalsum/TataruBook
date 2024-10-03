@@ -17,7 +17,7 @@ If you want TataruBook to read and write files using other character encoding fo
 
 ## Automatically generated index fields
 
-There are some fields whose values are automatically generated on insertion, such as `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table, `posting_index` in [postings]({{ site.baseurl }}/ tables_and_views.html#postings) table, etc. When inserting records into these tables with the [insert]({{ site.baseurl }}/commands.html#insert) command, the value of these fields should be filled in as `NULL`; with the [import]({{ site.baseurl }}/commands.html#import) command When importing records, the content of the cell corresponding to this field should be empty. This way, TataruBook will automatically find a new index value to fill this field with which is different from the other records.
+There are some fields whose values are automatically generated on insertion, such as `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table, `posting_index` in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, etc. When inserting records into these tables with the [insert]({{ site.baseurl }}/commands.html#insert) command, the value of these fields should be filled in as `NULL`; with the [import]({{ site.baseurl }}/commands.html#import) command When importing records, the content of the cell corresponding to this field should be empty. This way, TataruBook will automatically find a new index value to fill this field with which is different from the other records.
 
 ## Input format of date 
 
@@ -214,7 +214,7 @@ The import operation has some special handling, see the description in [general 
 
 ## overwrite
 
-Removes all contents of the specified table and inserts a row. This command only works on tables with only one field: [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), [end_date]({{ site.baseurl }}/tables_and_views.html #end_date), [standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset).
+Removes all contents of the specified table and inserts a row. This command only works on tables with only one field: [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), [standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset).
 
 **Command format**:
 
