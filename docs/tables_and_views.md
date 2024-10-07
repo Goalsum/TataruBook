@@ -25,7 +25,7 @@ Thus, the sum of the changes in the two accounts involved in each transaction is
 If you have studied professional accounting methods, then be aware that in TataruBook's simplified double-entry bookkeeping, there are some terms that don't mean exactly the same thing as the terms used in the professional accounting methods. For example, **asset** in TataruBook means a currency or a type of tradable ownership with a separate price per unit, NOT **liabilites** plus **equity** in the **accounting equation**.
 {: .notice}
 
-In the bookkeeping method used by TataruBook, the two accounts involved in each transaction can contain different assets (e.g., two different currencies, or one a currency and the other a stock), such that the amount of change in the two accounts resulting from the transaction no longer adds up to $$ 0 $$ (except when the unit prices of the two assets happen to be equal). TataruBook requires that an asset be designated as **standard asset**, and all other assets are converted to standard asset at the corresponding unit price on certain date.
+In the bookkeeping method used by TataruBook, the two accounts involved in each transaction can contain different assets (e.g., two different currencies, or one a currency and the other a stock), such that the amount of change in the two accounts resulting from the transaction no longer adds up to $$ 0 $$ (except when the unit prices of the two assets happen to be equal). TataruBook requires that an asset be designated as **standard asset** (i.e., home currency), and all other assets are converted to standard asset at the corresponding unit price on certain date.
 
 In some views' names, non-standard assets may be named as **shares** and standard assets may be named as **cash**, but note that this is just an analogy for ease of understanding, and does not strictly correspond to shares and cash in reality. For example, if a user defines a standard asset as US dollar, then his Japanese yen cash holdings will be treated as "shares" by TataruBook, because the price of Japanese yen fluctuates, and Japanese yen cash holdings may generate gains or losses when valued in US dollar. The amount of asset may not be a whole number, e.g. $$ 0.1 $$ or $$ 0.001 $$ is allowed for bookkeeping purposes.
 
@@ -33,7 +33,7 @@ In some views' names, non-standard assets may be named as **shares** and standar
 
 ## asset_types
 
-A list of assets. In TataruBook, an **asset** is a commodity with **separate unit price**, such as a currency, a stock, a mutual fund, and so on.
+A list of assets. In TataruBook, an **asset** is a type of tradable ownership with **separate unit price**, such as a currency, a stock, a mutual fund, and so on.
 
 If you use only one currency and do not hold or trade other investments or commodities, then your `asset_types` table has only one record: the currency you use.
 
@@ -55,7 +55,7 @@ The standard asset, which is used as the **home currency** for bookkeeping purpo
 
 ## accounts
 
-List of accounts. An **account** is an entity with **separate balance**. Note that a person can have multiple accounts in a bank, such as current account, investment account, credit account, etc., so care should be taken when naming accounts.
+List of accounts. An **account** is an entity with **separate balance**. A person can have multiple accounts in a bank, such as current account, investment account, credit account, etc., so care should be taken when naming accounts.
 
 The unit used for the balance of an account is defined by the asset it contains. For example, if the asset contained in the account is a currency, the account balance is the value in that currency; if the asset contained in the account is a stock, the account balance is the number of shares.
 
@@ -71,11 +71,11 @@ There are two types of accounts: **internal accounts** and **external accounts**
 
 ## interest_accounts
 
-A list of interest accounts. **interest accounts** are a special class of **external accounts** that provide interest earnings such as interest on deposits and financial income.
+A list of interest accounts. **interest accounts** are a special class of **external accounts** that provide interest earnings in transactions such as interests on deposits and financial income.
 
 When a transaction arises between an interest account and an internal account, TataruBook assumes that the internal account generates interest earning and calculates the associated **interest rate**. For this calculation, TataruBook considers the **average daily balance** of that internal account to be the denominator of the interest rate. See [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view.
 
-In order not to distort the interest rate data, fund/stock distributions should not come from the interest account. This is because these distributions are paid in cash to another internal account, not to the internal account in which the fund/share itself resides. To see what way fund/share distributions and splits are recorded, see the example in [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
+In order not to distort the interest rate data, transactions describing fund/stock distributions should not be related to interest accounts. This is because these distributions are paid in cash to another internal account, not to the internal account in which the fund/share itself resides. To see what way fund/share distributions and splits are recorded, see the example in [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 
 **Fields**
 - `account_index` (integer): the account index, not allowed to be empty, must be one of the account indexes present in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
