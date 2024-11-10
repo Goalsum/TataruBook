@@ -3,6 +3,8 @@ main:
     url: /index.html
   - title: "中文"
     url: /index_cn.html
+  - title: "日本語"
+    url: /index_jp.html
   - title: "Github"
     url: https://github.com/Goalsum/TataruBook
   - title: "Gitee"
@@ -39,3 +41,19 @@ chinese:
         url: /rate_of_return_cn.html
       - title: "数据导入指南"
         url: /importing_data_cn.html
+
+japanese:
+  - title: "目录"
+    children:
+      - title: "总体介绍"
+        url: /index_jp.html
+      - title: "快速入门"
+        url: /quick_start_jp.html
+      - title: "表和视图"
+        url: /tables_and_views_jp.html
+      - title: "命令行手册"
+        url: /commands_jp.html
+      - title: "收益率计算方法"
+        url: /rate_of_return_jp.html
+      - title: "数据导入指南"
+        url: /importing_data_jp.html
