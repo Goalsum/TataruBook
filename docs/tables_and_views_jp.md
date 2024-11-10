@@ -1,5 +1,5 @@
 ---
-title: 表和视图
+title: テーブルとビュー
 sidebar:
   nav: "japanese"
 ---

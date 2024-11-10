@@ -1,5 +1,5 @@
 ---
-title: 命令行手册
+title: コマンドマニュアル
 sidebar:
   nav: "japanese"
 ---

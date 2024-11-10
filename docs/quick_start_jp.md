@@ -1,5 +1,5 @@
 ---
-title: 快速入门
+title: クイックスタート
 sidebar:
   nav: "japanese"
 ---

@@ -1,5 +1,5 @@
 ---
-title: 数据导入指南
+title: データインポートガイド
 sidebar:
   nav: "japanese"
 ---

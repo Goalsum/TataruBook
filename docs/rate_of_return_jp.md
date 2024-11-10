@@ -1,5 +1,5 @@
 ---
-title: 收益率计算方法
+title: 収益率の計算方法
 sidebar:
   nav: "japanese"
 ---

@@ -1,5 +1,5 @@
 ---
-title: 总体介绍
+title: 概要
 sidebar:
   nav: "japanese"
 ---

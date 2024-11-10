@@ -43,17 +43,17 @@ chinese:
         url: /importing_data_cn.html
 
 japanese:
-  - title: "目录"
+  - title: "目次"
     children:
-      - title: "总体介绍"
+      - title: "概要"
         url: /index_jp.html
-      - title: "快速入门"
+      - title: "クイックスタート"
         url: /quick_start_jp.html
-      - title: "表和视图"
+      - title: "テーブルとビュー"
         url: /tables_and_views_jp.html
-      - title: "命令行手册"
+      - title: "コマンドマニュアル"
         url: /commands_jp.html
-      - title: "收益率计算方法"
+      - title: "収益率の計算方法"
         url: /rate_of_return_jp.html
-      - title: "数据导入指南"
+      - title: "データインポートガイド"
         url: /importing_data_jp.html
