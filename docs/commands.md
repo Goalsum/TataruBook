@@ -63,10 +63,10 @@ tatarubook insert example.db postings NULL 2023-01-07 "Sharlayan Bank current" -
 The specific rules for TataruBook to look up an index by name are as follows:
 
 1. First consider the field content as **index**, if the record corresponding to this index exists, then directly use this index value without conversion. For example, if there exists a record with an index of `666`, then the entered `666` will be interpreted directly as an index - even if there are other records with a **name** that is `666`, they will be ignored.
-1. if the record corresponding to that index does not exist, then look for a **unique** record with a name **equal to or containing the contents of the** field. If found, convert the field contents to the index of this record. This process is shown in the example above.
+1. if the record corresponding to that index does not exist, then look for a **unique** record with a name **equal to or containing the contents of the** field. If found, convert the field contents to the index of this record. This process is shown in the examples using [import]({{ site.baseurl }}/commands.html#import) and [insert]({{ site.baseurl }}/commands.html#insert) commands above.
 1. If there is no record with a name equal to or containing the contents of the field, or if more than one record is found, then execution fails and an error is reported. For example, if there are two `accounts` table records with the names `Sharlayan Bank current` and `Sharlayan workplace pension`, then an error is reported when the lookup field content is `Sharlayan` because TataruBook cannot determine which index corresponds to it.
 
-Below is a list of all fields that support the lookup index by name feature:
+Below is a list of all fields that support filling in name instead of the index, as well as the table and fields involved in the automatical lookup for that index:
 
 | Tables | Fields | Referenced Tables | Name Field | Index Field |
 |:-:|:-:|:-:|:-:|:-:|

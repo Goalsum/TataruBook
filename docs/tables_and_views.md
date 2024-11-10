@@ -27,7 +27,7 @@ If you have studied professional accounting methods, then be aware that in Tatar
 
 In the bookkeeping method used by TataruBook, the two accounts involved in each transaction can contain different assets (e.g., two different currencies, or one a currency and the other a stock), such that the amount of change in the two accounts resulting from the transaction no longer adds up to $$ 0 $$ (except when the unit prices of the two assets happen to be equal). TataruBook requires that an asset be designated as **standard asset** (i.e., home currency), and all other assets are converted to standard asset at the corresponding unit price on certain date.
 
-In some views' names, non-standard assets may be named as **shares** and standard assets may be named as **cash**, but note that this is just an analogy for ease of understanding, and does not strictly correspond to shares and cash in reality. For example, if a user defines a standard asset as US dollar, then his Japanese yen cash holdings will be treated as "shares" by TataruBook, because the price of Japanese yen fluctuates, and Japanese yen cash holdings may generate gains or losses when valued in US dollar. The amount of asset may not be a whole number, e.g. $$ 0.1 $$ or $$ 0.001 $$ is allowed for bookkeeping purposes.
+In some views' names, non-standard assets may be named as **shares** and standard assets may be named as **cash**, but note that this is just an analogy for ease of understanding, and does not strictly correspond to shares and cash in reality. For example, if a user defines a standard asset as US dollar, then his Japanese yen cash holdings will be treated as "shares" by TataruBook, because the unit price of Japanese yen fluctuates, and Japanese yen cash holdings may generate gains or losses when valued in US dollar. The amount of asset may not be a whole number, e.g. $$ 0.1 $$ or $$ 0.001 $$ is allowed for bookkeeping purposes.
 
 # Tables
 
@@ -51,7 +51,7 @@ The standard asset, which is used as the **home currency** for bookkeeping purpo
 
 **Constraints**
 - Only one record is allowed in this table.
-- The `asset_index` of any record in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is not allowed to be equal to the `asset_index` in this table because the price of standard asset is fixed at $$ 1 $$. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
+- The `asset_index` of any record in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is not allowed to be equal to the `asset_index` in this table because the unit price of standard asset is fixed at $$ 1 $$. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
 
 ## accounts
 
@@ -119,7 +119,7 @@ The amount of change in the destination account when the source and destination 
 
 ## prices
 
-The unit price of an asset, used to convert a non-standard asset to the [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) (home currency) when needed. An asset can have at most one price per day, which is considered to be the price of the asset at the end of that day. For assets such as stocks, which have intraday price movements, the asset price is the closing price of the day. Therefore, if an asset is bought or sold in the transaction for a given day, the actual price (real-time price) in that transaction can be unequal to the price (closing price) of that asset in the `prices` table for that day. (See [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view for an example)
+The unit price of an asset, used to convert a non-standard asset to the [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) (home currency) when needed. An asset can have at most one unit price per day, i.e., the unit price of the asset at the end of that day. For assets such as stocks, which have intraday price movements, the asset's unit price is the closing price of the day. Therefore, if an asset is bought or sold in the transaction for a given day, the actual unit price (real-time price) in that transaction can be unequal to the unit price (closing price) of that asset in the `prices` table for that day. (See [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view for an example)
 
 **Fields**
 - `price_date` (string): date, not allowed to be empty, fixed to ISO 8601 format: yyyy-mm-dd.
@@ -127,10 +127,10 @@ The unit price of an asset, used to convert a non-standard asset to the [standar
 - `price` (floating point): the unit price (i.e., $$ 1 $$ unit of this asset is equal to how many units of standard asset), not allowed to be empty.
 
 **Constraints**
-- Prices are not allowed for the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
-- The same asset can only have one price on the same day, i.e., the `price_date` and `asset_index` of any two records cannot both be the same.
-- On [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), all non-standard assets must have a price. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
-- If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset (or both non-standard assets) must have a price on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the price of HK dollar and the price of that stock (noting that it is a price denominated in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
+- There should be no price record associated with the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
+- There should be no more than one price record for one asset on one day, i.e., the `price_date` and `asset_index` of any two records cannot both be the same.
+- On [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), all non-standard assets must have a price record associated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
+- If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset (or both non-standard assets) must have a price record associated on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the unit price of HK dollar and the unit price of that stock (noting that they are prices measured in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
 
 ## start_date
 
@@ -254,7 +254,7 @@ The balances of all internal accounts which has a balance greater than $$ 0 $$ a
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day.
+The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the unit price of the day.
 
 **Fields**
 - Contains all fields from [start_balance]({{ site.baseurl }}/tables_and_views.html#start_balance) view, as well as:
@@ -263,13 +263,13 @@ The balances of all internal accounts which has a balance greater than $$ 0 $$ a
 
 ## start_stats
 
-At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each account's value to the total value.
+At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to each balance multiplied by the unit price of the day, as well as the percentage of each account's market value to the total value (i.e. the sum of all accounts' market values).
 
 **Fields**
 - Contains all fields in [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view, as well as:
 - `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
-- `proportion`: the proportion of this account's value to the sum of all accounts' values.
+- `proportion`: the proportion of this account's market value to the sum of all accounts' market values.
 
 **Examples**
 
@@ -294,11 +294,11 @@ Then the `start_stats` view contents are:
 | 0 | 2023-01-09 | 1 | Sharlayan Bank current | 36932.5 | 1 | Gil | 1.0 | 36932.5 | 0.7358 |
 | 0 | 2023-01-09 | 2 | Moogle:Garlond Ironworks shares | 260.0 | 2 | Garlond Ironworks shares | 51.0 | 13260.0 | 0.2642 |
 
-Note: Note that the values in the `balance` column are the same as the balances in the `statements` view for each account on that date; external accounts do not appear in the `start_stats` view. The purchase of `Garlond Ironworks shares` is at a price of $$ 13,000 \div 260 = 50 $$ for the transaction at that time, but the price record in the `prices` table on `2023-1-9` is $$ 51 $$, and the market value is based on price $$ 51 $$. This example shows that the real-time trading price can be different from the closing price.
+Note: Note that the values in the `balance` column are the same as the balances in the `statements` view for each account on that date; external accounts do not appear in the `start_stats` view. The purchase of `Garlond Ironworks shares` is at a unit price of $$ 13,000 \div 260 = 50 $$ for the transaction at that time, but the price record (which denotes the closing price) in the `prices` table on `2023-1-9` is $$ 51 $$, and the market value is based on unit price $$ 51 $$. This example shows that the real-time trading price can be different from the closing price.
 
 ## start_assets
 
-At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each asset's value to the total value.
+At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#start_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the unit price of the day, as well as the percentage of each asset's value to the total value.
 
 **Fields**
 - `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
@@ -341,14 +341,14 @@ The balance of each account at the end of [start_date]({{ site.baseurl }}/tables
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day.
+The balances of all internal accounts which has a balance greater than $$ 0 $$ at the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the unit price of the day.
 
 **Fields**
 - All fields are the same as in [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view, but the statistics are taken for [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
 ## end_stats
 
-At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each account's value to the total value.
+At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the balances of all internal accounts which has a balance greater than $$ 0 $$, as well as the market values measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the unit price of the day, as well as the percentage of each account's value to the total value.
 
 Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table must each have one record for the `end_stats` view to display correctly.
 {: .notice--warning}
@@ -389,7 +389,7 @@ Note: You can see that the content of the `end_stats` view is almost the same as
 
 ## end_assets
 
-At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the price of the day, as well as the percentage of each asset's value to the total value.
+At the end of the day [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), the quantity of each asset, as well as the market value measured in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) calculated according to the unit price of the day, as well as the percentage of each asset's value to the total value.
 
 Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) table and the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) table must each have one record for the `end_assets` view to display the correct content.
 {: .notice--warning}
@@ -402,7 +402,7 @@ Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) tabl
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each **external account**, and the price of the according asset on the day of the transaction. Transactions on the day of `start_date` are not counted, transactions on the day of `end_date` are counted. Note that each external account (other than the interest account) represents a specific category of income and expenses.
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each **external account**, and the unit price of the according asset on the day of the transaction. Transactions on the day of `start_date` are not counted, transactions on the day of `end_date` are counted. Note that each external account (other than the interest account) represents a specific category of income and expenses.
 
 Although the view name is **external flows**, unlike the definition of **external flows** in [Rate of Return]({{ site.baseurl }}/rate-of-return.html), this view includes interests.
 {: .notice}
@@ -424,7 +424,7 @@ The total amount of change with transactions between [start_date]({{ site.baseur
 **Fields**
 - Contains `asset_order`, `account_index`, `account_name`, `asset_ index`, `asset_name` fields in [external_flows]({{ site.baseurl }}/tables_and_views.html#external_flows) view, as well as:
 - `total_amount`: the total amount of change (not converted to standard asset) obtained by accumulating the amount of change in all transaction records for this external account between `start_date` and `end_date`.
-- `total_value`: the total market value obtained by converting the amount of change in each transaction to standard assets at the asset price of the day and adding it up. Assuming that there are a total of $$ n $$ transactions in an external account, and the amount of change in each transaction is $$ a_1 \dots a_n $$ respectively, and the unit price of the asset contained in the account on the day of each transaction is $$ p_1 \dots p_n $$ respectively, then the total value will be: $$ \displaystyle\sum_{i=1}^{n} p_ia_i $$.
+- `total_value`: the total market value obtained by converting the amount of change in each transaction to standard assets at the asset's unit price of the day and adding it up. Assuming that there are a total of $$ n $$ transactions in an external account, and the amount of change in each transaction is $$ a_1 \dots a_n $$ respectively, and the unit price of the asset contained in the account on the day of each transaction is $$ p_1 \dots p_n $$ respectively, then the total value will be: $$ \displaystyle\sum_{i=1}^{n} p_ia_i $$.
 
 **Examples**
 
@@ -483,7 +483,7 @@ Then the content of the `income_and_expenses` view is:
 
 Note: Note that the amount of change in the external account is equal to the opposite of the amount of change in the internal account, e.g., the `Salary` account's `total_amount` is $$ -50000.0 $$, which means that the internal account has a total of $$ 50000.0 $$ in salary income.
 
-For external accounts that contain standard asset (such as `Gil` in the example), the total market value is equal to the amount of the change accrued; however, when an external account contains non-standard asset (such as `MGP` in the example), they are converted to standard asset and accrued sequentially at the price on the day the transaction occurred. In this example, the `total_value` of `MGP` is calculated as $$ 30 \times 90 + 100 \times 110 = 13700 $$.
+If an external account contains the standard asset (such as `Gil` in the example), the total market value is equal to the amount of the change accrued; however, if an external account contains non-standard asset (such as `MGP` in the example), each transaction's amount is converted to the standard asset at the unit price on the day the transaction occurred, and then accumulated. In this example, the `total_value` of `MGP` is calculated as $$ 30 \times 90 + 100 \times 110 = 13700 $$.
 
 ## portfolio_stats
 
@@ -503,7 +503,7 @@ The amount of change in all transactions which involves **external account** bet
 
 Note that there are two differences between this view compared to [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view:
 1. In `flow_stats`, different internal accounts are counted separately, but in `income_and_expenses` the amounts of transactions from different internal accounts and the same external account are added up and combined;
-1. `flow_stats` only shows statistics that are aggregated by the amount of change in the corresponding asset, but `income_and_expenses` also shows market values converted to standard asset based on the price of the asset.
+1. `flow_stats` only shows statistics that are aggregated by the amount of change in the corresponding asset, but `income_and_expenses` also shows market values converted to standard asset based on the unit price of the asset.
 
 **Fields**
 - `flow_index`: external account index from `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
@@ -553,14 +553,14 @@ If you think of non-standard assets as stocks, then this view can be interpreted
 - `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 - `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
-- `cash_flow`: the amount of change in the transaction converted to the market value of standard asset at that day's price.
+- `cash_flow`: the amount of change in the transaction converted to the market value of standard asset at that day's unit price.
 
 ## share_stats
 
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-The required minimum net inflow between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each internal account containing non-standard asset, as well as the incremental amount of cash (measured in standard asset) obtained by trading and holding the asset in that internal account. See the introduction to the [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method) to understand the data in this view.
+The required minimum initial cash between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) for each internal account containing non-standard asset if the balance cannot be less than $$ 0 $$, as well as the incremental amount of cash (measured in standard asset) obtained by trading and holding the asset in that internal account. See the introduction to the [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method) to understand the data in this view.
 
 **Fields**
 - `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
@@ -568,7 +568,7 @@ The required minimum net inflow between [start_date]({{ site.baseurl }}/tables_a
 - `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 - `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
-- `min_inflow`: the required minimum net inflow for this account during the statistics period. If no inflow is required, then $$ 0 $$.
+- `min_inflow`: the required minimum initial cash for this account during the statistics period if the balance cannot be less than $$ 0 $$.
 - `cash_gained`: the incremental amount of cash (measured in standard asset) obtained by trading and holding the asset in this account.
 
 ## return_on_shares
@@ -658,7 +658,7 @@ Then the `return_on_shares` view contents are:
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 2 | Garlond Ironworks shares | 2 | Moogle:Garlond Ironworks shares | 10.0 | 100.0 | -1.0 | 9.0 | 99.0 | 30.0 | 60.0 | 29.0 | 0.18125 |
 
-Note: This example is very similar to **Example 1** in [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method), except that the intervals between inflows and outflows are different, so the resulting rate of return is the same as in that example. Note that the `prices` table only needs to provide the prices at the beginning and end of the statistics period, not the price at the time of each transaction, since the transaction itself already reflects the price information.
+Note: This example is very similar to **Example 1** in [minimum initial cash method]({{ site.baseurl }}/rate_of_return.html#minimum-initial-cash-method), except that the intervals between inflows and outflows are different, so the resulting rate of return is the same as in that example. Note that the `prices` table only needs to provide the unit prices at the beginning and end of the statistics period, not the unit price at the time of each transaction, since the transaction itself already reflects the unit price information.
 
 **Example 2**
 
@@ -810,7 +810,7 @@ Then the `interest_rates` view contents are:
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 1 | Sharlayan Bank current | 1 | 5016.44 | 100.0 | 0.02 |
 
-Note: See [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method) for interest rate calculation. Note that the `interest_rates` table calculates rate on the asset included in this account and does not convert to standard asset, so changes in asset prices are not reflected in the rate. To see the overall rate of return including changes in asset prices, see [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
+Note: See [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method) for interest rate calculation. Note that the `interest_rates` table calculates rate based on the amounts of the asset unit included in this account and does not convert them to standard asset, so changes in asset's unit prices are not reflected in the rate. To see the overall rate of return including changes in asset's unit prices, see [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 
 ## periods_cash_flows
 
@@ -825,7 +825,7 @@ This view is the data needed to calculate the [internal rate of return (IRR)]({{
 
 ## check_standard_prices
 
-Normally this view has no records. If a record appears, it means that the price of the standard asset is present in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, violating the constraint.
+Normally this view has no records. If a record appears, it means that a price record of the standard asset is present in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, violating the constraint.
 
 ## check_interest_account
 
@@ -859,4 +859,4 @@ Normally this view has no records. If a record appears, it means that there is a
 
 ## check_absent_price
 
-Normally this view has no records. If a record appears, it means that the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is missing prices for certain assets that need to be used on certain dates, violating the constraint.
+Normally this view has no records. If a record appears, it means that the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is missing unit prices for certain assets that need to be used on certain dates, violating the constraint.
