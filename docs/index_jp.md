@@ -1,5 +1,6 @@
 ---
 title: 概要
+locale: jp
 sidebar:
   nav: "japanese"
 ---
