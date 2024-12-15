@@ -350,7 +350,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 ## end_stats
 
-在[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天的单位价格换算成[标准资产]({{ site.baseurl }}/tables_and_views_cn.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。。
+在[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)这天结束时，所有余额不为$$ 0 $$的内部账户的余额，按当天的单位价格换算成[标准资产]({{ site.baseurl }}/tables_and_views_cn.html#standard_asset)的市场价值，以及每个账户的价值占总价值的比例。
 
 注意：[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)表和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)表必须各有一条记录，才能使`end_stats`视图显示正确的内容。
 {: .notice--warning}

@@ -58,7 +58,7 @@ Despite the shortcomings of the simple Dietz method, the overall inflows and out
 
 # Modified Dietz method
 
-To address the shortcomings of the simple Dietz method, the [modified Dietz method](https://en.wikipedia.org/wiki/Modified_Dietz_method) no longer assumes that a net inflow is generated only once at the midpoint of the statistics period, but instead calculates the **average** capital over the statistics period based on actual inflows and outflows, and then use the average capital as the denominator:
+To address the shortcomings of the simple Dietz method, the [modified Dietz method](https://en.wikipedia.org/wiki/Modified_Dietz_method) no longer assumes that a net inflow is generated only once at the midpoint of the statistics period, but instead calculates the **average** capital (i.e., the average market value of the portfolio) over the statistics period based on actual inflows and outflows, and then use the average capital as the denominator:
 
 $$ R = \frac{V_e - V_s - F}{V_s + \displaystyle \sum_{i=1}^{n} W_i \times F_i} $$
 
@@ -94,7 +94,7 @@ Because of the accuracy of the modified Dietz method of calculating interest ear
 
 # Internal rate of return (IRR)
 
-The [internal rate of return](https://en.wikipedia.org/wiki/Internal_rate_of_return) is the rate of return that sets the [net present value](https://en.wikipedia.org/wiki/Net_present_value) (NPV) of all cash flows (both positive and negative) from the investment equal to zero. In other words, assuming that the value of a portfolio has been growing at a fixed rate $$ R $$, the $$ R $$ that satisfies this assumption is the IRR: the starting value, inflows, outflows, and ending value of the portfolio all happen to match the actual.
+The [internal rate of return](https://en.wikipedia.org/wiki/Internal_rate_of_return) is the rate of return that sets the [net present value](https://en.wikipedia.org/wiki/Net_present_value) (NPV) of all cash flows (both positive and negative) from the investment equal to zero. In other words, assuming that the value of a portfolio has been growing at a fixed rate $$ R $$, the $$ R $$ that satisfies this assumption is the IRR: using the starting value, inflows, outflows of the portfolio and the $$ R $$ to calculate the ending value, that ending value happens to match the actual.
 
 The calculation of the IRR has some special requirements: the inflows or outflows must occur at fixed intervals, and the calculated rate of return $$ R $$ can only be the rate of return for the length of this interval. Assuming that there is an inflow or outflow $$ F_i $$ every interval of time $$ T $$, then the IRR $$ R $$ over the statistics period $$ T $$ is a solution to the following equation:
 
