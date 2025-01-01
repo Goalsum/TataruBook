@@ -398,7 +398,7 @@ tatarubook export accounting.db --table portfolio_stats
 TataruBookは通常、個人または家族のすべての資産を簿記に使用されるため、[portfolio_stats]({{ site.baseurl }}/tables_and_views_jp.html#portfolio_stats)ビューで表示される情報は非常に重要です。このビューには、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)や[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付時点の個人または家族の資産状況や、その期間中の収支、収益情報が表示されます。
 {: .notice}
 
-# ウインドウアプリでデータベースファイルを表示する
+# GUIアプリでデータベースファイルを表示する
 
 TataruBookはコマンドラインプログラムであり、グラフィカルユーザーインターフェイス(GUI)は備わっていません。ただし、テーブルとビューを含むすべてのデータベースファイルは**SQLiteファイル形式**で保存されているため、SQLite形式を対応しているソフトウェア(SQLiteの最新機能に対応している場合) を使用すれば、これらのテーブルやビューを表示できます。ここでは、オープンソースソフトウェアである[DB Browser for SQLite](https://sqlitebrowser.org/)を例に説明します。
 
