@@ -192,22 +192,32 @@ SQL_CREATE_COMMANDS = (
             AND flow_acc.is_external = 1
         GROUP BY single_entries.account_index, single_entries.target
         ORDER BY single_entries.account_index ASC, single_entries.target ASC"""),
-    ("share_trades", "view",
-     """CREATE VIEW share_trades AS
-        SELECT single_entries.*, share_acc.account_name,
-            share_acc.asset_index, asset_types.asset_name, asset_types.asset_order,
-            amount * iif(cash_acc.asset_index IN (SELECT * FROM standard_asset), 1.0,
-                (SELECT price FROM prices WHERE cash_acc.asset_index = prices.asset_index
-                    AND prices.price_date = single_entries.trade_date)) AS cash_flow
+    ("share_trade_flows", "view",
+     """CREATE VIEW share_trade_flows AS
+        SELECT single_entries.posting_index, single_entries.trade_date,
+            iif(single_entries.amount = 0, single_entries.target, single_entries.account_index) AS account_index,
+            iif(single_entries.amount = 0, 
+                -(SELECT dst_change FROM posting_extras 
+                    WHERE posting_extras.posting_index = single_entries.posting_index),
+                amount) as amount,
+            single_entries.target, single_entries.comment, share_acc.account_name,
+            share_acc.asset_index, asset_types.asset_name, asset_types.asset_order
         FROM single_entries INNER JOIN accounts AS share_acc ON single_entries.target = share_acc.account_index
             INNER JOIN asset_types ON share_acc.asset_index = asset_types.asset_index
-            INNER JOIN accounts AS cash_acc ON single_entries.account_index = cash_acc.account_index
         WHERE single_entries.trade_date > (SELECT * FROM start_date)
             AND single_entries.trade_date <= (SELECT * FROM end_date)
-            AND share_acc.is_external = 0 AND single_entries.account_index <> single_entries.target
+            AND share_acc.is_external = 0
             AND single_entries.account_index NOT IN (SELECT * FROM interest_accounts)
-            AND asset_types.asset_index NOT IN (SELECT * FROM standard_asset)
-        ORDER BY single_entries.trade_date ASC, single_entries.posting_index ASC"""),
+            AND asset_types.asset_index NOT IN (SELECT * FROM standard_asset)"""),
+    ("share_trades", "view",
+     """CREATE VIEW share_trades AS
+        SELECT share_trade_flows.*,
+            amount * iif(cash_acc.asset_index IN (SELECT * FROM standard_asset), 1.0,
+                (SELECT price FROM prices WHERE cash_acc.asset_index = prices.asset_index
+                    AND prices.price_date = share_trade_flows.trade_date)) AS cash_flow
+        FROM share_trade_flows INNER JOIN accounts AS cash_acc
+            ON share_trade_flows.account_index = cash_acc.account_index
+        ORDER BY share_trade_flows.trade_date ASC, share_trade_flows.posting_index ASC"""),
     ("share_stats", "view",
      """CREATE VIEW share_stats AS
         SELECT asset_order, asset_index, asset_name, account_index, account_name,
@@ -340,13 +350,9 @@ SQL_CREATE_COMMANDS = (
             FROM comparison, end_date
             WHERE comparison.end_amount <> 0
             UNION
-            SELECT cash_acc.asset_index, single_entries.trade_date AS date_val
-            FROM single_entries
-                INNER JOIN accounts AS share_acc ON single_entries.target = share_acc.account_index
-                INNER JOIN accounts AS cash_acc ON single_entries.account_index = cash_acc.account_index
-            WHERE single_entries.trade_date > (SELECT * FROM start_date)
-                AND single_entries.trade_date <= (SELECT * FROM end_date)
-                AND share_acc.asset_index NOT IN (SELECT * FROM standard_asset)
+            SELECT cash_acc.asset_index, share_trade_flows.trade_date AS date_val
+            FROM share_trade_flows INNER JOIN accounts AS cash_acc
+                ON share_trade_flows.account_index = cash_acc.account_index
             EXCEPT
             SELECT asset_index, price_date AS date_val FROM prices) AS absence
             INNER JOIN asset_types ON absence.asset_index = asset_types.asset_index
