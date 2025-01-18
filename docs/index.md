@@ -11,13 +11,13 @@ TataruBook is an individual or family-oriented bookkeeping and financial income 
 
 There are 2 approaches:
 
-1. (Recommended) First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `tatarubook.py` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
+1. First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `tatarubook.py` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
 1. Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `tatarubook.exe` program from it. This approach does not require Python to be installed, but is only available for Windows operating systems with Windows 10 or above.
 
 TataruBook is a **command-line program**, that means if you double-click the `tatarubook.exe` file directly on Windows, most likely you'll see a flash of a black window and then nothing else happens. The correct way to run a command-line program is to open a command-line terminal first (on windows, run `Command Prompt`), and then type (or paste) the program name with specified subcommand and proper arguments.
 {: .notice--warning}
 
-The first approach is recommended because when run `tatarubook.py` script with this approach, it directly uses the latest Python interpreter, SQLite and other dependent libraries in the runtime environment, so it only takes up very little disk space. With the second approach, the Python interpreter, SQLite, and other dependent Python libraries are downloaded and take up disk space, but the advantage is that if these libraries are missing or faulty in the runtime environment, it will not affect the operation of the TataruBook software.
+When using the first approach, the `tatarubook.py` script directly uses the default Python interpreter, SQLite and other dependent libraries in the runtime environment, so it only takes up very little disk space, but you must guarantee that all dependencies' versions are compatible. With the second approach, the Python interpreter, SQLite, and other dependent Python libraries are downloaded and take up disk space, but the advantage is that if these libraries are missing or faulty in the runtime environment, it will not affect the operation of the TataruBook software.
 
 **Note:** After installing the software using the second approach, the `tatarubook.exe` program depends on other files in the zip package to run. Therefore, please make sure to extract all files in `tatarubook.zip` in the same directory and keep the directory structure the same as in the archive.
 {: .notice--warning}
