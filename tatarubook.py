@@ -6,7 +6,7 @@ import locale
 from pathlib import Path
 from argparse import ArgumentParser
 from functools import wraps
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from collections import namedtuple
 
 
@@ -389,6 +389,10 @@ VALUE_LOOKUPS = {("postings", "src_account"): (("accounts", 0, 0), ("accounts", 
                  ("standard_asset", "asset_index"): (("asset_types", 0, 0), ("asset_types", 1, 0))}
 
 
+class HandledError(Exception):
+    pass
+
+
 def db_file_to_path(f):
     @wraps(f)
     def wrapper(db_file, *p_args, **kw_args):
@@ -417,11 +421,31 @@ def fence(con):
     try:
         con.execute("PRAGMA foreign_keys = ON")
         yield con
+    except HandledError:
+        pass
+    except Exception as e:
+        print(e)
+    finally:
+        con.close()
+
+
+@contextmanager
+def prompt_transaction():
+    try:
+        yield
     except Exception as e:
         print(e)
         print("Operation failed! Rollback! File stays unmodified.")
-    finally:
-        con.close()
+        raise HandledError
+    else:
+        print("Operation done! File modified successfully.")
+
+
+def in_transaction(con):
+    stack = ExitStack()
+    stack.enter_context(prompt_transaction())
+    stack.enter_context(con)
+    return stack
 
 
 def decode_csv(con, csv_file, encoding, op):
@@ -429,7 +453,7 @@ def decode_csv(con, csv_file, encoding, op):
         [None] if locale.getpreferredencoding(False) == "utf-8" else [None, "utf-8"])
     for codec in codecs:
         try:
-            with con:
+            with in_transaction(con):
                 with csv_file.open(newline='', encoding=codec) as file:
                     for row in csv.reader(file):
                         if not op(row):
@@ -679,7 +703,7 @@ def insert(db_file, table, content):
             print("Table {} has {} columns but {} columns are provided.".format(table, len(col_info), len(content)))
             return
 
-        with con:
+        with in_transaction(con):
             atomic_insert(con, table, col_info, content)
 
         print("Integrity check after insertion:")
@@ -729,7 +753,7 @@ def overwrite(db_file, table, content):
             print("Table {} has {} columns but this command requires exactly 1 column.".format(table, len(col_info)))
             return
 
-        with con:
+        with in_transaction(con):
             con.execute("DELETE FROM {}".format(table))
             insert_row(con, table, col_info, (content,))
 
@@ -769,7 +793,7 @@ def delete(db_file, table, content):
             print("Table {} has {} key columns but {} columns are provided.".format(table, len(col_info), len(content)))
             return
 
-        with con:
+        with in_transaction(con):
             atomic_delete(con, table, col_info, content)
 
         print("Integrity check after deletion:")
@@ -826,11 +850,10 @@ def upgrade(db_file):
             return
         if not (removed or different or added):
             return
-        with con:
-            for x in removed + different:
-                con.execute("DROP VIEW {}".format(x))
-            for x in different + added:
-                con.execute([s[2] for s in SQL_CREATE_COMMANDS if s[0] == x][0])
+        for x in removed + different:
+            con.execute("DROP VIEW {}".format(x))
+        for x in different + added:
+            con.execute([s[2] for s in SQL_CREATE_COMMANDS if s[0] == x][0])
         print("All definitions have been fixed.")
 
 
