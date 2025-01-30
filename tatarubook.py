@@ -57,7 +57,7 @@ SQL_CREATE_COMMANDS = (
         SELECT postings.posting_index, trade_date, dst_account AS account_index,
             ifnull(posting_extras.dst_change, -src_change) AS amount, src_account AS target, comment
         FROM postings LEFT JOIN posting_extras ON postings.posting_index = posting_extras.posting_index
-        WHERE amount <> 0
+        WHERE round(amount, 6) <> 0
         ORDER BY trade_date ASC, posting_index ASC"""),
     ("statements", "view",
      """CREATE VIEW statements AS
@@ -76,7 +76,7 @@ SQL_CREATE_COMMANDS = (
             start_date
         WHERE single_entries.trade_date <= start_date.val AND accounts.is_external = 0
         GROUP BY accounts.account_index
-        HAVING sum(single_entries.amount) <> 0
+        HAVING round(sum(single_entries.amount), 6) <> 0
         ORDER BY accounts.asset_index ASC"""),
     ("start_values", "view",
      """CREATE VIEW start_values AS
@@ -133,7 +133,7 @@ SQL_CREATE_COMMANDS = (
                     (SELECT price FROM prices WHERE comparison.asset_index = prices.asset_index
                         AND prices.price_date = end_date.val)) AS price
             FROM comparison, end_date
-            WHERE balance <> 0)
+            WHERE round(balance, 6) <> 0)
         ORDER BY asset_index ASC"""),
     ("end_stats", "view",
      """CREATE VIEW end_stats AS
@@ -298,10 +298,10 @@ SQL_CREATE_COMMANDS = (
      """CREATE VIEW check_interest_account AS
         SELECT accounts.*
         FROM interest_accounts INNER JOIN accounts ON interest_accounts.account_index = accounts.account_index
-        WHERE accounts.is_external == 0"""),
+        WHERE accounts.is_external = 0"""),
     ("check_same_account", "view",
      """CREATE VIEW check_same_account AS
-        SELECT * FROM postings WHERE postings.src_account == postings.dst_account"""),
+        SELECT * FROM postings WHERE postings.src_account = postings.dst_account"""),
     ("check_both_external", "view",
      """CREATE VIEW check_both_external AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
@@ -309,7 +309,7 @@ SQL_CREATE_COMMANDS = (
             dst_ai.asset_index, dst_ai.is_external, postings.comment
         FROM postings INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
             INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
-        WHERE src_ai.is_external == 1 AND dst_ai.is_external == 1"""),
+        WHERE src_ai.is_external = 1 AND dst_ai.is_external = 1"""),
     ("check_diff_asset", "view",
      """CREATE VIEW check_diff_asset AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
@@ -329,7 +329,7 @@ SQL_CREATE_COMMANDS = (
         FROM postings INNER JOIN posting_extras ON postings.posting_index = posting_extras.posting_index
             INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
             INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
-        WHERE src_ai.asset_index == dst_ai.asset_index"""),
+        WHERE src_ai.asset_index = dst_ai.asset_index"""),
     ("check_external_asset", "view",
      """CREATE VIEW check_external_asset AS
         SELECT postings.posting_index, postings.trade_date, postings.src_account, src_ai.account_name,
@@ -338,8 +338,8 @@ SQL_CREATE_COMMANDS = (
         FROM postings INNER JOIN accounts AS src_ai ON postings.src_account = src_ai.account_index
             INNER JOIN accounts AS dst_ai ON postings.dst_account = dst_ai.account_index
         WHERE src_ai.asset_index <> dst_ai.asset_index
-            AND ((src_ai.is_external == 1 AND src_ai.asset_index NOT IN (SELECT * FROM standard_asset))
-                OR (dst_ai.is_external == 1 AND dst_ai.asset_index NOT IN (SELECT * FROM standard_asset)))"""),
+            AND ((src_ai.is_external = 1 AND src_ai.asset_index NOT IN (SELECT * FROM standard_asset))
+                OR (dst_ai.is_external = 1 AND dst_ai.asset_index NOT IN (SELECT * FROM standard_asset)))"""),
     ("check_absent_price", "view",
      """CREATE VIEW check_absent_price AS
         SELECT asset_types.asset_index, asset_types.asset_name, asset_types.asset_order, absence.date_val
@@ -348,7 +348,7 @@ SQL_CREATE_COMMANDS = (
             UNION
             SELECT comparison.asset_index, end_date.val AS date_val
             FROM comparison, end_date
-            WHERE comparison.end_amount <> 0
+            WHERE round(comparison.end_amount, 6) <> 0
             UNION
             SELECT cash_acc.asset_index, share_trade_flows.trade_date AS date_val
             FROM share_trade_flows INNER JOIN accounts AS cash_acc
