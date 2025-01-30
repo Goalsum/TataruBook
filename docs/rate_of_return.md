@@ -220,7 +220,7 @@ A scenario that corresponds to such a transaction in reality is an investment in
 
 However, TataruBook's [prices]({{ site.baseurl }}/tables_and_views.html#prices) table only has information on asset prices at the end of each day, and does not contain the instant price at the moment of the transaction. So for the inflow and outflow values of such transactions, TataruBook's calculations are not entirely accurate. However, considering that most of the time asset prices do not fluctuate much during the day, this approximation is often sufficient.
 
-Generally TataruBook uses such an algorithm: when calculating the outflow value of account `A', using the inflow amount of account `B' multiplied by the price of the assets contained in account `B' on the same day; and when calculating the inflow value of account `B', using the outflow amount of account `A' multiplied by the price of the assets contained in account `A' on the same day.
+Generally TataruBook uses such an algorithm: when calculating the outflow value of account `A`, using the inflow amount of account `B` multiplied by the price of the assets contained in account `B` on the same day; and when calculating the inflow value of account `B`, using the outflow amount of account `A` multiplied by the price of the assets contained in account `A` on the same day.
 
 However, there is a special type of transaction for which this algorithm does not apply: when one of the parties in the transaction has an amount of change of $$ 0 $$ in the account:
 
