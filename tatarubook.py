@@ -448,16 +448,60 @@ def in_transaction(con):
     return stack
 
 
-def decode_csv(con, csv_file, encoding, op):
+class BatchHandler:
+    def __init__(self, con, table, col_info):
+        self.con = con
+        self.table = table
+        self.col_info = col_info
+
+    def handle(self, row):
+        pass
+
+
+class Inserter(BatchHandler):
+    def __init__(self, con, table, col_info):
+        super().__init__(con, table, col_info)
+
+    def handle(self, row):
+        print("> {}".format(row))
+        if len(row) > len(self.col_info) and not any(row[len(self.col_info):]):
+            row = row[:len(self.col_info)]
+
+        if is_headline(row):
+            print("Headline detected, Skip this row.")
+        elif len(self.col_info) != len(row) and (self.table, len(row)) not in COMBINED_INSERT:
+            raise TypeError("Table {} has {} columns but {} columns are provided.".format(
+                self.table, len(self.col_info), len(row)))
+        else:
+            atomic_insert(self.con, self.table, self.col_info, row)
+
+
+class Deleter(BatchHandler):
+    def __init__(self, con, table, col_info):
+        super().__init__(con, table, col_info)
+
+    def handle(self, row):
+        print("> {}".format(row))
+        if len(row) > len(self.col_info) and not any(row[len(self.col_info):]):
+            row = row[:len(self.col_info)]
+
+        if is_headline(row):
+            print("Headline detected, Skip this row.")
+        elif len(self.col_info) != len(row):
+            raise TypeError("Table {} has {} key columns but {} columns are provided.".format(
+                self.table, len(self.col_info), len(row)))
+        else:
+            atomic_delete(self.con, self.table, self.col_info, row)
+
+
+def decode_csv(csv_file, encoding, handler):
     codecs = [encoding] if encoding else (
         [None] if locale.getpreferredencoding(False) == "utf-8" else [None, "utf-8"])
     for codec in codecs:
         try:
-            with in_transaction(con):
-                with csv_file.open(newline='', encoding=codec) as file:
-                    for row in csv.reader(file):
-                        if not op(row):
-                            return
+            with csv_file.open(newline='', encoding=codec) as file:
+                for row in csv.reader(file):
+                    handler.handle(row)
             break
         except UnicodeError as e:
             if codec == codecs[-1]:
@@ -721,21 +765,9 @@ def cmd_import(db_file, csv_file, table=None, encoding=None):
             print("Table \"{}\" does not exist.".format(table))
             return
 
-        def import_by_row(row):
-            print("> {}".format(row))
-            if len(row) > len(col_info) and not any(row[len(col_info):]):
-                row = row[:len(col_info)]
-
-            if is_headline(row):
-                print("Headline detected, Skip this row.")
-            elif len(col_info) != len(row) and (table, len(row)) not in COMBINED_INSERT:
-                print("Table {} has {} columns but {} columns are provided.".format(table, len(col_info), len(row)))
-                return False
-            else:
-                atomic_insert(con, table, col_info, row)
-            return True
-
-        decode_csv(con, csv_file, encoding, import_by_row)
+        inserter = Inserter(con, table, col_info)
+        with in_transaction(con):
+            decode_csv(csv_file, encoding, inserter)
 
         print("\nIntegrity check after import:")
         integrity_check(con)
@@ -812,17 +844,9 @@ def prune(db_file, csv_file, table=None, encoding=None):
             return
         col_info = [x for x in col_info if x[5] > 0]
 
-        def prune_by_row(row):
-            print("> {}".format(row))
-            if is_headline(row):
-                print("Headline detected, Skip this row.")
-            elif len(col_info) != len(row):
-                print("Table {} has {} key columns but {} columns are provided.".format(table, len(col_info), len(row)))
-                return False
-            atomic_delete(con, table, col_info, row)
-            return True
-
-        decode_csv(con, csv_file, encoding, prune_by_row)
+        deleter = Deleter(con, table, col_info)
+        with in_transaction(con):
+            decode_csv(csv_file, encoding, deleter)
 
         print("\nIntegrity check after prune:")
         integrity_check(con)
