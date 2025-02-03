@@ -546,7 +546,7 @@ This view serves as an intermediate process for the calculations of the other vi
 This is a new view added in v1.2.
 {: .notice}
 
-Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account (indicated by `target` field) which contains non-standard asset, as well as the amount of change which will be used to calculate the inflow or outflow value in each transaction. This data is used to calculate the ROI on non-standard asset.
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account (indicated by `target` field) which contains non-standard asset, as well as the amount of change which will be used to calculate the inflow or outflow value in each transaction. The data in this view is used to calculate the ROI on non-standard asset.
 
 **Fields**
 - `posting_index`：`posting_index` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
@@ -565,7 +565,7 @@ Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account which contains non-standard asset, as well as the market values of the change in these transactions measured in standard asset. This data is used to calculate the ROI on non-standard asset.
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account which contains non-standard asset, as well as the market values of the change in these transactions measured in standard asset. The data in this view is used to calculate the ROI on non-standard asset.
 
 If you think of non-standard assets as stocks, then this view can be interpreted as the cost of buying or the income from selling in each stock trade.
 

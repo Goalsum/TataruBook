@@ -548,7 +548,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这是v1.2版本新增的视图。
 {: .notice}
 
-每个包含非标准资产的内部账户（由`target`字段指示）在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的所有交易记录，以及每笔交易中用于计算该账户流入流出价值的变动数额。该数据用于计算非标准资产的投资收益率。
+每个包含非标准资产的内部账户（由`target`字段指示）在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的所有交易记录，以及每笔交易中用于计算该账户（即`target`字段指示的账户）流入流出价值的变动数额。该视图中的数据用于计算非标准资产的投资收益率。
 
 **字段**
 - `posting_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`posting_index`。
@@ -567,7 +567,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
+每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该视图中的数据用于计算非标准资产的投资收益率。
 
 如果把非标准资产看成股票，那么这个视图可以理解为每一笔交易的买入成本或卖出收入。
 
