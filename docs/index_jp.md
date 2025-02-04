@@ -14,13 +14,13 @@ TataruBookは、SQLのテーブルとビューに基に、コマンドライン�
 
 ２つの方法があります:
 
-1. （推奨）まず[Python 3.8 以上のバージョン](https://www.python.org/downloads/)をインストールし、次に[Githubリポジトリ](https://github.com/Goalsum/TataruBook)または[Giteeリポジトリ](https://gitee.com/goalsum/tatarubook)から`tatarubook.py`というスクリプトをダウンロードし、`python tatarubook.py`というマンドで実行します。この方法では、Pythonを対応しているすべてのオペレーティングシステムで使用できます。
+1. まず[Python 3.8 以上のバージョン](https://www.python.org/downloads/)をインストールし、次に[Githubリポジトリ](https://github.com/Goalsum/TataruBook)または[Giteeリポジトリ](https://gitee.com/goalsum/tatarubook)から`tatarubook.py`というスクリプトをダウンロードし、`python tatarubook.py`というマンドで実行します。この方法では、Pythonを対応しているすべてのオペレーティングシステムで使用できます。
 1. [Github](https://github.com/Goalsum/TataruBook/releases)または[Gitee](https://gitee.com/goalsum/tatarubook/releases)のリリースから`tatarubook.zip`というパッケージをダウンロードし、任意のフォルダーに展開してから`tatarubook.exe`というプログラムを実行します。この方法では、Python をインストールする必要はありませんが、Windows 10以降のオペレーティングシステムでのみ動作します。
 
 TataruBookは**コマンドラインプログラム**です。Windowsで`tatarubook.exe`プログラムを直接ダブルクリックすると、黒いウィンドウが一瞬表示され、その後は何も起こらないことがあります。コマンドラインプログラムを実行する正しい方法は、まずコマンドラインターミナルを開き (Windowsでは`cmd.exe`というプロンプトを実行する)、次にプログラム名やサブコマンド、引数を入力 (または貼り付け) します。
 {: .notice--warning}
 
-１つ目の方法が推奨される理由は、この方法で`tatarubook.py`を実行すると、最新のPythonインタープリターやSQLiteなどの依存ライブラリがランタイムがランタイム環境で直接使用され、ディスク容量をほとんど消費しないためです。２つ目の方法では、PythonインタープリターやSQLite、およびその他の依存ライブラリがダウンロードされ、ディスク容量を使用しますが、これらのライブラリがランタイム環境で欠落している場合でも、 TataruBookソフトの動作には影響がありません。
+１つ目の方法にしたら、`tatarubook.py`を実行すると、最新のPythonインタープリターやSQLiteなどの依存ライブラリがランタイムがランタイム環境で直接使用され、ディスク容量をほとんど消費しないためです。２つ目の方法では、PythonインタープリターやSQLite、およびその他の依存ライブラリがダウンロードされ、ディスク容量を使用しますが、これらのライブラリがランタイム環境で欠落している場合でも、 TataruBookソフトの動作には影響がありません。
 
 **注：**２つ目の方法でこのソフトウェアをインストールした後は、`tatarubook.exe`を実行する際に、zipパッケージ内の他のファイルが必要になります。したがって、`tatarubook.zip`内のすべてのファイルを同じフォルダーに展開し、フォルダー内の構造をzipパッケージ内と同じに保ってください。
 {: .notice--warning}
