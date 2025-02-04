@@ -203,3 +203,40 @@ $$ R = \frac{(99 + 30) - (100 + 0)}{100 + 0} = 29\% $$
 
 For a single investment with a floating price, the rate of return calculated by the minimum initial cash method yields results that look reasonable under a variety of different inflow and outflow scenarios. Therefore, TataruBook uses the minimum initial cash method for accounts that contain non-standard asset to calculate the rate of return of a single account, see [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 {: .notice}
+
+# How to determine the value of an external flow?
+
+External flows are all valued in [standard asset]({{ site.baseurl }}/tables_and_views.html#standard_asset). When the inflows or outflows of a portfolio are in the form of standard asset (i.e., home currency), their values can be easily determined. However, sometimes inflows or outflows are not in form of standard asset.
+
+Take a transaction as an example:
+
+| outflow account | outflow amount | inflow account | inflow amount |
+|:-:|:-:|:-:|:-:|
+| A | -500 | B | 10 |
+
+If the portfolio contains account `A` only, then this transaction is an outflow; if the portfolio contains account `B` only, then this transaction is an inflow. Assuming that both account `A` and `B` contain non-standard assets, then for this transaction it is necessary to determine the value of the inflow or outflow measured in standard asset.
+
+A scenario that corresponds to such a transaction in reality is an investment in a currency other than the home currency: for example, the purchase of Japanese stocks in Japanese Yen when the home currency is U.S. dollar. In such a transaction, the accurate way to determine the value of the inflow or outflow measured in U.S. dollar should be to record the instantaneous USD-JPY exchange rate at the moment of the transaction and convert it.
+
+However, TataruBook's [prices]({{ site.baseurl }}/tables_and_views.html#prices) table only has information on asset prices at the end of each day, and does not contain the instant price at the moment of the transaction. So for the inflow and outflow values of such transactions, TataruBook's calculations are not entirely accurate. However, considering that most of the time asset prices do not fluctuate much during the day, this approximation is often sufficient.
+
+Generally TataruBook uses such an algorithm: when calculating the outflow value of account `A`, using the inflow amount of account `B` multiplied by the price of the assets contained in account `B` on the same day; and when calculating the inflow value of account `B`, using the outflow amount of account `A` multiplied by the price of the assets contained in account `A` on the same day.
+
+However, there is a special type of transaction for which this algorithm does not apply: when one of the parties in the transaction has an amount of change of $$ 0 $$ in the account:
+
+| outflow account | outflow amount | inflow account | inflow amount |
+|:-:|:-:|:-:|:-:|
+| A | 0 | B | 200 |
+
+This type of transaction usually occurs when dividends are paid on stocks or funds, or when coupons are paid on bonds. For example, if account `A` is a Japanese stock, and account `B` is a Japanese Yen account that receives dividends, then if the above algorithm is still used, account `B` will have an inflow value of $$ 0 $$ for this transaction, which is not reasonable.
+
+To solve this problem, TataruBook does a special treatment: if one party of the transaction has an amount of change of $$ 0 $$, then the inflow and outflow values of both accounts are determined according to the type of asset and the amount of change of the other party (the amount of change of which is not $$ 0 $$). In the example just given, the outflow value of account `A` and the inflow value of account `B` are both $$ 200 $$ multiplied by the price of the asset contained in account `B` on that day. This processing can be observed with the [share_trade_flows]({{ site.baseurl }}/tables_and_views.html#share_trade_flows) view.
+
+If you do need to accurately calculate the inflow and outflow values using instant prices, then you can split a single transaction into two transactions using an intermediate account:
+
+| outflow account | outflow amount | inflow account | inflow amount |
+|:-:|:-:|:-:|:-:|
+| A | -500 | X | 100 |
+| X | -100 | B | 10 |
+
+The account `X` in this example contains the standard asset, and the amount of change in `X` reflects the immediate inflow and outflow values at the time of the transaction. By entering transactions in this way, TataruBook can accurately calculate inflow and outflow values, and no longer needs to use the price information in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table.

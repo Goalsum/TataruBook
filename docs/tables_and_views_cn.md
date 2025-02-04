@@ -132,7 +132,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - 标准资产不允许有相关价格记录。（由[check_standard_prices]({{ site.baseurl }}/tables_and_views_cn.html#check_standard_prices)视图校验）
 - 同一资产在同一天只能有一条价格记录，即任两条记录的`price_date`和`asset_index`不能都相同。
 - 在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)这两天，所有非标准资产都必须有价格记录。（由[check_absent_price]({{ site.baseurl }}/tables_and_views_cn.html#check_absent_price)视图校验）
-- 如果两个含有非标准资产的账户发生了交易（无论是内部账户还是外部账户），该（一种或两种）非标准资产在交易当天必须要有价格记录。比如：如果美元是非标准资产，那么当使用美元买入美国股票时，交易当天必须要有美元的价格记录和该股票的价格记录（注意是以标准资产计价的单位价格）。这是因为在对这两个账户计算投资收益率时，它们在交易当天都有一次资金流入或流出，需要计算流入/流出的价值。（由[check_absent_price]({{ site.baseurl }}/tables_and_views_cn.html#check_absent_price)视图校验）
+- 如果两个含有非标准资产的账户发生了交易（无论是内部账户还是外部账户），该交易中变动数额不为$$ 0 $$的账户所包含的非标准资产在交易当天必须要有价格记录。比如：如果美元是非标准资产，那么当使用美元买入美国股票时，交易当天必须要有美元的价格记录和该股票的价格记录（注意是以标准资产计价的单位价格）。这是因为在对这两个账户计算投资收益率时，它们在交易当天都有一次资金流入或流出，需要计算流入/流出的价值。（由[check_absent_price]({{ site.baseurl }}/tables_and_views_cn.html#check_absent_price)视图校验）
 
 ## start_date
 
@@ -414,7 +414,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `asset_order`：来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_order`。
 - `account_index`：来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`account_index`。
 - `account_name`：来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`account_name`。
-- `amount`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)表中的`amount`。
+- `amount`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`amount`。
 - `asset_index`：来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
 - `asset_name`：来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_name`。
 - `price`：来自[prices]({{ site.baseurl }}/tables_and_views_cn.html#prices)表中的`price`；如果是标准资产，则值为`1`。
@@ -540,21 +540,39 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 说明：`工资`对于两个不同内部账户分别进行了统计，相比之下`income_and_expenses`视图只会显示一条`工资`记录（所有内部账户累加到一起）。此外，`金碟消费`统计的是以`金碟币`为单位的数量，而不是标准资产`Gil`。
 
+## share_trade_flows
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+这是v1.2版本新增的视图。
+{: .notice}
+
+每个包含非标准资产的内部账户（由`target`字段指示）在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的所有交易记录，以及每笔交易中用于计算该账户（即`target`字段指示的账户）流入流出价值的变动数额。该视图中的数据用于计算非标准资产的投资收益率。
+
+**字段**
+- `posting_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`posting_index`。
+- `trade_date`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`trade_date`。
+- `account_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`account_index`或`target`。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中该笔交易的`amount`不为$$ 0 $$则为`account_index`，否则为`target`。
+- `amount`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`amount`或者对应的[posting_extras]({{ site.baseurl }}/tables_and_views_cn.html#posting_extras)表中的`dst_change`的相反数。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中该笔交易的`amount`不为$$ 0 $$则为`amount`，否则为`dst_change`的相反数。
+- `target`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`target`。
+- `comment`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`comment`。
+- `account_name`：`target`的账户名字，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`account_name`。
+- `asset_index`：`target`账户包含的资产的索引，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
+- `asset_name`：`target`账户包含的资产的名字，来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_name`。
+- `asset_order`：`target`账户包含的资产的序号，来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_order`。
+
 ## share_trades
 
 这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
 {: .notice}
 
-每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该数据用于计算非标准资产的投资收益率。
+每个包含非标准资产的内部账户在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间与其他账户的每笔交易额换算成标准资产的市场价值。该视图中的数据用于计算非标准资产的投资收益率。
 
 如果把非标准资产看成股票，那么这个视图可以理解为每一笔交易的买入成本或卖出收入。
 
 **字段**
-- 包含[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的所有字段，以及：
-- `account_name`：来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`account_name`。
-- `asset_index`：来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
-- `asset_name`：来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_name`。
-- `asset_order`：来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_order`。
+- 包含[share_trade_flows]({{ site.baseurl }}/tables_and_views_cn.html#share_trade_flows)视图中的所有字段，以及：
 - `cash_flow`：该笔交易的变动数额按照当天单位价格换算成标准资产后的市场价值。
 
 ## share_stats
@@ -589,7 +607,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `end_amount`：期末余额。来自[comparison]({{ site.baseurl }}/tables_and_views_cn.html#comparison)视图中的`end_amount`。
 - `end_value`：期末市场价值。来自[end_values]({{ site.baseurl }}/tables_and_views_cn.html#end_values)视图中的`market_value`，或者$$ 0 $$（如果`end_values`中没有此账户）。
 - `cash_gained`：已实现收益。来自[share_stats]({{ site.baseurl }}/tables_and_views_cn.html#share_stats)视图中的`cash_gained`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
-- `min_inflow`：最小资金净流入。来自[share_stats]({{ site.baseurl }}/tables_and_views_cn.html#share_stats)视图中的`min_inflow`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
+- `min_inflow`：最小初始资金。来自[share_stats]({{ site.baseurl }}/tables_and_views_cn.html#share_stats)视图中的`min_inflow`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
 - `profit`：该账户的投资利润（或亏损），计算方法为$$ \text{cash_gained} + \text{end_value} - \text{start_value} $$。
 - `rate_of_return`：使用[最小初始资金法]({{ site.baseurl }}/rate_of_return_cn.html#最小初始资金法)计算的该账户的投资收益率。
 

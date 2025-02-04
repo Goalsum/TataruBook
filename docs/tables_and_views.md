@@ -130,7 +130,7 @@ The unit price of an asset, used to convert a non-standard asset to the [standar
 - There should be no price record associated with the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
 - There should be no more than one price record for one asset on one day, i.e., the `price_date` and `asset_index` of any two records cannot both be the same.
 - On [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), all non-standard assets must have a price record associated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
-- If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset (or both non-standard assets) must have a price record associated on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the unit price of HK dollar and the unit price of that stock (noting that they are prices measured in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
+- If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset contained by each account that has an amount of change other than $$ 0 $$ in the transaction must have a price record associated on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the unit price of HK dollar and the unit price of that stock (noting that they are prices measured in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
 
 ## start_date
 
@@ -412,7 +412,7 @@ Although the view name is **external flows**, unlike the definition of **externa
 - `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `account_index`: `account_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 - `account_name`: `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
-- `amount`: `amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) table.
+- `amount`: `amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
 - `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 - `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `price`: `price` from [price]({{ site.baseurl }}/tables_and_views.html#prices) table; value `1` if standard asset.
@@ -538,21 +538,39 @@ Then the `flow_stats` view contents are:
 
 Note: `Salary` has separate statistics for the two different internal accounts, compared to the `income_and_expenses` view which will only show one `salary` record (all internal accounts totaled together). In addition, `MGP spending` counts quantities in `MGP`, not the standard asset `Gil`.
 
+## share_trade_flows
+
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
+{: .notice}
+
+This is a new view added in v1.2.
+{: .notice}
+
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account (indicated by `target` field) which contains non-standard asset, as well as the amount of change which will be used to calculate the inflow or outflow value in each transaction. The data in this view is used to calculate the ROI on non-standard asset.
+
+**Fields**
+- `posting_index`：`posting_index` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `trade_date`：`trade_date` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `account_index`：`account_index` or `target` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view: `account_index` if the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise `target`.
+- `amount`：`amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view or the negtive number of `dst_change` from the corresponding record of [posting_extras]({{ site.baseurl }}/tables_and_views.html#posting_extras) table: `amount` if the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise the negtive number of `dst_change`.
+- `target`：`target` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `comment`：`comment` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `account_name`：The account name of `target`, i.e. `account_name` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `asset_index`：The index of asset that the `target` account contains, i.e. `asset_index` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `asset_name`：The name of asset that the `target` account contains, i.e. `asset_name` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `asset_order`：The order of asset that the `target` account contains, i.e. `asset_order` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+
 ## share_trades
 
 This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
 {: .notice}
 
-Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account which contains non-standard asset, as well as the market values of the change in these transactions measured in standard asset. This data is used to calculate the ROI on non-standard asset.
+Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) that involves internal account which contains non-standard asset, as well as the market values of the change in these transactions measured in standard asset. The data in this view is used to calculate the ROI on non-standard asset.
 
 If you think of non-standard assets as stocks, then this view can be interpreted as the cost of buying or the income from selling in each stock trade.
 
 **Fields**
-- Contains all the fields in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view, as well as:
-- `account_name`: the `account_name` from the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
-- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
-- `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
-- `asset_order`: `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+- Contains all the fields in [share_trade_flows]({{ site.baseurl }}/tables_and_views.html#share_trade_flows) view, as well as:
 - `cash_flow`: the amount of change in the transaction converted to the market value of standard asset at that day's unit price.
 
 ## share_stats
