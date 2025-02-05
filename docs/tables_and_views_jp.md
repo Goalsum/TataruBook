@@ -133,8 +133,8 @@ TataruBookで使用されている簿記方法では、各取引に関わる２�
 **制約**
 - テーブル内に標準資産のレコードを設定できません。（[check_standard_prices]({{ site.baseurl }}/tables_and_views_jp.html#check_standard_prices)ビューでチェックされます）
 - 同じ資産に対して、１日に1つのpricesレコードのみを持つことができます。つまり、2つのレコードにおいて`price_date`と`asset_index`が同じであることは許されません。
-- すべての標準資産以外の資産には、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)と[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)に対応する単位価格のレコードが存在する必要があります。（[check_absent_price]({{ site.baseurl }}/tables_and_views_jp.html#check_absent_price)ビューでチェックされます）
-- 標準資産以外の資産を含む２つのアカウント間で取引が発生した場合、これが内部アカウントであっても外部アカウントであっても、取引当日に資産には単位価格のレコードが存在する必要があります。たとえば、香港ドルが標準資産でない場合、香港ドルを使用して香港の株を購入する際には、取引当日に香港ドルと株式の両方に対してpricesレコードが存在し、それらが標準資産に換算された価格であることが求められます。これは、２つのアカウントのROIを計算する際に、取引当日に資金が流入・流出した時点の価格で計算される必要があるためです。（[check_absent_price]({{ site.baseurl }}/tables_and_views_jp.html#check_absent_price)ビューでチェックされます）
+- すべての標準資産以外の資産には、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)と[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)に対応するpricesレコードが存在する必要があります。（[check_absent_price]({{ site.baseurl }}/tables_and_views_jp.html#check_absent_price)ビューでチェックされます）
+- 非標準資産を含む２つのアカウント間で取引が発生した場合、内部アカウントであっても外部アカウントであっても、この（一種や二種）の非標準資産は、取引当日にはprices記録が存在している必要があります。たとえば、米ドルが標準資産でない場合、米ドルを使用してアメリカの株を購入する際には、取引当日に米ドルと株式の両方に対してprices記録が存在し、それらが標準資産に換算された価格であることが求められます。これは、２つのアカウントのROIを計算する際に、取引当日に資金が流入・流出した時点の価格で計算される必要があるからです。（[check_absent_price]({{ site.baseurl }}/tables_and_views_jp.html#check_absent_price)ビューでチェックされます）
 
 ## start_date
 
@@ -416,7 +416,7 @@ TataruBookで使用されている簿記方法では、各取引に関わる２�
 - `asset_order`：[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_order`から取得されます。
 - `account_index`：[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`account_index`から取得されます。
 - `account_name`：[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`account_name`から取得されます。
-- `amount`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)テーブルの`amount`から取得されます。
+- `amount`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`amount`から取得されます。
 - `asset_index`：[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`asset_index`から取得されます。
 - `asset_name`：[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_name`から取得されます。
 - `price`：[prices]({{ site.baseurl }}/tables_and_views_jp.html#prices)テーブルの`price`から取得されます。標準資産である場合、数値は$$1$$です。
@@ -542,6 +542,28 @@ TataruBookで使用されている簿記方法では、各取引に関わる２�
 
 注: 異なる内部アカウントで`給料`が個別に集計されますが、`income_and_expenses`ビューでは`給料`に関するレコードが１つだけ表示されます (すべての内部アカウントから合算されます)。さらに、`MGP支出`の金額は標準資産の`ギル`に換算されず、`MGP`の数量として集計されます。
 
+## share_trade_flows
+
+このビューは、他のビューの中間計算結果を表示します。通常、このビューに注意を払う必要はありません。
+{: .notice}
+
+これはv1.2で追加された新しいビューです。
+{: .notice}
+
+非標準資産を含んでいる内部アカウント（`target`フィールドに指示されている）における、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)と[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の間に、ほかのアカウントとの取引記録と、各取引にこの内部アカウント（即ち`target`フィールドに指示されているアカウント）の流入·流出価値を示している変動額です。このビューのデータは非标准资产のROIを計算するために使用されています。
+
+**フィールド**
+- `posting_index`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`posting_index`から取得されます。
+- `trade_date`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`trade_date`から取得されます。
+- `account_index`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`account_index`あるいは`target`から取得されます。[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューにおいて、この取引の`amount`が$$ 0 $$であれば`target`、そうでなければ`account_index`となります。
+- `amount`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`amount`あるいは対応している[posting_extras]({{ site.baseurl }}/tables_and_views_jp.html#posting_extras)テーブルの`dst_change`的反数から取得されます。[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューにおいて、この取引の`amount`が$$ 0 $$であれば`dst_change`の反数、そうでなければ`amount`となります。
+- `target`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`target`から取得されます。
+- `comment`：[single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの`comment`から取得されます。
+- `account_name`：`target`のアカウント名です。[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`account_name`から取得されます。
+- `asset_index`：`target`に対応するアカウントが含んでいる資産のインデックスです。[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`asset_index`から取得されます。
+- `asset_name`：`target`に対応するアカウントが含んでいる資産の名前です。[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_name`から取得されます。
+- `asset_order`：`target`に対応するアカウントが含んでいる資産の番号です。[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_order`から取得されます。
+
 ## share_trades
 
 このビューは、他のビューの中間計算結果を表示します。通常、このビューに注意を払う必要はありません。
@@ -552,11 +574,7 @@ TataruBookで使用されている簿記方法では、各取引に関わる２�
 非標準資産を株式と見なすと、このビューは各株式取引における購入価格や売却収入を表します。
 
 **フィールド**
-- [single_entries]({{ site.baseurl }}/tables_and_views_jp.html#single_entries)ビューの ビューのすべてのフィールドに加え、次のフィールドが含まれます。
-- `account_name`：[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`account_name`から取得されます。
-- `asset_index`：[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルの`asset_index`から取得されます。
-- `asset_name`：[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_name`から取得されます。
-- `asset_order`：[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルの`asset_order`から取得されます。
+- [share_trade_flows]({{ site.baseurl }}/tables_and_views_jp.html#share_trade_flows)ビューのすべてのフィールドに加え、次のフィールドが含まれます。
 - `cash_flow`：この内部アカウントに含まれる非標準資産は、その日の単位価格で標準資産に換算された市場価値です。
 
 ## share_stats
