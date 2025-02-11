@@ -8,6 +8,7 @@ from argparse import ArgumentParser
 from functools import wraps
 from contextlib import contextmanager, ExitStack
 from collections import namedtuple
+import subprocess
 
 
 SQL_CREATE_COMMANDS = (
@@ -369,6 +370,8 @@ INIT_SQL_CMD = """
 EXPORT_TABLES = [x[0] for x in SQL_CREATE_COMMANDS if x[1] != "index"]
 
 EXCLUDED_TABLES = ("sqlite_sequence",)
+
+OVERWRITE_TABLES = ("standard_asset", "start_date", "end_date")
 
 DATE_COLUMNS = {("postings", "trade_date"), ("prices", "price_date"), ("start_date", "val"), ("end_date", "val")}
 
@@ -793,6 +796,30 @@ def overwrite(db_file, table, content):
         integrity_check(con)
 
 
+@db_file_to_path
+def paste(db_file, table):
+    content = subprocess.getoutput("powershell.exe -Command Get-Clipboard")
+    with fence(sqlite3.connect(db_file)) as con:
+        col_info = get_table_columns(con, table)
+        if not col_info:
+            print("Table \"{}\" does not exist.".format(table))
+            return
+
+        if table in OVERWRITE_TABLES:
+            content = content.strip(" \t\r\n")
+            with in_transaction(con):
+                con.execute("DELETE FROM {}".format(table))
+                insert_row(con, table, col_info, (content,))
+        else:
+            inserter = Inserter(con, table, col_info)
+            with in_transaction(con):
+                for row in content.splitlines():
+                    inserter.handle(row.split("\t"))
+
+        print("Integrity check after paste:")
+        integrity_check(con)
+
+
 def delete_row(con, table, col_info, content):
     condition = " AND ".join((x[1] + " = " + format_value(y, x[2], (table, x[1]) in DATE_COLUMNS)
                               for x, y in zip(col_info, content)))
@@ -916,6 +943,11 @@ if __name__ == "__main__":
     parser_overwrite.add_argument("table", help="table name to modify with")
     parser_overwrite.add_argument("content", help="the only value that will exist in the table")
     parser_overwrite.set_defaults(func=overwrite)
+
+    parser_overwrite = subparsers.add_parser("paste", help="paste clipboard content info table")
+    parser_overwrite.add_argument("db_file", help="db filename to paste into")
+    parser_overwrite.add_argument("table", help="table name to paste into")
+    parser_overwrite.set_defaults(func=paste)
 
     parser_delete = subparsers.add_parser("delete", help="delete one row by key columns")
     parser_delete.add_argument("db_file", help="db filename to delete from")
