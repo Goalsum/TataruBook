@@ -67,6 +67,3 @@ defaults:
       toc_sticky: true
       sidebar:
         nav: "english"
-
-head_scripts:
-  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js
