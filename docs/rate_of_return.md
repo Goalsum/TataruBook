@@ -239,4 +239,4 @@ If you do need to accurately calculate the inflow and outflow values using insta
 | A | -500 | X | 100 |
 | X | -100 | B | 10 |
 
-The account `X` in this example contains the standard asset, and the amount of change in `X` reflects the immediate inflow and outflow values at the time of the transaction. By entering transactions in this way, TataruBook can accurately calculate inflow and outflow values, and no longer needs to use the price information in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table.
+The account `X` in this example is an intermediate account, it is a newly created internal account. account `X` contains the standard asset, and the amount of change in `X` reflects the immediate inflow and outflow values at the time of the transaction. By entering transactions in this way, TataruBook can accurately calculate inflow and outflow values, and no longer needs to use the price information in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table.
