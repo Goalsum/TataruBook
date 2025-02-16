@@ -1,5 +1,5 @@
 ---
-title: コマンドマニュアル
+title: ガイドブック
 locale: jp
 sidebar:
   nav: "japanese"

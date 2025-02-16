@@ -48,7 +48,7 @@ For first time users of TataruBook, we recommend reading [quick start]({{ site.b
 
 [Tables and views]({{ site.baseurl }}/tables_and_views.html) describes all the tables and views in the DB file and how they are related to each other. When you have questions about certain table or view fields, refer to this document.
 
-[Command-line manual]({{ site.baseurl }}/commands.html) describes all the command usage and notes of TataruBook.
+[User manual]({{ site.baseurl }}/commands.html) describes all the command usage and notes of TataruBook.
 
 If you feel that the existing views in the DB file are not enough for you and you know how to use the SQL language, you can use other software that supports the SQLite format (make sure that they support some of the new features of SQLite) to open the DB file and write your own SQL statements to query and edit the data (but do not modify the definitions of the existing tables and views).
 

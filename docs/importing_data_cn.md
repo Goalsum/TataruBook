@@ -70,7 +70,7 @@ sidebar:
 
 # 抓取和转换需要的信息
 
-`原始数据`中有一些列的信息是不需要导入到db文件的，比如例子中的`流水号`、`剩余金额`。——当然，如果你觉得有必要，也可以把一些需要保留的信息放入[postings]({{ site.baseurl }}/tables_and_views_cn.html#postings)表的`comment`字段。但最重要的还是从`原始数据`中抓取交易的关键信息。
+`原始数据`中有一些列的信息是不需要导入到DB文件的，比如例子中的`流水号`、`剩余金额`。——当然，如果你觉得有必要，也可以把一些需要保留的信息放入[postings]({{ site.baseurl }}/tables_and_views_cn.html#postings)表的`comment`字段。但最重要的还是从`原始数据`中抓取交易的关键信息。
 
 在转换模板中`参数`的后面新建一个工作表，命名为`中间结果`，在该工作表的第一行写出以下几个列名：
 
@@ -176,14 +176,14 @@ sidebar:
 
 # 识别已经导入过的交易记录
 
-在上面的例子中，第一笔交易`银行转存`是从`萨雷安银行活期`账户转账$$ 8000 $$到`莫古证券资金`账户。正常情况下，这条交易记录在交易双方的两个账户中会同时存在。如果我们先导入了`萨雷安银行活期`的交易记录，那么在导入`莫古证券资金`的交易记录之前，这条记录就已经在db文件中了。因此，在导入`莫古证券资金`的交易记录时，需要先识别出这些已经导入过的交易记录，避免这些记录在db文件中重复多次。
+在上面的例子中，第一笔交易`银行转存`是从`萨雷安银行活期`账户转账$$ 8000 $$到`莫古证券资金`账户。正常情况下，这条交易记录在交易双方的两个账户中会同时存在。如果我们先导入了`萨雷安银行活期`的交易记录，那么在导入`莫古证券资金`的交易记录之前，这条记录就已经在DB文件中了。因此，在导入`莫古证券资金`的交易记录时，需要先识别出这些已经导入过的交易记录，避免这些记录在DB文件中重复多次。
 
-这个步骤不是必须的，如果你确信需要导入的交易记录在db文件中不存在，那么可以跳过这个步骤。
+这个步骤不是必须的，如果你确信需要导入的交易记录在DB文件中不存在，那么可以跳过这个步骤。
 {: .notice}
 
 在`最终结果`工作表的后面新建一个工作表，命名为`statements`。
 
-使用[export]({{ site.baseurl }}/commands_cn.html#export)命令将db文件的[statements]({{ site.baseurl }}/tables_and_views_cn.html#statements)视图内容导出，然后用Excel打开，对`src_name`列筛选，只显示`莫古证券资金`账户的记录。观察与当前要导入的交易记录有重合的时间段，把这段时间的交易记录复制到`statements`工作表中。
+使用[export]({{ site.baseurl }}/commands_cn.html#export)命令将DB文件的[statements]({{ site.baseurl }}/tables_and_views_cn.html#statements)视图内容导出，然后用Excel打开，对`src_name`列筛选，只显示`莫古证券资金`账户的记录。观察与当前要导入的交易记录有重合的时间段，把这段时间的交易记录复制到`statements`工作表中。
 
 接下来，我们需要对`中间结果`工作表和`statements`工作表中的交易记录进行**一对一的匹配**。正确的记账数据应当满足这样的匹配结果：
 
@@ -225,7 +225,7 @@ sidebar:
 
 修改H3单元格的内容之后，`statements`的M列内容发生了更新：现在两条记录分别找到的匹配是`3`和`4`，即`中间结果`工作表的第三行和第四行，匹配结果正确。
 
-最后，在`最终结果`工作表中当前最后一列`dst_change`（G列）的右边新增一列`skip`（H列），在第二行输入公式：`=COUNTIF(statements!M:M,ROW())`。这条公式用于显示该行的记录是否在`statements`中有匹配，如果有，结果为`1`，否则为`0`。填充该公式到所有行，并筛选这一列为`0`的记录，这些就是需要导入的，db文件中不存在的交易记录。
+最后，在`最终结果`工作表中当前最后一列`dst_change`（G列）的右边新增一列`skip`（H列），在第二行输入公式：`=COUNTIF(statements!M:M,ROW())`。这条公式用于显示该行的记录是否在`statements`中有匹配，如果有，结果为`1`，否则为`0`。填充该公式到所有行，并筛选这一列为`0`的记录，这些就是需要导入的，DB文件中不存在的交易记录。
 
 按照以上过程为相关工作表添加的列及每列第二行的公式总结如下：
 
@@ -239,6 +239,6 @@ sidebar:
 
 # 保存为csv文件并导入数据
 
-`最终结果`工作表中的数据已经符合TataruBook的交易记录导入要求了。把这些数据保存成`postings.csv`文件并使用[import]({{ site.baseurl }}/commands_cn.html#import)命令导入，所有的工作就完成了。
+`最终结果`工作表中的数据已经符合TataruBook的交易记录导入要求了。把这些数据复制到剪贴板并使用[paste]({{ site.baseurl }}/commands_cn.html#paste)命令插入，所有的工作就完成了。
 
 但是要注意：有一些交易记录所涉及的账户可能在TataruBook中还没有创建。比如例子中的`证券买入`如果是第一次买入`中概互联网ETF`这个证券品种，那么有可能在导入时[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中找不到这个品种，导致导入失败。不过，TataruBook在任一条记录导入失败时会触发自动回滚而不影响已有数据。因此可以多次尝试导入，并根据每次提示的失败信息补充[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表的记录，直到整个`postings.csv`文件导入成功。在转换模板的`中间结果`工作表中，可以新增几列来抓取[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表所需要的字段，用于当导入失败时在这两个表中添加需要的记录。

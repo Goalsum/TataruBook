@@ -1,5 +1,5 @@
 ---
-title: Command-line Manual
+title: User Manual
 ---
 This page describes all the commands supported by TataruBook.
 

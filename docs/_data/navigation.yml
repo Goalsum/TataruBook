@@ -19,7 +19,7 @@ english:
         url: /quick_start.html
       - title: "Tables and Views"
         url: /tables_and_views.html
-      - title: "Command-line Manual"
+      - title: "User Manual"
         url: /commands.html
       - title: "Rate of Return"
         url: /rate_of_return.html
@@ -35,7 +35,7 @@ chinese:
         url: /quick_start_cn.html
       - title: "表和视图"
         url: /tables_and_views_cn.html
-      - title: "命令行手册"
+      - title: "用户手册"
         url: /commands_cn.html
       - title: "收益率计算方法"
         url: /rate_of_return_cn.html
@@ -51,7 +51,7 @@ japanese:
         url: /quick_start_jp.html
       - title: "テーブルとビュー"
         url: /tables_and_views_jp.html
-      - title: "コマンドマニュアル"
+      - title: "ガイドブック"
         url: /commands_jp.html
       - title: "収益率の計算方法"
         url: /rate_of_return_jp.html

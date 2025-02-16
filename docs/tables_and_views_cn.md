@@ -3,7 +3,7 @@ title: 表和视图
 sidebar:
   nav: "chinese"
 ---
-本页介绍db文件中包含的所有表和视图。
+本页介绍DB文件中包含的所有表和视图。
 
 **表**包含了用户提供的财务数据，它是所有报表的数据源头。为了确保数据的完整性和一致性，在添加、修改、删除表中的数据时，TataruBook会进行各方面的校验，保证数据之间不出现冲突和逻辑矛盾。
 
@@ -104,7 +104,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - 一条记录中，源账户和目标账户不能都是外部账户。（由[check_both_external]({{ site.baseurl }}/tables_and_views_cn.html#check_both_external)视图校验）（v1.1新增）
 - 一条记录中，源账户或者目标账户是外部账户时，该外部账户要么包含标准资产，要么和另一个账户包含相同资产。（由[check_external_asset]({{ site.baseurl }}/tables_and_views_cn.html#check_external_asset)视图校验）（v1.1新增）
 
-刚开始记账的用户可能会疑惑如何把各个账户的现有余额导入到db文件中。建议的做法是：建立一个名为`历史结余`的外部账户，并对每个需要导入余额的内部账户，添加一笔从`历史结余`到该内部账户的交易记录。
+刚开始记账的用户可能会疑惑如何把各个账户的现有余额导入到DB文件中。建议的做法是：建立一个名为`历史结余`的外部账户，并对每个需要导入余额的内部账户，添加一笔从`历史结余`到该内部账户的交易记录。
 {: .notice}
 
 ## posting_extras
@@ -235,7 +235,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 | 3 | 2023-01-09 | 1 | -13000.0 | 2 | 购入加隆德股份 | 萨雷安银行活期 | 1 | 0 | 莫古证券_加隆德股份 | 36932.5 |
 | 3 | 2023-01-09 | 2 | 260.0 | 1 | 购入加隆德股份 | 莫古证券_加隆德股份 | 2 | 0 | 萨雷安银行活期 | 260.0 |
 
-说明：`statements`视图比较像通常人们所习惯的单式记账账单。如果只想查看某一个账户的变动记录，可以用其他软件打开db文件并按`account_index`或`src_name`筛选。比如筛选`account_index`为`1`的记录，就能看到`萨雷安银行活期`的所有历史交易和余额变化。
+说明：`statements`视图比较像通常人们所习惯的单式记账账单。如果只想查看某一个账户的变动记录，可以用其他软件打开DB文件并按`account_index`或`src_name`筛选。比如筛选`account_index`为`1`的记录，就能看到`萨雷安银行活期`的所有历史交易和余额变化。
 
 ## start_balance
 
