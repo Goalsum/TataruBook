@@ -1,0 +1,1 @@
+@powershell "Start-Process -FilePath '%~dp0shell\unreg.bat' -WorkingDirectory '%~dp0shell' -Verb RunAs"
