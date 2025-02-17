@@ -46,7 +46,7 @@ tatarubook init accounting.db
 TataruBook文档中的很多例子借用了《最终幻想14》游戏里的背景设定。在《最终幻想14》中，主要货币为`Gil`，所以本文用这种货币来示例。在实际记账的时候，你可以使用任何货币名字，如人民币、美元、日元等等。
 {: .notice}
 
-接下来选中整个表格的内容，按`Ctrl+C`组合键复制到剪贴板，再在`accounting.db`文件上点右键，选择`TataruBook paste`子菜单下的`asset_types`。新添加的这一行就会被插入到`accounting.db`文件里的`asset_types`表中。
+接下来选中新增的这一行的内容，按`Ctrl+C`组合键复制到剪贴板，再在`accounting.db`文件上点右键，选择`TataruBook paste`子菜单下的`asset_types`。新添加的这一行就会被插入到`accounting.db`文件里的`asset_types`表中。
 
 实际上，你可以复制表格中的任意一行或多行，再使用`paste`命令将其插入到DB文件中。如果复制的内容含了表头，`paste`命令会自动识别出来并跳过表头。
 {: .notice}
@@ -93,7 +93,7 @@ TataruBook在每次修改数据操作之后都会自动进行数据一致性检�
 |:-:|:-:|:-:|:-:|
 || 萨雷安银行活期 | Gil | 0 |
 
-然后复制整张表（或者复制这一行），在`accounting.db`文件上点右键，选择`TataruBook paste`子菜单下的`accounts`，完成内容的插入。
+然后把这一行复制到剪贴板，在`accounting.db`文件上点右键，选择`TataruBook paste`子菜单下的`accounts`，完成内容的插入。
 
 在DB文件中任一张表中插入内容的过程均与此类似，因此后续不再赘述插入操作过程。
 
@@ -106,6 +106,9 @@ TataruBook在每次修改数据操作之后都会自动进行数据一致性检�
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
 || 历史结余 | Gil | 1 |
+
+注意`paste`操作执行的是**插入**而不是**同步**。如果当前编辑的表格中已经有部分内容存在于DB文件里了，你应当只复制新增的那些行来执行`paste`命令。
+{: .notice}
 
 插入这行内容后，就可以从`历史结余`账户向`萨雷安银行活期`账户转移资产了。向[postings]({{ site.baseurl }}/tables_and_views_cn.html#postings)表插入内容来添加交易记录：
 
