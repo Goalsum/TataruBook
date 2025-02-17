@@ -11,7 +11,7 @@ TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_an
 
 # 如何下载和安装TataruBook？
 
-有2种方式可选：
+TataruBook可以以可执行程序的形态使用，也可以以Python脚本的形态使用。对应的两种下载和安装方式如下：
 
 ## 在Windows 10或更高版本中的可执行程序
 
