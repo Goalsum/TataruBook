@@ -7,9 +7,20 @@ sidebar:
 
 # 命令行和快捷菜单
 
-TataruBook是基于命令行的程序，但是在Windows 10或更高版本中提供了快捷菜单的调用方式。所有快捷菜单项都是对特定命令行的封装：当你在某个DB文件上使用快捷菜单命令时，TataruBook会自动转换成对应的命令行并填入文件名、表名等参数。因此，如果你想要查看快捷菜单中某个命令的解释，查看对应的命令行解释即可。
+TataruBook是基于命令行的程序，但是在Windows 10或更高版本中提供了右键快捷菜单的调用方式。所有快捷菜单项都是对特定命令行的封装：当你在某个DB文件上使用快捷菜单命令时，TataruBook会自动转换成对应的命令行并填入文件名、表名等参数。因此，如果你想要查看快捷菜单中某个命令的解释，查看对应的命令行解释即可。
 
-只有常用的命令提供了快捷菜单操作方式，其他命令只能通过命令行来调用。
+以下是可以用快捷菜单调用的命令列表。列表以外的命令只能通过命令行来调用。
+
+| 触发方式 | 快捷菜单项 | 对应命令 |
+|:-:|:-:|:-:|
+| 文件夹内容空白处点右键 | TataruBook create DB file | [init]({{ site.baseurl }}/commands_cn.html#init) |
+| DB文件上点右键 | TataruBook check | [check]({{ site.baseurl }}/commands_cn.html#check) |
+| DB文件上点右键 | TataruBook export | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| DB文件上点右键 | TataruBook paste | [paste]({{ site.baseurl }}/commands_cn.html#paste) |
+| DB文件上点右键 | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands_cn.html#upgrade) |
+
+Windows 11会默认隐藏一部分快捷菜单项，你需要先指定显示所有的菜单项才能找到某些命令。
+{: .notice}
 
 TataruBook有两种[安装方式]({{ site.baseurl }}/index_cn.html#如何下载和安装tatarubook)，与之对应的有两种命令行用法：**可执行文件用法**和**Python脚本用法**。为了简便起见，本文档都以可执行文件用法为示例。如果采用的是Python脚本用法，则需要将所有命令开头从`tatarubook`换成`python tatarubook.py`（假设你的解释器通过`python`运行）。比如，要创建一个名为`example.db`的数据库文件，需要将`tatarubook init example.db`命令改为`python tatarubook.py init example.db`。
 
