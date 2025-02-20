@@ -9,24 +9,29 @@ TataruBook is an individual or family-oriented bookkeeping and financial income 
 
 # How to download and install TataruBook?
 
-There are 2 approaches:
+TataruBook can be used either as an executable program or as a Python script. The two corresponding download and installation approaches are as follows:
 
-1. First install [Python 3.8 or above](https://www.python.org/downloads/), and then download `tatarubook.py` from [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository]( https://gitee.com/goalsum/tatarubook), and run it later using `python tatarubook.py`. This works on any operating system that can support Python.
-1. Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `tatarubook.exe` program from it. This approach does not require Python to be installed, but is only available for Windows operating systems with Windows 10 or above.
+## Executable program in Windows 10 or higher version of Windows
 
-TataruBook is a **command-line program**, that means if you double-click the `tatarubook.exe` file directly on Windows, most likely you'll see a flash of a black window and then nothing else happens. The correct way to run a command-line program is to open a command-line terminal first (on windows, run `Command Prompt`), and then type (or paste) the program name with specified subcommand and proper arguments.
+Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `install.bat` script to install (you may be asked to grant administrator privileges during the installation process). Once the installation is complete, you can use the features of TataruBook via the right-click context menu in File Explorer.
+
+The `install.bat` will only modify the registry to add the context menu commands, it will not add files to any system directory. If you move the location of the TataruBook program folder, you will need to re-run `install.bat`. By running `uninstall.bat` you can remove all the added context menu commands.
+{: .notice}
+
+**NOTICE:** The `tatarubook.exe` file in the zip file is for command-line invocation only, do not try to double-click on it to run this file directly. TataruBook depends on several other files to run, so be sure to unzip all of the files in `tatarubook.zip` in the same directory, and keep the directory structure as is.
 {: .notice--warning}
 
-When using the first approach, the `tatarubook.py` script directly uses the default Python interpreter, SQLite and other dependent libraries in the runtime environment, so it only takes up very little disk space, but you must guarantee that all dependencies' versions are compatible. With the second approach, the Python interpreter, SQLite, and other dependent Python libraries are downloaded and take up disk space, but the advantage is that if these libraries are missing or faulty in the runtime environment, it will not affect the operation of the TataruBook software.
+## Python script
 
-**Note:** After installing the software using the second approach, the `tatarubook.exe` program depends on other files in the zip package to run. Therefore, please make sure to extract all files in `tatarubook.zip` in the same directory and keep the directory structure the same as in the archive.
-{: .notice--warning}
+If you have Python 3.8 or higher version installed on your system, then you can also download the `tatarubook.py` source file from the [Github repository](https://github.com/Goalsum/TataruBook) or [Gitee repository](https://gitee.com/goalsum/tatarubook), and then run `tatarubook.py` script with the Python interpreter to use TataruBook's bookkeeping functions.
+
+This approach only requires downloading a very small script file, needs neither unzipping nor installation, and can be run on any operating system. But by this approach TataruBook can only be used through command-line. The first approach is recommended for those using Windows 10 or higher version to gain the convenience of context menu operations.
 
 # How to use TataruBook for bookkeeping?
 
 You need to understand some concepts first:
 
-TataruBook is just a program (technically a Python script), it doesn't contain any financial data itself, all the data is stored in **DB files**, which are files named by the user and have the suffix `.db`. TataruBook can operate on DB files specified on the command-line.
+TataruBook is just a program, it doesn't contain any financial data itself, all the data is stored in **DB files**, which are files named by the user and have the suffix `.db`. TataruBook can operate on the DB file specified on the command-line.
 
 ## What is a DB file?
 
@@ -54,7 +59,7 @@ If you feel that the existing views in the DB file are not enough for you and yo
 
 For investors, the return on investment is of great interest, and TataruBook has several views that present the return on investment from various perspectives. [Rate of return]({{ site.baseurl }}/rate_of_return.html) describes in detail how the various rates of return are calculated and how they are used in TataruBook's views.
 
-How to improve the efficiency of importing external data is a key challenge in actual bookkeeping, [Data importing guide]({{ site.baseurl }}/importing_data.html) gives efficient data processing and importing methods for reference.
+How to improve the efficiency of importing external data is a key challenge in actual bookkeeping, [Data importing guide]({{ site.baseurl }}/importing_data.html) gives efficient data processing and importing s for reference.
 
 # How do I give feedback on issues and requirements?
 
