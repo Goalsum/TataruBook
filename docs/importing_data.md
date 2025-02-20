@@ -157,14 +157,14 @@ Populate all rows with these formulas to get the calculation results as follows:
 
 # Recognize transaction records that have already been imported
 
-In the above example, the last three transactions each is a transfer from another account to the `Sharlayan Bank credit card` account. Normally, these transaction records would exist in both accounts on both sides of the transaction. For example, If we had imported the `Sharlayan Bank current` transaction records first, then the last two records would have been in the db file before importing the `Sharlayan Bank credit card` transaction records. Therefore, while importing the transaction records of `Sharlayan Bank credit card`, you need to first identify these already imported transaction records to avoid these records from being duplicated in the db file.
+In the above example, the last three transactions each is a transfer from another account to the `Sharlayan Bank credit card` account. Normally, these transaction records would exist in both accounts on both sides of the transaction. For example, If we had imported the `Sharlayan Bank current` transaction records first, then the last two records would have been in the DB file before importing the `Sharlayan Bank credit card` transaction records. Therefore, while importing the transaction records of `Sharlayan Bank credit card`, you need to first identify these already imported transaction records to avoid these records from being duplicated in the DB file.
 
-This step is not required and can be skipped if you are sure that the transaction records that need to be imported do not exist in the db file.
+This step is not required and can be skipped if you are sure that the transaction records that need to be imported do not exist in the DB file.
 {: .notice}
 
 Create a new worksheet named `statements` after the `Final Results` worksheet.
 
-Use the [export]({{ site.baseurl }}/commands.html#export) command to export the content of [statements]({{ site.baseurl }}/tables_and_views.html#statements) view from the db file, then open it in Excel and filter on the `src_name` column to show only records for the `Sharlayan Bank current` account. Observe the time period that overlap with the current transaction records to be imported, and copy the transaction records within this period into the `statements` worksheet.
+Use the [export]({{ site.baseurl }}/commands.html#export) command to export the content of [statements]({{ site.baseurl }}/tables_and_views.html#statements) view from the DB file, then open it in Excel and filter on the `src_name` column to show only records for the `Sharlayan Bank current` account. Observe the time period that overlap with the current transaction records to be imported, and copy the transaction records within this period into the `statements` worksheet.
 
 Next, we need to perform a **one-to-one match** between the transaction records in the `Intermediate Results` worksheet and the `statements` worksheet. The correct bookkeeping data should satisfy such a match result:
 
@@ -198,7 +198,7 @@ This matching relationship is incorrect because the fifth record of `Intermediat
 
 After modifying the contents of cell H6, the contents of column M of `statements` are updated: the two records now find matches of `6` and `7`, respectively, and the matches are correct.
 
-Finally, add a new column, `skip` (column H), to the right of the current last column, `dst_change` (column G), in the `Final Results` worksheet, and fill a formula in the second row: `=COUNTIF(statements!M:M,ROW())`. This formula is used to show whether the row has a match in `statements`, if so, the result is `1`, otherwise `0`. Fill this formula to all rows and filter this row for `0` records, these are the transactions that do not exist in the db file and need to be imported.
+Finally, add a new column, `skip` (column H), to the right of the current last column, `dst_change` (column G), in the `Final Results` worksheet, and fill a formula in the second row: `=COUNTIF(statements!M:M,ROW())`. This formula is used to show whether the row has a match in `statements`, if so, the result is `1`, otherwise `0`. Fill this formula to all rows and filter this row for `0` records, these are the transactions that do not exist in the DB file and need to be imported.
 
 The columns added to the relevant worksheet and the formulas for the second row of each column according to the above process are summarized as below:
 
@@ -210,8 +210,8 @@ The columns added to the relevant worksheet and the formulas for the second row 
 | statements | 1 | M | `=IF(COUNTIF('Intermediate Results'!H:H,ROW())>0,MATCH(ROW(),'Intermediate Results'!H:H,0),MATCH(L2,OFFSET('Intermediate Results'!G$1,M1,0,9999),0)+M1)` |
 | Final Results | skip | H | `=COUNTIF(statements!M:M,ROW())` |
 
-# Save as a csv file and import the data
+# Import data into the DB file
 
-The data in the `Final Results` worksheet already meets TataruBook's requirements for transaction records to import. Save these data as a `postings.csv` file and import them using the [import]({{ site.baseurl }}/commands.html#import) command, and all the work is done.
+The data in the `Final Results` worksheet already meets the formatting requirements of [postings]({{ site.baseurl }}/tables_and_views.html#postings) table. Copy these data to clipboard and import them into the DB file by using [paste]({{ site.baseurl }}/commands.html#paste) command, then all the work is done.
 
-But be careful: there are some transactions that involve accounts that may not have been created in TataruBook yet. For example, if a transaction involves a stock that has never been traded before, it is possible that the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site .baseurl }}/tables_and_views.html#asset_types) table does not contain this stock, causing the import to fail. However, TataruBook triggers an automatic rollback when any record fails to be imported without affecting existing data. So you can try to import multiple times and supplement the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table according to the failure message each time until the entire `postings.csv` file is imported successfully. In the `Intermediate Results` worksheet of the conversion template, you can add a few new columns to grab the information needed by the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+But be careful: there are some transactions that involve accounts that may not have been created in TataruBook yet. For example, if a transaction involves a stock that has never been traded before, it is possible that the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site .baseurl }}/tables_and_views.html#asset_types) table does not contain this stock, causing the import to fail. However, TataruBook triggers an automatic rollback when any record fails to be imported without affecting existing data. So you can try to import multiple times and supplement the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table according to the failure message each time until all the records can be imported successfully. In the `Intermediate Results` worksheet of the conversion template, you can add a few new columns to grab the information needed by the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table and the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
