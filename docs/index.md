@@ -15,7 +15,7 @@ TataruBook can be used either as an executable program or as a Python script. Th
 
 Download `tatarubook.zip` package from the [Github release page](https://github.com/Goalsum/TataruBook/releases) or [Gitee release page](https://gitee.com/goalsum/tatarubook/releases), extract it to any folder, and run the `install.bat` script to install (you may be asked to grant administrator privileges during the installation process). Once the installation is complete, you can use the features of TataruBook via the right-click context menu in File Explorer.
 
-The `install.bat` will only modify the registry to add the context menu commands, it will not add files to any system directory. If you move the location of the TataruBook program folder, you will need to re-run `install.bat`. By running `uninstall.bat` you can remove all the added context menu commands.
+The `install.bat` will only modify the registry to add the context menu items, it will not add files to any system directory. If you move the location of the TataruBook program folder, you will need to re-run `install.bat`. By running `uninstall.bat` you can remove all the added context menu items.
 {: .notice}
 
 **NOTICE:** The `tatarubook.exe` file in the zip file is for command-line invocation only, do not try to double-click on it to run this file directly. TataruBook depends on several other files to run, so be sure to unzip all of the files in `tatarubook.zip` in the same directory, and keep the directory structure as is.
