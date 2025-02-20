@@ -3,7 +3,24 @@ title: User Manual
 ---
 This page describes all the commands supported by TataruBook.
 
-There are two [installation approaches]({{ site.baseurl }}/index.html#how-to-download-and-install-tatarubook) for TataruBook, which correspond to two command-line usages: **Python script usage** and **executable file usage**. For the sake of simplicity, executable file usage is used as an example on this page. If you are using Python script usage, you need to change the beginning of all commands from `tatarubook` to `python tatarubook.py`. For example, to create a database file named `example.db`, change the `tatarubook init example.db` command to `python tatarubook.py init example.db`.
+# Command-line and context menu
+
+TataruBook is a command-line based program, but can be invoked by right-click context menu items in Windows 10 or higher version. Each context menu item is just an encapsulation of a specific command: when you right-click a DB file and select a context menu item, TataruBook automatically invokes the corresponding command-line and fills in parameters such as file name, table name, and so on. Therefore, if you want to see the explanation of an item in the context menu, just check the corresponding command's explanation.
+
+The following is a list of commands that can be invoked from the context menu. Commands outside the list can only be invoked from the command-line.
+
+| Trigger Method | Context Menu Item | Corresponding Command |
+|:-:|:-:|:-:|
+| Right-click on the background of a folder's content | TataruBook create DB file | [init]({{ site.baseurl }}/commands.html#init) |
+| Right-click on a DB file | TataruBook check | [check]({{ site.baseurl }}/commands.html#check) |
+| Right-click on a DB file | TataruBook export | [export]({{ site.baseurl }}/commands.html#export) |
+| Right-click on a DB file | TataruBook paste | [paste]({{ site.baseurl }}/commands.html#paste) |
+| Right-click on a DB file | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands.html#upgrade) |
+
+Windows 11 will hide some context menu items by default, you need to specify to show all menu items if you can't find some ones.
+{: .notice}
+
+There are two [installation approaches]({{ site.baseurl }}/index.html#how-to-download-and-install-tatarubook) for TataruBook, which correspond to two command-line usages: **Python script usage** and **executable file usage**. For the sake of simplicity, executable file usage is used in examples on this page. If you are using Python script, you need to change the beginning of all commands from `tatarubook` to `python tatarubook.py` (assuming that your Python interpreter can be invoked by `python`). For example, to create a database file named `example.db`, change the `tatarubook init example.db` command to `python tatarubook.py init example.db`.
 
 # General Features
 
@@ -17,7 +34,7 @@ If you want TataruBook to read and write files using other character encoding fo
 
 ## Automatically generated index fields
 
-There are some fields whose values are automatically generated on insertion, such as `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table, `posting_index` in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, etc. When inserting records into these tables with the [insert]({{ site.baseurl }}/commands.html#insert) command, the value of these fields should be filled in as `NULL`; with the [import]({{ site.baseurl }}/commands.html#import) command When importing records, the content of the cell corresponding to this field should be empty. This way, TataruBook will automatically find a new index value to fill this field with which is different from the other records.
+There are some fields whose values are automatically generated on insertion, such as `account_index` in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table, `posting_index` in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, etc. When inserting records into these tables with the [insert]({{ site.baseurl }}/commands.html#insert) command, the value of these fields should be filled in as `NULL`; with the [import]({{ site.baseurl }}/commands.html#import) or [paste]({{ site.baseurl }}/commands.html#paste) command When importing records, the content of the cell corresponding to this field should be empty. This way, TataruBook will automatically find a new index value which is different from the other records to fill in this field.
 
 ## Input format of date 
 
@@ -44,17 +61,17 @@ Now we want to insert a record into the [postings]({{ site.baseurl }}/tables_and
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | 1 | 2023-01-07 | 1 | -67.5 | 2 | Dinner at the Last Stand |
 
-However, writing this record manually requires finding the `account_index` of the `Sharlayan Bank current` to be `1` and filling that in the `src_account` field, and finding the `account_index` of the `Food and Beverages` to be `2` and filling that in the `dst_account` field. This lookup process is cumbersome - especially when the `accounts` table has dozens of records.
+However, writing this record requires manually finding the `account_index` of the `Sharlayan Bank current` to be `1` and filling that in the `src_account` field, and finding the `account_index` of the `Food and Beverages` to be `2` and filling that in the `dst_account` field. This lookup process is cumbersome - especially when the `accounts` table has dozens of records.
 
-To solve this problem, TataruBook allows filling in **names** in certain places where indexes need to be filled in. For example, to insert the above record into the `postings` table, you can write this in the CSV file (if you don't understand why the cell below `posting_index` is empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields)):
+To solve this problem, TataruBook allows filling in **names** in certain places where indexes need to be filled in. For example, to insert the above record into the `postings` table, you can write it as this (if you don't understand why the cell below `posting_index` is empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields)):
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | | 2023-01-07 | Sharlayan Bank current | -67.5 | Food and Beverages | Dinner at the Last Stand |
 
-Then import with [import]({{ site.baseurl }}/commands.html#import) command. TataruBook will automatically find which record in the `accounts` table has `account_name` as `Sharlayan Bank current`, which record has `account_name ` as `Food and Beverages` and populate the corresponding field with the `account_index` of those two records.
+When inserting this record, TataruBook will automatically find which record in the `accounts` table has `account_name` as `Sharlayan Bank current`, which record has `account_name ` as `Food and Beverages` and populate the corresponding field with the `account_index` of those two records.
 
-Not only [import]({{ site.baseurl }}/commands.html#import) command supports this, but also [insert]({{ site.baseurl }}/commands.html#insert) command. This record above can also be inserted directly with a single command:
+This feature is applied not only by [import]({{ site.baseurl }}/commands.html#import) and [paste]({{ site.baseurl }}/commands.html#paste) command, but also by [insert]({{ site.baseurl }}/commands.html#insert) command. The record above can also be inserted directly with a single command:
 
 ~~~
 tatarubook insert example.db postings NULL 2023-01-07 "Sharlayan Bank current" -67.5 "Food and Beverages" "Dinner at the Last Stand"
@@ -86,7 +103,7 @@ A records of the [posting_extras]({{ site.baseurl }}/tables_and_views.html#posti
 
 This process is obviously cumbersome. To simplify the insertion of transaction records, TataruBook supports **automatically inserting into the associated table**. When inserting a record into the `postings` table, if you write an extra field at the end, TataruBook assumes that this is a request to insert into the `posting_extras` table, and that the extra field is the value of the `dst_change` field of the `posting_extras` table.
 
-For example: Importing a CSV file like the one below with [import]({{ site.baseurl }}/commands.html#import) command inserts a record into both the `postings` table and the `posting_extras` table with the same `posting_index` for both records. (If you don't understand why the values of `src_account` and `dst_account` are not numbers, see [lookup index by name]({{ site.baseurl }}/commands.html#lookup-index-by-name); if you don't understand why the cells below `posting_index` are empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields))
+For example: either inserting a record like the one below with [paste]({{ site.baseurl }}/commands.html#paste) command, or importing a CSV file like the one below with [import]({{ site.baseurl }}/commands.html#import) command will inserts a record into both the `postings` table and the `posting_extras` table with the same `posting_index` for both records. (If you don't understand why the values of `src_account` and `dst_account` are not numbers, see [lookup index by name]({{ site.baseurl }}/commands.html#lookup-index-by-name); if you don't understand why the cells below `posting_index` are empty, see [automatically generated index fields]({{ site.baseurl }}/commands.html#automatically-generated-index-fields))
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -98,9 +115,9 @@ The [insert]({{ site.baseurl }}/commands.html#insert) command also supports this
 tatarubook insert example.db postings NULL 2023-05-22 "Sharlayan Bank current" -10000 "Garlond Ironworks shares" "Buy shares" 500
 ~~~
 
-Note that the `dst_change` field must be placed at the end. TataruBook only recognizes fields based on position, it doesn't care about the contents of the header row of the CSV file.
+Note that the `dst_change` field must be placed at the end. TataruBook only recognizes fields based on position, it doesn't care about the contents of the header row.
 
-The [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table also supports associative insertion: if a record of `accounts` table as well as an associated record of `asset_types` table both needs to be inserted, the two records can be inserted using a single [import]({{ site.baseurl }}/commands.html#import) command, the CSV file contents are as follows:
+The [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table also supports associative insertion: if a record of `accounts` table as well as an associated record of `asset_types` table both needs to be inserted, the two records can be inserted using a single [import]({{ site.baseurl }}/commands.html#import) command, the contents of the form are as follows:
 
 | account_index | account_name | asset_index | is_external | asset_name | asset_order |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -206,7 +223,7 @@ tatarubook import [-h] [--table TABLE] [--encoding ENCODING] db_file csv_file
 - `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 - `csv_file`: CSV file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
 
-TataruBook will automatically determine if the CSV file has a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
+TataruBook will automatically determine if the CSV file includes a header row or not, the judgment is: if no column of the first row of the CSV contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
 
 If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire DB file is restored to the state it was in before this `import` command was executed, even if other rows in the CSV file can be inserted successfully.
 
@@ -228,6 +245,33 @@ tatarubook overwrite [-h] db_file table content
 - `content`: the content of the only field of the only record inserted.
 
 This command can be seen as a quick way to modify a table containing only one value.
+
+## paste
+
+This is a new command added in v1.2. This command uses PowerShell to read the clipboard content, and can only be used in Windows.
+{: .notice}
+
+Parse current clipboard content as one or more records of a specified table, and insert those records into that table. Multiple records in the clipboard need to be separated by newlines, multiple fields in a record need to be separated by tabs, and the content of each field is not allowed to contain tabs.
+
+If you copy content from a text editor (such as Notepad) to the clipboard, you need to follow the above formatting requirements. If you copy cells from Excel to the clipboard, then the data format meets the requirements automatically, but you must ensure that each cell's content does not contain tabs. Be careful not to use a text editor to open a CSV file and copy the source content, because the fields in a CSV file are separated by commas and do not meet the formatting requirements. You should open the CSV file in Excel and then copy the cells.
+
+When the `table` parameter is one of `start_date`, `end_date`, or `standard_asset`, this command performs [overwrite]({{ site.baseurl }}/commands.html#overwrite); otherwise, [insert]({{ site.baseurl }}/commands.html#insert) is performed for each record in the clipboard.
+
+**Command format**:
+
+~~~
+tatarubook paste [-h] db_file table
+~~~
+
+**Parameters**:
+- `db_file`: DB file name, with or without path. If there are spaces in the path or file name, you need to surround this parameter with quotes.
+- `table`: table name.
+
+TataruBook will automatically determine if the clipboard content includes a header row or not, the judgment is: if no column of the first row contains a number, then it is considered to be a header row. Note: TataruBook only determines and skips the header row, it does not adjust the field order based on the content of the header row. The field order must be consistent with the table definition.
+
+If the processing fails when inserting a row, then TataruBook performs a **rollback** and the entire DB file is restored to the state it was in before this `paste` command was executed, even if other rows in the clipboard can be inserted successfully.
+
+The paste operation has some special handling, see the description in [general features]({{ site.baseurl }}/commands.html#general-features).
 
 ## delete
 
