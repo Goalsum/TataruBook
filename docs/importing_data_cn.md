@@ -237,8 +237,8 @@ sidebar:
 | statements | 1 | M | `=IF(COUNTIF(中间结果!H:H,ROW())>0,MATCH(ROW(),中间结果!H:H,0),MATCH(L2,OFFSET(中间结果!G$1,M1,0,9999),0)+M1)` |
 | 最终结果 | skip | H | `=COUNTIF(statements!M:M,ROW())` |
 
-# 保存为csv文件并导入数据
+# 导入数据到DB文件
 
-`最终结果`工作表中的数据已经符合TataruBook的交易记录导入要求了。把这些数据复制到剪贴板并使用[paste]({{ site.baseurl }}/commands_cn.html#paste)命令插入，所有的工作就完成了。
+`最终结果`工作表中的数据已经符合TataruBook的[postings]({{ site.baseurl }}/tables_and_views_cn.html#postings)表的格式要求了。把这些数据复制到剪贴板并使用[paste]({{ site.baseurl }}/commands_cn.html#paste)命令导入DB文件，所有的工作就完成了。
 
 但是要注意：有一些交易记录所涉及的账户可能在TataruBook中还没有创建。比如例子中的`证券买入`如果是第一次买入`中概互联网ETF`这个证券品种，那么有可能在导入时[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中找不到这个品种，导致导入失败。不过，TataruBook在任一条记录导入失败时会触发自动回滚而不影响已有数据。因此可以多次尝试导入，并根据每次提示的失败信息补充[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表的记录，直到整个`postings.csv`文件导入成功。在转换模板的`中间结果`工作表中，可以新增几列来抓取[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表和[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表所需要的字段，用于当导入失败时在这两个表中添加需要的记录。
