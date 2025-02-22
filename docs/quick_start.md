@@ -71,7 +71,7 @@ The content of the vast majority of views in TataruBook is determined by the sta
 
 Then set the unique currency `Gil` as the bookkeeping **home currency** to solve the problem of needing a record in the [standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) table: select and copy the cell in previous `asset_types.csv` table which contains `Gil`, then right-click on the `accounting.db` file, select `standard_asset` under the `TataruBook paste` submenu. This sets the home currency to `Gil`.
 
-In the actual data of DB file's table, assets are referenced using the value of the `asset_index` field rather than the `asset_name` field - because the `asset_name` field is not the primary key of the table, and it is possible that there may be assets with the same name. However, it is not convenient for the user to enter the value of the `asset_index` field, so TataruBook allows the user to enter the value of the `asset_name` field where the value of the `asset_index` field is required, and as long as an asset can be uniquely identified based on the value entered, then TataruBook will automatically convert it internally to the corresponding `asset_index` field value.
+In the actual data of DB file's table, assets are referenced using the value of the `asset_index` field rather than the `asset_name` field, since the `asset_name` field is not the primary key of the table, and it is possible that there may be assets with the same name. However, it is not convenient for the user to enter the value of the `asset_index` field, so TataruBook allows the user to enter the value of the `asset_name` field where the value of the `asset_index` field is required, and as long as an asset can be uniquely identified based on the value entered, then TataruBook will automatically convert it internally to the corresponding `asset_index` field value.
 {: .notice}
 
 Now the data consistency issues are all solved. In the pop-up window of the last `TataruBook paste` operation, TataruBook reports:
@@ -97,7 +97,7 @@ The process of inserting content into any table in the DB file is similar, so we
 
 The inserted row indicates that the name of the account is `Sharlayan Bank current`, the corresponding asset (or currency) is `Gil`, and the last field has a value of `0` indicating that the account is an **internal account**.
 
-You may be wondering what is "internal account"? --The answer to this question will come soon.
+You may be wondering what is "internal account"? The answer to this question will come soon.
 
 Suppose the balance inside the `Sharlayan Bank current` account is not $$ 0 $$ before we start bookkeeping, and now we want to enter this balance into TataruBook. However, TataruBook uses [double-entry bookkeeping]({{ site.baseurl }}/tables_and_views.html#simplified-double-entry-bookkeeping). So, **to add value to an account, there must be another account that reduces the value by an equal amount**. To fulfill this requirement, we add another **external account** named `Opening balance` to the [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table (note that this time the `is_external` field value is `1`):
 
@@ -140,7 +140,7 @@ After the execution is complete, right-click on the `accounting.db` file and sel
 | 3 | 2023/1/7 | 1 | -45 | 3 | Dinner at the Last Stand | Sharlayan Bank current | 1 | 0 | Food and Beverages | 4935 |
 | 3 | 2023/1/7 | 3 | 45 | 1 | Dinner at the Last Stand | Food and Beverages | 1 | 1 | Sharlayan Bank current | 65 |
 
-This data is similar to the usual transaction ledger statements that we see commonly. Filtering on `src_name` using Excel gives a different perspective: when filtering on the internal account `Sharlayan Bank current`, you see a chronological record of transactions and balances for that account; when filtering by the external account `Food and Beverages`, you see all transactions that occurred in the name of `Food and Beverages`. So, **external accounts are categorization of income and expenses**. In TataruBook, you can categorize your income and expenses statistics any way you like - just add the corresponding external accounts.
+This data is similar to the usual transaction ledger statements that we see commonly. Filtering on `src_name` using Excel gives a different perspective: when filtering on the internal account `Sharlayan Bank current`, you see a chronological record of transactions and balances for that account; when filtering by the external account `Food and Beverages`, you see all transactions that occurred in the name of `Food and Beverages`. So, **external accounts are categorization of income and expenses**. In TataruBook, you can categorize your income and expenses statistics any way you like: just add the corresponding external accounts.
 
 # Categorized statistics
 
@@ -165,10 +165,10 @@ Then, add a batch of transaction records to the [postings]({{ site.baseurl }}/ta
 | | 2023/3/10 | Sharlayan Bank credit card | -43 | Food and Beverages | Lunch at the Last Stand |
 | | 2023/3/20 | Sharlayan Bank current | -9300 | Sharlayan Bank credit card | Pay off credit card |
 
-In actual bookkeeping, the input data often comes from statements provided by banks, brokerage firms, and other organizations. It is obviously troublesome to manually write each transaction into the format required by the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table. Therefore, we recommend that you use means such as Excel formulas to automatically convert the raw statement data. The [Data Importing Guide]({{ site.baseurl }}/importing_data.html) describes in detail how to use Excel to automatically import statement data.
+In actual bookkeeping, the input data often comes from statements provided by banks, brokerage firms, and other organizations. It is obviously troublesome to manually write each transaction into the format required by the [postings]({{ site.baseurl }}/tables_and_views.html#postings) table. Therefore, we recommend that you use means such as Excel formulas to automatically convert the raw statement data. The [data importing guide]({{ site.baseurl }}/importing_data.html) describes in detail how to use Excel to automatically import statement data.
 {: .notice}
 
-TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch insertion. In this case, a **rollback** will be triggered - restoring the DB file to the state it was in before the command was executed. You can then correct the errors in the contents of the table and re-execute the command. The automatic rollback feature eliminates the need for users to worry about importing huge amount of records with partially successful inserts that make the state of the DB file difficult to determine.
+TataruBook has a lot of checks on the inserted data, you may encounter a failure of inserting a certain record during batch insertion. In this case, a **rollback** will be triggered to restore the DB file to the state it was in before the command was executed. You can then correct the errors in the contents of the table and re-execute the command. The automatic rollback feature eliminates the need for users to worry about importing huge amount of records with partially successful inserts that make the state of the DB file difficult to determine.
 {: .notice}
 
 Now we want to look at the categorized statistics of income and expenses. Exports the [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view, you'll see the following:
@@ -201,7 +201,7 @@ If you want to know what the final balance of each internal account is after the
 | 0 | 2023-12-31 | 1 | Sharlayan Bank current | 11635.0 | 1 | Gil | 1.0 | 11635.0 | 1.006 |
 | 0 | 2023-12-31 | 4 | Sharlayan Bank credit card | -73.0 | 1 | Gil | 1.0 | -73.0 | -0.006 |
 
-Note that the credit card has a negative balance - this is the norm for most credit card accounts.
+Note that the credit card has a negative balance, this is the norm for most credit card accounts.
 
 TataruBook does not allow account balances to be input directly (the previous operation of entering an opening balance actually enters a transaction), and the balances of all accounts are calculated automatically from the transaction history. During bookkeeping, the data entered can be effectively verified for completeness and accuracy by checking whether the balance displayed by TataruBook and the actual account balance are the same.
 {: .notice}
@@ -238,7 +238,7 @@ The [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) vi
 
 These figures indicate that the average daily account balance of `Sharlayan Bank current` during the statistics period was $$ 11278.38 $$ Gil, and the interest rate was about $$ 0.576\% $$. For a detailed description on this calculation, see the [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method).
 
-Checking the interest rate for each account helps to avoid errors in bookkeeping - if the calculated interest rate doesn't make sense, it's an indication that there may be an error in the bookkeeping data.
+Checking the interest rate for each account helps to avoid errors in bookkeeping. If the calculated interest rate doesn't make sense, it's an indication that there may be an error in the bookkeeping data.
 {: .notice}
 
 # Stock Investments
@@ -285,7 +285,7 @@ This is because TataruBook needs to know the value of the other assets measured 
 
 It is now possible to view all records on [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats) view to see all account balances and market values on the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date):
 
-If you follow this tutorial all along, now there is already an `end_stats.csv` file existing in this folder because we've exported it before. In this circumstance, when you execute `TataruBook export`, you will see an error message and that file will not be updated - because TataruBook avoids accidentally damaging existing files. So you need to delete the `end_stats.csv` file first, and then execute `TataruBook export`.
+If you follow this tutorial all along, now there is already an `end_stats.csv` file existing in this folder because we've exported it before. In this circumstance, when you execute `TataruBook export`, you will see an error message and that file will not be updated. That's because TataruBook avoids accidentally damaging existing files. So you need to delete the `end_stats.csv` file first, and then execute `TataruBook export`.
 {: .notice--warning}
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
@@ -367,7 +367,7 @@ TataruBook is often used to keep track of all of an individual or family's asset
 
 TataruBook is a command-line program and does not have a graphical interface. However, the DB file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the DB file (provided that the software supports the new features of SQLite). Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install the [nightly version](https://nightlies.sqlitebrowser.org/latest) of `DB Browser for SQLite` (only the nightly version supports the new features of SQLite), then run `DB Browser for SQLite`, and finally click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the DB file.
 
-![DB Browser for SQLite界面]({{ site.baseurl }}/assets/images/statements.png)
+![DB Browser for SQLite's UI]({{ site.baseurl }}/assets/images/statements.png)
 
 You can also use software other than TataruBook to edit the data in the DB file, but only TataruBook does a perfect consistency check when inserting data. So if you use other software to edit the DB file, it is better to use TataruBook to do the check again. If you know how to use SQL, you can also write your own SQL commands to develop data analysis functions that TataruBook does not provide.
 {: .notice}
