@@ -6,7 +6,25 @@ sidebar:
 ---
 このページでは、TataruBookでサポートされているすべてのコマンドについて説明します。
 
-TataruBookには２つの[インストール方法]({{ site.baseurl }}/index_jp.html#どうやってダウンロードやインストールする？)があり、それに対応するコマンドラインの使用法が２つあります。これらは、**Pythonスクリプト方式**と**実行ファイル方式**です。説明を簡単にするために、このページは、実行ファイル方式を例にとって説明します。Pythonスクリプト方式を使用する場合は、すべてのコマンドの冒頭を`tatarubook`から`python tatarubook.py`に置き換える必要があります。たとえば、`example.db`というデータベースファイルを作成するには、`tatarubook init example.db`というコマンドを`python tatarubook.py init example.db`に変更する必要があります。
+# コマンドラインとショートカットメニュー
+
+TataruBookはコマンドベースのプログラムですが、Windows 10以降では右クリックでショートカットメニューを呼び出すことができます。 全てのショートカットメニュー項目は特定のコマンドラインをひとまとめにしたものです。データベースファイルのところでショートカットメニューのコマンドを使用すると、TataruBookは自動的に対応するコマンドラインに変換し、ファイル名、テーブル名などのパラメータを入力します。したがって、ショートカットメニューのコマンドの使い方を確認するには、対応するコマンドのヘルプ情報を調べてください。
+
+以下はショートカットメニューから呼び出せるコマンドの一覧です。 リスト外のコマンドはコマンドラインからしか呼び出せません。
+
+| トリガーの方法 | ショートカットメニューの項目 | 対応するコマンド |
+|:-:|:-:|:-:|
+| フォルダー内の空白を右クリックする | TataruBook create DB file | [init]({{ site.baseurl }}/commands_cn.html#init) |
+| データベースファイルを右クリックする | TataruBook check | [check]({{ site.baseurl }}/commands_cn.html#check) |
+| データベースファイルを右クリックする | TataruBook export | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| データベースファイルを右クリックする | TataruBook paste | [paste]({{ site.baseurl }}/commands_cn.html#paste) |
+| データベースファイルを右クリックする | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands_cn.html#upgrade) |
+
+Windows 11では、初期設定でショートカットメニュー項目の一部が非表示になっている場合、特定のコマンドを使用するには、｢全ての項目を表示する」を選択する必要がある。
+{: .notice}
+
+TataruBookには２つの[インストール方法]({{ site.baseurl }}/index_jp.html#どうやってダウンロードやインストールする)があり、それに対応するコマンドラインの使用方法も２つあります。これらは、Pythonスクリプト方式と実行ファイル方式です。一例として、実行ファイル方式を説明します。
+Pythonスクリプト方式を使用する場合は、すべてのコマンドの冒頭を`tatarubook`から`python tatarubook.py`に置き換える必要があります（インタプリタをpythonで実行すると仮定します）。たとえば、`example.db`というデータベースファイルを作成するには、`tatarubook init example.db`というコマンドを`python tatarubook.py init example.db`に変更する必要があります。
 
 # 共通特性
 
@@ -49,15 +67,17 @@ TataruBookで他の文字コード形式を使用してファイルを読み書�
 
 ただし、このレコードを作成する際には、`シャーレアン銀行普通預金`の`account_index`が`1`であることを確認して`src_account`フィールドに入力し、`飲食費用`の`account_index`が`2`であることを確認して`dst_account`フィールドに入力する必要があります。特に、`accounts`テーブルに何十ものレコードが存在する場合、この検索作業は非常に大変です。
 
-この問題を解決するため、TataruBookでは、ではインデックスの代わりに**名字（アカウント名）**を入力することが可能です。たとえば、上記のレコードを`postings`テーブルに挿入する場合、CSVファイルに次のように記述します (`posting_index`のセルが空欄である理由については、[自動生成されたインデックスフィールド]({{ site.baseurl }}/commands_jp.html#自動生成されたインデックスフィールド)を参照してください)）。
+この問題を解決するため、TataruBookでは、インデックスの代わりに**名字（アカウント名）**を入力することが可能です。たとえば、上記のレコードを`postings`テーブルに挿入する場合、CSVファイルに次のように記述します (`posting_index`のセルが空欄である理由については、[自動生成されたインデックスフィールド]({{ site.baseurl }}/commands_jp.html#自動生成されたインデックスフィールド)を参照してください)）。
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
 | | 2023-01-07 | シャーレアン銀行普通預金 | -67.5 | 飲食費用 | ラストスタンドの夕食 |
 
-その後、[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを使用入力します。TataruBookは、`シャーレアン銀行普通預金`と`飲食費用`に対応する`account_name`を`accounts`テーブルから自動的に検出し、対応するレコードの`account_index`を各フィールドに入力します。
+上記のレコードを挿入時、TataruBookは、`accounts`テーブルのどのレコードの`account_name`が`萨雷安银行活期`に対応し、どのレコードの`account_name`が`餐饮消费`に対応することを自動的に検索します。その後、検索結果を2つのレコードの`account_index`のそれぞれ対応するフィールドに入力します。
 
-この機能は[import]({{ site.baseurl }}/commands_jp.html#import)コマンドだけでなく、[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドでも利用可能です。上記のレコードは、次のようなコマンドを使用して直接挿入することもできます。
+不光[import]({{ site.baseurl }}/commands_cn.html#import)和[paste]({{ site.baseurl }}/commands_cn.html#paste)命令支持这个功能，[insert]({{ site.baseurl }}/commands_cn.html#insert)命令也支持这个功能。上面的这条记录也可以直接用一条命令插入：
+
+この機能は[import]({{ site.baseurl }}/commands_jp.html#import)コマンドと[paste]({{ site.baseurl }}/commands_jp.html#paste)コマンドだけでなく、[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドでも利用可能です。上記のレコードは、次のようなコマンドを使用して直接挿入することもできます。
 
 ~~~
 tatarubook insert example.db postings NULL 2023-01-07 シャーレアン銀行普通預金 -67.5 飲食費用 ラストスタンドの夕食
@@ -69,7 +89,7 @@ TataruBookの名前によるインデックス検索に関する具体的なル�
 1. インデックスに対応するレコードが存在しない場合、フィールドの内容**と一致する、もしくはそれを含む唯一**の名前を持つレコードを検索します。該当するレコードが見つかった場合、フィールドの内容をそのレコードのインデックスに変換されます。この処理は前述の[import]({{ site.baseurl }}/commands_jp.html#import)和[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドの例と同じです。
 1. フィールドの内容と一致する、もしくはそれを含むレコードが存在しないか、または複数のレコードが見つかった場合、実行は失敗し、エラーが報告されます。たとえば、`シャーレアン銀行普通預金`と`シャーレアン年金`という２つのレコードは`accounts`テーブルに存在し、フィールドの内容が`シャーレアン`であった場合、TataruBookはどのインデックスを参照すべきか判断できないため、エラーを報告します。
 
-名前によるインデックス検索機能をサポートするフィールドの一覧は以下のとおりです。
+インデックスではなく名前の記入をサポートするフィールドと、インデックスの自動検索に関連するテーブルとフィールドは以下のとおりです。
 
 | テーブル | フィールド | 参照テーブル | 検索対象の名前 | 変換後のインデックス |
 |:-:|:-:|:-:|:-:|:-:|
@@ -89,7 +109,7 @@ TataruBookの名前によるインデックス検索に関する具体的なル�
 
 このプロセスは明らかに手間がかかります。取引記録の挿入を簡素化するため、TataruBookは**関連テーブルへの自動挿入**機能が備わっています。`postings`テーブルにレコードを挿入する際に、末尾に追加のフィールドを記入することで、TataruBookは同時に関連する`posting_extras`テーブルにもデータを挿入します。この追加フィールドは`posting_extras`テーブルの`dst_change`の値に対応します。
 
-例：[import]({{ site.baseurl }}/commands_jp.html#import) コマンドを使用して以下のようなCSVファイルをインポートすると、`postings`テーブルと`posting_extras`テーブルのそれぞれに一つのレコードが同時に挿入され、両方のレコードは同じ`posting_index`値を持ちます。（`src_account`と`dst_account`の値が数字でない理由がわからない場合は、[名前によるインデックスの検索]({{ site.baseurl }}/tables_and_views_jp.html#名前によるインデックスの検索)を参照してください。`posting_index`下のセルが空欄になっている理由がわからない場合は、[自動生成されたインデックスフィールド]({{ site.baseurl }}/commands_jp.html#自動生成されたインデックスフィールド)を参照してください）
+例：[paste]({{ site.baseurl }}/commands_jp.html#paste)コマンドを使用して以下のレコード、あるいは[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを使用して以下のようなCSVファイルをインポートする時、`postings`テーブルと`posting_extras`テーブルのそれぞれに一つのレコードが同時に挿入され、両方のレコードは同じ`posting_index`値を持ちます。(`src_account`と`dst_account`の値が数字でない理由がわからない場合は、[名前によるインデックスの検索]({{ site.baseurl }}/tables_and_views_jp.html#名前によるインデックスの検索)を参照してください。`posting_index`の下のセルが空欄になっている理由がわからない場合は、[自動生成されたインデックスフィールド]({{ site.baseurl }}/commands_jp.html#自動生成されたインデックスフィールド)を参照してください）
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -101,9 +121,9 @@ TataruBookの名前によるインデックス検索に関する具体的なル�
 tatarubook insert example.db postings NULL 2023-05-22 シャーレアン銀行普通預金 -10000 ガーロンド・アイアンワークス社の株 株を買う500
 ~~~
 
-`dst_change`フィールドは必ず末尾に配置する必要があることに注意してください。TataruBookは位置に基づいてフィールドを識別するだけであり、CSVファイルのヘッダ一行の内容には考慮しません。
+`dst_change`フィールドは必ず末尾に配置する必要があることに注意してください。TataruBookは位置に基づいてフィールドを識別するだけであり、テーブルのヘッダ一行の内容には考慮しません。
 
-また、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルも関連するレコードの挿入機能をサポートしています。`accounts`テーブルと`asset_types`テーブルに関連するレコードをそれぞれ同時に挿入する必要がある場合は、[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを一回実行するだけで完了します。使用するCSVファイルの内容は以下のようになります。
+また、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルも関連するレコードの挿入機能をサポートしています。`accounts`テーブルと`asset_types`テーブルに関連するレコードをそれぞれ同時に挿入する必要がある場合は、一回実行するだけで完了します。使用するテーブルの内容は以下のようになります。
 
 | account_index | account_name | asset_index | is_external | asset_name | asset_order |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -231,6 +251,33 @@ tatarubook overwrite [-h] db_file table content
 - `content`：挿入された唯一のレコードの唯一のフィールドの内容です。
 
 このコマンドは、１件のレコードのみを含むテーブルを迅速に変更できます。
+
+## paste
+
+これはv1.２で追加された新しいコマンドです。PowerShellを使ってクリップボードの内容を読み取って、WindowsOSでのみ使用できます。
+{: .notice}
+
+クリップボードの内容を、指定されたテーブルの1つ以上のレコードに解析し、テーブルに挿入します。 クリップボード内の複数のレコードは改行して区切る必要があり、レコード内の複数のフィールドはタブで区切る必要があります。
+
+テキストエディター（メモ帳など）からクリップボードに内容をコピぺする場合は、上記のフォーマット要件になっているか、自分で確認する必要があります。 Excelからクリップボードにコピぺする場合、そのフォーマットはその要件を満たしていますが、各セルの内容にタブが含まれないようにする必要があります。テキストエディタでCSVファイルを開いて内容をコピーしないでください。なぜなら、CSVファイルのフィールドがカンマで区切られ、書式要件を満たさないのです。Excelを使用してCSVファイルを開いてコピーしてください。
+
+`table`パラメータが`start_date`、`end_date`、`standard_asset`いずれかである場合、コマンドは[overwrite]({{ site.baseurl }}/commands_jp.html#overwrite)を実行し、そうでない場合、クリップボード内の各レコードに[insert]({{ site.baseurl }}/commands_cn.html#insert)を実行します。
+
+**コマンド形式**：
+
+~~~
+tatarubook paste [-h] db_file table
+~~~
+
+**パラメ—タ—**：
+- `db_file`：データベースファイル名です(パスの指定も可能)。パスやファイル名にスペースが含まれる場合は、このパラメータを引用符で囲む必要があります。
+- `table`：テーブル名です。
+
+TataruBookは、クリップボードの内容がテーブルのヘッダー行を含んでいるかを自動的判断します。最初の行のすべての列が数値でない場合、ヘッダー行とみなします。 注：TataruBookはヘッダー行を判断してスキップするだけで、ヘッダー行の内容に基づいてフィールドの順序を調整することはありません。 フィールドの順序はテーブルの定義と一致していなければなりません。
+
+レコードの挿入時に処理が失敗した場合、TataruBookは**ロールバック**を実行し、データベースファイルを`paste`コマンドが実行される前の状態に復元します。クリップボード内の他のレコードが正常に挿入できたとしても、挿入されません。
+
+挿入操作にはいくつかの特別な処理があります。[共通特性]({{ site.baseurl }}/commands_jp.html#共通特性)を参照してください。
 
 ## delete
 
