@@ -944,10 +944,10 @@ if __name__ == "__main__":
     parser_overwrite.add_argument("content", help="the only value that will exist in the table")
     parser_overwrite.set_defaults(func=overwrite)
 
-    parser_overwrite = subparsers.add_parser("paste", help="paste clipboard content info table")
-    parser_overwrite.add_argument("db_file", help="db filename to paste into")
-    parser_overwrite.add_argument("table", help="table name to paste into")
-    parser_overwrite.set_defaults(func=paste)
+    parser_paste = subparsers.add_parser("paste", help="paste clipboard content info table")
+    parser_paste.add_argument("db_file", help="db filename to paste into")
+    parser_paste.add_argument("table", help="table name to paste into")
+    parser_paste.set_defaults(func=paste)
 
     parser_delete = subparsers.add_parser("delete", help="delete one row by key columns")
     parser_delete.add_argument("db_file", help="db filename to delete from")
