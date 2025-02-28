@@ -140,7 +140,7 @@ After the execution is complete, right-click on the `accounting.db` file and sel
 | 3 | 2023/1/7 | 1 | -45 | 3 | Dinner at the Last Stand | Sharlayan Bank current | 1 | 0 | Food and Beverages | 4935 |
 | 3 | 2023/1/7 | 3 | 45 | 1 | Dinner at the Last Stand | Food and Beverages | 1 | 1 | Sharlayan Bank current | 65 |
 
-This data is similar to the usual transaction ledger statements that we see commonly. Filtering on `src_name` using Excel gives a different perspective: when filtering on the internal account `Sharlayan Bank current`, you see a chronological record of transactions and balances for that account; when filtering by the external account `Food and Beverages`, you see all transactions that occurred in the name of `Food and Beverages`. So, **external accounts are categorization of income and expenses**. In TataruBook, you can categorize your income and expenses statistics any way you like: just add the corresponding external accounts.
+This data is similar to the usual transaction ledger statements that we see commonly. Filtering on `src_name` using Excel gives a different perspective: when filtering on the internal account `Sharlayan Bank current`, you see a chronological record of transactions and balances for that account; when filtering by the external account `Food and Beverages`, you see all transactions that occurred in the name of `Food and Beverages`. So, **internal accounts contain assets or liabilities, external accounts are categorization of income and expenses**. In TataruBook, you can categorize your income and expenses statistics any way you like: just add the corresponding external accounts.
 
 # Categorized statistics
 
