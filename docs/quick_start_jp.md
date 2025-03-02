@@ -8,33 +8,51 @@ sidebar:
 
 # データベースファイルを初期化する
 
-まずTataruBookをダウンロードしてインストールします。その方法がわからない場合は、[これ]({{ site.baseurl }}/index_jp.html#どうやってダウンロードやインストールする？)を参照してください。。
+まずTataruBookをダウンロードしてインストールします。その方法がわからない場合は、[こちら]({{ site.baseurl }}/index_jp.html#どうやってダウンロードやインストールする)を参照してください。Windowsシステムで実行可能ファイルを使用してTataruBookをインストールしたと仮定します。
 
-便宜上、以下ではTataruBookが２つ目のインストール方法 (実行ファイル方式) を使用してインストールされたと仮定します。１つ目のインストール方法 (Pythonスクリプト方式) が使用された場合は、以下のコマンドの冒頭の`tatarubook`を`python tatarubook.py`に置き換える必要があります。たとえば、データベースファイルを作成するコマンドは`tatarubook init accounting.db`から`python tatarubook.py init accounting.db`に変更する必要があります。
+インストールが完了したら、エクスプローラーを開き、任意フォルダー内の空白の部分を右クリックし、`TataruBook create DB file`を選択します。Windows 11システムでは、一部の右クリックメニュー項目がデフォルトで非表示になっている場合は、まず｢その他のオプションを確認」を選択する必要があります。その後、データベースファイル名を入力するためのウィンドウが表示されます。
 
-インストールしたら、コマンドラインプログラムを実行して、TataruBookプログラムがあるディレクトリに切り替えて、以下のコマンドを実行します。
+~~~
+Input DB filename to create with(for example: financial.db):
+~~~
+
+ファイル名は任意のものにできますが、拡張子は必ず`.db`とする必要があります。この例では、`accounting.db`と入力してEnterキーを押すと、そのディレクトリ内に`accounting.db`というファイルが追加されました。それは、財務データが保存されている**データベースファイル**です。
+
+データベースファイルを作成する別の方法もあります。オペレーティングシステムのコマンドのターミナルを開き、TataruBookプログラムが配置されているディレクトリに移動し、次のコマンドを実行します。
 
 ~~~
 tatarubook init accounting.db
 ~~~
 
-そのディレクトリ内に`accounting.db`というファイルが追加されました。それは、財務データが保存されている**データベースファイル**です。
+この操作は同様に`accounting.db`のファイルを作成します。実際に、TataruBookの右クリックメニュー機能を使用する場合、TataruBookは自動的にメニュー項目を対応するコマンドに変換して実行します。そのため、各右クリックメニュー項目と対応するコマンドで同じ機能を使用できます。
 
-次に、[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドを使用して通貨の種類を追加します。
+次に、簿記のためには、まず通貨を追加する必要があります。通貨を追加するには、[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルを変更する必要があります。テーブルの内容を変更するために、まずテーブルにどのようなフィールドがあるか分かるようにする必要があります。そのため、まずexport機能を使用してこのテーブルをエクスポートしてから、変更することをお勧めします。
 
-~~~
-tatarubook insert accounting.db asset_types NULL ギル 0
-~~~
+先ほど作成した`accounting.db`ファイルを右クリックし、`TataruBook export`というサブメニューから`asset_types`を選択します。
 
-レコードが[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルに挿入されました。そのレコードが、`asset_index`、`asset_name`、`asset_order`という3つのフィールドが含まれています。`asset_index`の数値は`NULL`で、インデックスが自動的に生成されたことを表します。`asset_name`の数値は`ギル`で、資産(あるいは通貨)の名前を表します。`asset_order`の数値は`0`で、資産のシリアル番号を表します。TataruBookは、複数の資産を表示するときに、このシリアル番号を使って並べ替えを行います。
+![DB文件的快捷菜单]({{ site.baseurl }}/assets/images/context_menu.png)
 
-[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドは、テーブル名や各フィールドの数値を含むレコードを任意のテーブルに挿入します。
+ポップアップで`asset_types.csv`ファイルが作成されたことが表示されます。そのポップアップを閉じ、Excelで`asset_types.csv`ファイルを開くと、ヘッダー一行のみを含む空のテーブルが表示されます。
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+||||
+
+そして、そのテーブルに内容を追加します。`asset_index`フィールドは自動生成されたインデックスです。内容を追加する際、この列は空にしてください。`asset_name`フィールドは資産（通貨）の名前を表します。この例では、`ギル`と入力します。`asset_order`フィールドは並べ替えに資産の番号です。ひとまずは`0`と入力しておきます。入力後のテーブル内容は以下のようになります。
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+|| ギル | 0 |
+
+TataruBookのサポートファイルでは、例の多くは、「ファイナルファンタジー14」というゲームの設定から引用しています。ファイナルファンタジー14ではメインの通貨は`ギル`なので、ここでも例としてギルを使用しています。実際の簿記では、JPY、USD、RMB など、任意の通貨名を使用できます。
 {: .notice}
 
-TataruBookのサポートファイルでは、例の多くは、「ファイナルファンタジー14」というゲームの設定から引用しています。ファイナルファンタジー14ではメインの通貨は`ギル`なので、ここでも例としてギルを使用しています。実際の簿記では、日本円や米ドル、人民元など、任意の通貨名を使用できます。
+次に、追加された行を選択し、`Ctrl+C`のショートカットでクリップボードにコピーし、`accounting.db`ファイルを右クリックして、`TataruBook paste`というサブメニューから`asset_types`を選択します。これにより、新しく追加された行が`accounting.db`ファイル内の`asset_types`テーブルに挿入されます。
+
+実際には、テーブル内の任意の行または複数の行をコピーし、`TataruBook paste`コマンドを使用してデータベースファイルに挿入することができます。コピーされた内容にヘッダー一行が含まれている場合、`TataruBook paste`コマンドは自動的に識別し、ヘッダー一行をスキップします。
 {: .notice}
 
-前回のコマンドを実行すると、異常なメッセージが表示されました。
+さっきのTataruBook pasteコマンドを実行すると、ポップアップで異常なメッセージが表示されました。
 
 ~~~
 Integrity check after insertion:
@@ -43,81 +61,79 @@ end_date should contain exactly 1 row but 0 row(s) are found.
 standard_asset should contain exactly 1 row but 0 row(s) are found.
 ~~~
 
-それは**データ整合性チェック**を実行した後に報告された問題です。TataruBookには、財務データを分析するための複数の**ビュー**があり、その多くは計算するための特定のデータが必要です。そのため、TataruBookは必要なデータが不足していると判断すると、データの入力を要求します。多くの場合、メッセージの内容だけで、どの問題が報告されたのかを把握できます。
+それは**データ整合性チェック**を実行した後に報告された問題です。TataruBookには、財務データを分析するための複数の**ビュー**があり、その多くは計算するための特定のデータが必要です。そのため、TataruBookは必要なデータが不足していると判断すると、データの入力を要求します。多くの場合、エラーメッセージに書かれたコードによって、問題を推測できます。
 
-では、メッセージ内で報告された問題を１つずつ解決していきましょう。
+では、エラーメッセージが表示された場合は、該当する対処方法をお試しください。
 
-まず、[standard_asset]({{ site.baseurl }}/tables_and_views_jp.html#standard_asset)テーブルにレコードが必要であるという問題を解決するために、唯一の通貨として`ギル`を**自国通貨**に設定します。
+まず、**統計期間**の開始日と終了日を設定して、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)テーブルと[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)テーブルにそれぞれレコードが必要であるという問題を解決します。テキストを編集できるところで`2022-12-31`と入力し、それをコピーします。そして、`accounting.db`ファイルを右クリックし、`TataruBook paste`のサブメニューから`start_date`を選択し、統計期間の開始日が設定されます。同じ方法で、統計期間の終了日を`2023-12-31`に設定します。
 
-~~~
-tatarubook overwrite accounting.db standard_asset ギル
-~~~
+注意: 統計期間は`start_date`の日の**終了時**から始まります。したがって、2023年全体のデータを集計する場合、`start_date`を`2023-1-1`としないようにしてください。そうすると、`2023-1-1`の一日分のデータが計に含まれなくなってしまいます。
 
-次に、**統計期間**の開始日と終了日を設定して、 start_date[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)テーブルと[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)テーブルにそれぞれレコードが必要であるという問題を解決します。
-
-~~~
-tatarubook overwrite accounting.db start_date 2022-12-31
-tatarubook overwrite accounting.db end_date 2023-12-31
-~~~
-
-注意: 統計期間は`start_date`の日の**終了時**から始まります。したがって、2023年全体のデータを集計する場合、`start_date`を`2023-1-1`としないようにしてください。そうすると、`2023-1-1`の一日分のデータが合計に含まれなくなってしまいます。
-
-TataruBookの多くのビューは、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)および[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)テーブルで設定された統計期間に基づいて内容が決まります。たとえば、[start_stats]({{ site.baseurl }}/tables_and_views_jp.html#start_stats)ビューには、`start_date`の日の終了時点でのアカウント残高と資産価値が表示されます。[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューには、`end_date`の日の終了時点でのアカウント残高と資産価値が表示されます。また、ROIに関連するビューには、統計期間の収益が表示されます。 `start_date`と`end_date`を変更することで、統計期間を調整し、指定した過去期間の財務状況を確認できます。
+TataruBook中绝大多数视图的内容都是由[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)表和[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)表所定义的统计周期决定的。比如，[start_stats]({{ site.baseurl }}/tables_and_views_jp.html#start_stats)视图展示`start_date`这天结束时的账户余额和价值；[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)视图展示`end_date`这天结束时的账户余额和价值；投资收益率相关视图展示统计周期内的收益情况，等等。通过修改`start_date`和`end_date`，可以修改统计周期来观察指定的某段历史时期的财务状况。
 {: .notice}
 
-以上でデータ整合性の問題が解決したため、TataruBookは次のように報告します。
+次に、[standard_asset]({{ site.baseurl }}/tables_and_views_jp.html#standard_asset)テーブルにレコードが必要であるという問題を解決するために、唯一の通貨として`ギル`を**自国通貨**に設定します。先ほど作成した`asset_types.csv`テーブル内の`ギル`を含むセルをコピーし、`accounting.db`ファイルを右クリックして、`TataruBook paste`のサブメニューから`standard_asset`を選択して、自国通貨が`ギル`に設定されます。
+
+実際のTataruBookのデータでは、資産を参照する際に`asset_index`フィールドではなく、`asset_name`フィールドの値が使用されます。これは、`asset_name`フィールドがテーブルのメインキーではなく、同名の資産が存在する可能性があるためです。ただし、ユーザーが`asset_index`フィールドの値を直接入力するのは不便です。そのため、TataruBookでは、`asset_index`フィールドの値を入力する必要があるところで、`asset_name`フィールドの値を入力できるようにしています。入力された値が資産のタイプを特定できる場合、TataruBookは内部で自動的にそれを対応する`asset_index`フィールドの値に変換します。
+{: .notice}
+
+以上でデータ整合性の問題が解決しました。最後の`TataruBook paste`の操作で表示されたポップアップで、TataruBookは次のように報告します。
 
 ~~~
 Integrity check after overwrite:
 Everything is fine, no integrity breach found.
 ~~~
 
+TataruBookは、データを変更するたびに自動的にデータ整合性チェックを行います。 ショートカットメニューから`TataruBook check`を選択することで、いつでも手動でチェックを行うことができます。
+
 # 簿記を始める
 
-まずアカウントを追加しましょう:
+まずアカウントを追加しましょう。`accounting.db`ファイルを右クリックし、`TataruBook export`のサブメニューから`accounts`を選択し、生成された`accounts.csv`ファイルを開き、右クリックで｢新しい行を追加する」を選択して、以下のような新しい行を追加します。
 
-~~~
-tatarubook insert accounting.db accounts NULL シャーレアン銀行普通預金 ギル 0
-~~~
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| シャーレアン銀行普通預金 | ギル | 0 |
 
-このコマンドは、アカウントの名前が`シャーレアン銀行普通預金`であり、対応する資産 (通貨) が`ギル`であり、最後のフィールドの値0はそのアカウントが**内部アカウント**であることを意味します。
+この行をクリップボードにコピーして、`accounting.db`ファイルを右クリックし、`TataruBook paste`のサブメニューから`accounts`を選択し、挿入してください。
 
-「内部アカウント」とは何なのか疑問に思うかもしれません。後で答えます。
+データベースファイルのテーブルに内容を挿入するプロセスはこれと同様なので、以降では挿入操作のプロセスについては繰り返し説明しません。
 
-簿記を始める前に、 シャーレアン銀行の残高が$$ 0 $$ではないと仮定します。この残高をTataruBookに入力します。ただし、TataruBookは[複式簿記]({{ site.baseurl }}/tables_and_views_jp.html#容易化された複式簿記)を使用しますので、**アカウントに資産を追加する際には、別のアカウントから同額の資産を減らす必要があります。**この要件を満たすために、`期首残高`という名前の**外部アカウント**を追加します（最後のフィールドの値は`1`に設定してください）。
+この一行は、アカウントの名前が`シャーレアン銀行普通預金`であり、対応する資産 (通貨) が`ギル`であり、最後のフィールドの値`0`はそのアカウントが**内部アカウント**であることを意味します。
 
-~~~
-tatarubook insert accounting.db accounts NULL 期首残高 ギル 1
-~~~
+｢内部アカウント」とは何なのか疑問に思うかもしれません。このセクションの最後に答えます。
 
-`期首残高`アカウントから`シャーレアン銀行普通預金`アカウントに資産を移動できるようになりました。次のコマンドを使用して、`シャーレアン銀行普通預金`に$$ 5000 $$ギルの残高を追加します。
+簿記を始める前に、`シャーレアン銀行`の残高が$$ 0 $$ではないと仮定します。この残高をTataruBookに入力します。ただし、TataruBookは[複式簿記]({{ site.baseurl }}/tables_and_views_jp.html#容易化された複式簿記)を使用しますので、**アカウントに資産を追加する際には、別のアカウントから同額の資産を減らす必要があります**。この要件を満たすために、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルに`期首残高`という名前の**外部アカウント**を追加します(今回`is_external`フィールドの値は`1`であることに注意してください）。
 
-~~~
-tatarubook insert accounting.db postings NULL 2022-12-31 期首残高 -5000 シャーレアン銀行普通預金 期首残高
-~~~
 
-このコマンドを実行すると、TataruBookでは、`2022-12-31`に`期首残高`アカウントが$$ 5000 $$ギル減少し、`シャーレアン銀行普通預金`アカウントが$$ 5000 $$ギル増加したことになります。
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| 期首残高 | ギル | 1 |
 
-次に、飲食費の支出を記録するため、まず「飲食費用」という外部アカウントを追加します。
+`TataruBook paste`の操作は**同期**ではなく、**入力**であることにご注意ください。現在編集しているテーブルで、コンテンツの一部がデータベースファイルに存在している場合は、追加された分だけをコピーして`TataruBook paste`の操作を実行します。
+{: .notice}
 
-~~~
-tatarubook insert accounting.db accounts NULL 飲食費用 ギル 1
-~~~
+この一行を挿入すると、`期首残高`のアカウントから`シャーレアン銀行普通預金`のアカウントに資産を移すことができます。[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルにコンテンツを挿入して取引記録を追加します
 
-続いて、2件の消費記録を追加します。
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|| 2022-12-31 | 期首残高 | -5000 | シャーレアン銀行普通預金 | 残高 |
 
-~~~
-tatarubook insert accounting.db postings NULL 2023-1-5 シャーレアン銀行普通預金 -20 飲食費用 ホテルのモーニング
-tatarubook insert accounting.db postings NULL 2023-1-7 シャーレアン銀行普通預金 -45 飲食費用 ラストスタンドの夕食
-~~~
+例えば、上記の表を例に説明します。挿入操作を実行すると、TataruBookでは、`2022-12-31`に`历史结余`アカウントが $$ 5000 $$ギル減少し、`シャーレアン銀行普通預金`アカウントが$$ 5000 $$ギル増加したことになります。ですから、`シャーレアン銀行普通預金`アカウントには`2022-12-31`の終わる時点で$$ 5000 $$ギルの残高が残ります。
 
-実行後、[export]({{ site.baseurl }}/commands_jp.html#export)コマンドを使用して、[statements]({{ site.baseurl }}/tables_and_views_jp.html#statements)というビューをエクスポートします。
+次に、飲食費の支出を記録するため、まず[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルに`飲食費用`という外部アカウントを追加します。
 
-~~~
-tatarubook export accounting.db --table statements
-~~~
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| 飲食費用 | ギル | 1 |
 
-このコマンドにより、`statements.csv`ファイルがディレクトリに生成されます。Excel で開くと、次の内容が確認できます。
+続いて、[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルに2件の消費記録を追加します。
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|| 2023-1-5 | シャーレアン銀行普通預金 | -20 | 飲食費用 | ホテルのモーニング |
+|| 2023-1-7 | シャーレアン銀行普通預金 | -45 | 飲食費用 | ラストスタンドの夕食 |
+
+実行後、`accounting.db`を右クリックし、`TataruBook export`のサブメニューから`statements`を選択し、[statements]({{ site.baseurl }}/tables_and_views_jp.html#statements)というビューをエクスポートします。そして、Excelを使用して、ディレクトリに生成された`statements.csv`ファイルを開くと、次の内容が確認できます。
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -128,49 +144,38 @@ tatarubook export accounting.db --table statements
 | 3 | 2023/1/7 | 1 | -45 | 3 | ラストスタンドの夕食 | シャーレアン銀行普通預金 | 1 | 0 | 飲食費用 | 4935 |
 | 3 | 2023/1/7 | 3 | 45 | 1 | ラストスタンドの夕食 | 飲食費用 | 1 | 1 | シャーレアン銀行普通預金 | 65 |
 
-このデータは、よく目にする支払明細書に似ています。Excelの`src_name`列でフィルタをかけることで、さまざまな角度からデータを確認できます。例えば、内部アカウントの`シャーレアン銀行普通預金`を選ぶと、そのアカウントの取引と残高を時系列で確認できます。外部アカウントの`飲食費用`を選ぶと、飲食費用の明細を確認できます。つまり、**外部アカウントは収支の分類するためのものです**。TataruBookでは、収支の統計を自由に分類できます。対応する外部アカウントを追加するだけです。
+このデータは、よく目にする支払明細書に似ています。Excelの`src_name`列でフィルタをかけることで、さまざまな角度からデータを確認できます。例えば、内部アカウントの`シャーレアン銀行普通預金`を選ぶと、そのアカウントの取引と残高を時系列で確認できます。外部アカウントの`飲食費用`を選ぶと、飲食費用の明細を確認できます。つまり、**内部アカウントは資産や負債をふ込んでおり、外部アカウントは収支の分類するためのものです**。TataruBookでは、収支の統計を自由に分類できます。対応する外部アカウントを追加するだけです。
 
-# データを一括インポートする
+# 分類統計
 
-前のステップを踏まえて、さらなる財務データをインポートしてみましょう。まず、アカウントと外部アカウントを追加します。
+前のステップを踏まえて、さらなる財務データをインポートしてみましょう。まず、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルに内部アカウントと外部アカウントを追加します。
 
-~~~
-tatarubook insert accounting.db accounts NULL シャーレアン銀行クレジットカード ギル 0
-tatarubook insert accounting.db accounts NULL ショッピング ギル 1
-tatarubook insert accounting.db accounts NULL 家賃 ギル 1
-tatarubook insert accounting.db accounts NULL 給料 ギル 1
-~~~
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| シャーレアン銀行クレジットカード | Gil | 0 |
+|| ショッピング | ギル | 1 |
+|| 家賃 | ギル | 1 |
+|| 給料 | ギル | 1 |
 
-次に、取引記録を一括入力します。データ入力を効率化するため、銀行や他の組織から提供された取引詳細を一括でインポートします。TataruBookは[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを提供します。
-
-まずExcelで以下の形式にデータを整え、`postings.csv`というファイルとして保存します（`posting_index`列のデータはインポートされる時に自動生成されるため、空のままにしておきます。[自動生成されるインデックスフィールド]({{ site.baseurl }}/commands_jp.html#自動生成されるインデックスフィールド)を参照してください）。
+然后，向[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)表添加一批交易记录：
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment |
 |:-:|:-:|:-:|:-:|:-:|:-:|
-| | 2023/2/10 | 給料 | -8000 | シャーレアン銀行普通預金 | 月給 |
-| | 2023/2/13 | シャーレアン銀行クレジットカード | -190 | ショッピング | 洋服 |
-| | 2023/2/26 | シャーレアン銀行クレジットカード | -140 | ショッピング | 家庭用品 |
-| | 2023/3/2 | シャーレアン銀行クレジットカード | -9000 | 家賃 | 半年の家賃 |
-| | 2023/3/10 | 給料 | -8000 | シャーレアン銀行普通預金 | 月給 |
-| | 2023/3/10 | シャーレアン銀行クレジットカード | -43 | 飲食費用 | ラストスタンドのランチ |
-| | 2023/3/20 | シャーレアン銀行普通預金 | -9300 | シャーレアン銀行クレジットカード | クレジットカードの支払い |
+| | 2023-2-10 | 給料 | -8000 | シャーレアン銀行普通預金 | 月給 |
+| | 2023-2-13 | シャーレアン銀行クレジットカード | -190 | ショッピング | 洋服 |
+| | 2023-2-26 | シャーレアン銀行クレジットカード | -140 | ショッピング | 家庭用品 |
+| | 2023-3-2 | シャーレアン銀行クレジットカード | -9000 | 家賃 | 半年の家賃 |
+| | 2023-3-10 | 給料 | -8000 | シャーレアン銀行普通預金 | 月給 |
+| | 2023-3-10 | シャーレアン銀行クレジットカード | -43 | 餐饮费 | ラストスタンドのランチ |
+| | 2023-3-20 | 萨雷安银行活期 | -9300 | シャーレアン銀行クレジットカード | クレジットカードの支払い |
 
-次に、以下のコマンドを使用して、CSVファイルの全レコードを[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルにインポートします。
-
-~~~
-tatarubook import accounting.db postings.csv
-~~~
-
-実際の簿記では、簿記のデータは銀行や証券会社などの組織が提供する取引詳細から得られることが多いため、[insert]({{ site.baseurl }}/commands_jp.html#insert)コマンドよりも[import]({{ site.baseurl }}/commands_jp.html#import)コマンドの方が一般的に使用されます。TataruBookでは挿入データに対して多くのチェックが行われるため、一括インポート中に特定のデータを挿入できない場合があります。 この場合、`import`コマンドは自動的に**ロールバック**を実行し、データベースファイルを`import`コマンドを実行する前の状態に復元します。その後、CSVファイルの内容のエラーを修正してから、再実行できます。その自動ロールバック機能により、巨大なCSVファイルをインポートする際に、部分的な成功によってデータベースファイルの状態が不明確になる心配をする必要がありません。
+実際の簿記では、簿記のデータは銀行や証券会社などの組織が提供する取引詳細から得られることが多いため、各取引を[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルが要求するフォーマットに手入力するのは明らかに面倒なので、Excel関数を使って、生データを自動的に変換することをお勧めします。[データインポートガイド]({{ site.baseurl }}/importing_data_jp.html)では、Excelを使って簿記データを自動的にインポートする方法について詳しく説明しています。
 {: .notice}
 
-次に、収支の分類統計を確認します。まず[export]({{ site.baseurl }}/commands_jp.html#export)コマンドを使用して[income_and_expenses]({{ site.baseurl }}/tables_and_views_jp.html#income_and_expenses)ビューをエクスポートします。
+TataruBookでは挿入データに対して多くのチェックが行われるため、一括インポート中に特定のデータを挿入できない場合があります。 この場合、自動的に**ロールバック**を実行し、データベースファイルをインポート前の状態に復元します。その後、テーブルの内容のエラーを修正すると、入力を再実行できます。その自動ロールバック機能により、巨大なデータをインポートする際に、部分的な成功によってデータベースファイルの状態が不明確になる心配は必要ありません。
+{: .notice}
 
-~~~
-tatarubook export accounting.db --table income_and_expenses
-~~~
-
-次に、生成された`income_and_expenses.csv`ファイルを開きます。内容は次の通りです。
+次に、収支の分類統計を確認します。まず[income_and_expenses]({{ site.baseurl }}/tables_and_views_jp.html#income_and_expenses)ビューをエクスポートします。以下のような内容で表示されます。
 
 | asset_order | account_index | account_name | total_amount | asset_index | asset_name | total_value |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -216,33 +221,30 @@ TataruBookでは、アカウント残高を直接に入力できません (前�
 
 # 利子収益
 
-通常、銀行口座の資金には利子がつきます。利子収益を記録するには、まず利子用の外部アカウントを追加します。
+通常、銀行口座の資金には利子がつきます。利子収益を記録するには、まず[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルに利子用の外部アカウントを追加します。
 
-~~~
-tatarubook insert accounting.db accounts NULL ギルの利子 ギル 1
-~~~
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| ギルの利子 | ギル | 1 |
 
 複数の異なる通貨を使用している場合は、通貨ごとに異なる外部アカウントを設定する必要があります。利子アカウントを`ギルの利子`と命名しておくと、後から他の通貨を追加する際に、他の通貨の利子に対応する外部アカウントと`ギルの利子`を区別しやすくなります。もちろん、１つの通貨しか使用しない場合は、その必要はありません。
 {: .notice}
 
 TataruBookでは、利子収益を統計として管理できます。それを利用するには、利子アカウントを[interest_accounts]({{ site.baseurl }}/tables_and_views_jp.html#interest_accounts)テーブルに追加する必要があります。
 
-~~~
-tatarubook insert accounting.db interest_accounts ギルの利子
-~~~
+| interest_accounts |
+|:-:|
+| ギルの利子 |
 
-これで、利子収益を追加できるようになります。
+これで、[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)ーブルに利子収益を追加できるようになります。
 
-~~~
-tatarubook insert accounting.db postings NULL 2023-3-30 ギルの利子 -30 シャーレアン銀行普通預金 利子
-tatarubook insert accounting.db postings NULL 2023-6-30 ギルの利子 -35 シャーレアン銀行普通預金 利子
-~~~
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| | 2023-3-30 | ギルの利子 | -30 | シャーレアン銀行普通預金 | ギル |
+| | 2023-6-30 | ギルの利子 | -35 | シャーレアン銀行普通預金 | ギル |
+
 
 次に、[interest_rates]({{ site.baseurl }}/tables_and_views_jp.html#interest_rates)ビューを使用して、現在のデータに基づいて収益率を計算し表示できます。
-
-~~~
-tatarubook export accounting.db --table interest_rates
-~~~
 
 | account_index | account_name | asset_index | avg_balance | interest | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|
@@ -258,27 +260,27 @@ tatarubook export accounting.db --table interest_rates
 
 株式投資を記録するには、特定の株式**資産**を追加する必要があります。TataruBookでは、株式と通貨は本質的に区別されず、どちらも一種の資産として扱われます。そのため、[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルに株式資産を追加する方法は、通貨を追加する方法と同じです。
 
-~~~
-tatarubook insert accounting.db asset_types NULL ガーロンド・アイアンワークス社の株 1
-~~~
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+|| ガーロンド・アイアンワークス | 1 |
 
 末尾のフィルドの`asset_order`の値を`1`に設定すると、[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)などのビューで株式資産が通貨資産の後に表示されます。各ビューの資産の表示順序にこだわらない場合は、すべての資産の`asset_order`を`0`に設定できます。
 
-次に、この株を保有する内部アカウントを追加します。TataruBookでは、複数の内部アカウントが同じ株式を保有できますが、ここでは１つの株式アカウントを追加します。
+次に、この株を保有する内部アカウントを追加します。TataruBookでは、複数の内部アカウントが同じ株式を保有できますが、現時点では[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルに１つの株式アカウントを追加するだけです。
 
-~~~
-tatarubook insert accounting.db accounts NULL モーグリ証券_ガーロンドの株 ガーロンド・アイアンワークス社の株 0
-~~~
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| モーグリ証券_ガーロンドの株 | ガーロンド・アイアンワークス社の株 | 0 |
 
 TataruBookでの株式取引は、内部アカウント間で資産を移動される操作に過ぎません。しかし、１つの問題があります。前述のすべての取引では、元のアカウント（振り出し側のアカウント）の減少と、目的アカウント（移動先のアカウント）の増加は常に同等です。そのため、簿記の際には、１つの数値を入力するだけで、TataruBookが元のアカウントと目的アカウントの残高を同時に更新します。ただし、現金アカウントと株式アカウントは異なる資産を持っており、現金アカウントの残高は金額で表されるのに対して、株式アカウントの残高は株式の数で表されます。そのため、取引における現金アカウントの変化額は、株式アカウントの変化額の反数にはなりません (株価がちょうど$$ 1 $$である場合を除きます)。
 
-この問題を解決するために、TataruBookでは、**取引記録において２つのアカウントに異なる資産が含まれる場合、元のアカウントと目的アカウントの両方の変化額を同時に指定する必要がある**というルールがあります。具体的には、insertコマンドの末尾に目的アカウントの変化額を表す数字を追加する必要があります。
+この問題を解決するために、TataruBookでは、**取引記録において２つのアカウントに異なる資産が含まれる場合、元のアカウントと目的アカウントの両方の変化額を同時に指定する必要がある**というルールがあります。具体的には、[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)に入力された一行の末尾に目的アカウントの変化額を表す数字を追加する必要があります。
 
-~~~
-tatarubook insert accounting.db postings NULL 2023-7-3 シャーレアン銀行普通預金 -2000 モーグリ証券_ガーロンドの株 株を買う 200
-~~~
+| posting_index | trade_date | src_account | src_change | dst_account | comment ||
+|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
+| | 2023-7-3 | シャーレアン銀行普通預金 | -2000 | モーグリ証券_ガーロンドの株 | 株を買う | 200 |
 
-この場合、コマンド末尾の$$ 200 $$は、200株が購入されたことを示しています。[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを使用して記録をインポートする場合も、このコマンド (記録) の末尾に、目的アカウントの変動額を示すフィールドを追加する必要があります。
+この場合、コマンド末尾の$$ 200 $$は、200株が購入されたことを示しています。[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルがエクスポートされた時にこの列が存在しなかったため、自分でこの列の意味を覚えておく必要があります。最後の列の1行目に`dst_change`を書くことで、ヘッダ一行を編集して、データの意味を明確にすることもできます。TataruBookでは、挿入されたデータを処理する際に、ヘッダーの内容は気にしません。
 
 ２つのアカウントの変化額が既に取引価格を反映しているため、取引を追加する際にリアルタイムの取引価格を入力する必要はありません。手数料やコミッション、税金を記録する場合には、対応する外部アカウントを追加して、取引を複数の記録に分割して入力してください。
 
@@ -298,12 +300,8 @@ tatarubook insert accounting.db prices 2023-12-31 ガーロンド・アイアン
 
 [end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューを使用して、[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)におけるすべてのアカウント残高と価値を確認できます。
 
-もし入門書に従って最初から実行していた場合、`end_stats.csv`ファイルがエクスポートされており、このファイルが既にカレントフォルダに存在するはずです。この場合、以下のコマンドを実行しても、そのファイルは更新されません。これは、TataruBookが既存のファイルを誤って破壊しないようにしているためです。そのため、まず`end_stats.csv`ファイルを削除してから、以下のコマンドを実行してください。
+もし入門書に従って最初から実行していた場合、`end_stats.csv`ファイルがエクスポートされており、このファイルが既にカレントフォルダに存在するはずです。この場合、まず`end_stats.csv`ファイルを削除してから、`export`コマンドを実行してください。そうしないと、`export`コマンドの実行時に失敗が報告され、`end_stats.csv`ファイルの内容は変わりません。これは、TataruBookが既存のファイルを誤って破壊しないようにしているためです。
 {: .notice--warning}
-
-~~~
-tatarubook export accounting.db --table end_stats
-~~~
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -313,15 +311,19 @@ tatarubook export accounting.db --table end_stats
 
 # 投資収益率
 
-株式に加えて、ファンド、債券、商品、先物などの他の資産も同様の方法で記録されます。ファンド資産と対応するアカウントを追加します。
+株式に加えて、ファンド、債券、商品、先物などの他の資産も同様の方法で記録されます。[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルにファンド資産を追加します。
 
-~~~
-tatarubook insert accounting.db asset_types NULL エオルゼア100インデックスファンド 1
-tatarubook insert accounting.db accounts NULL モーグリ証券_エオルゼア100 エオルゼア100インデックスファンド 0
-~~~
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+|| エオルゼア100インデックスファンド | 1 |
 
-このファンドには、購入と償還の両方に関する複数の取引があります。[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを使用して、すべての取引記録を一括でインポートします。
-まず、CSVファイルを作成します。
+[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルにアカウントを追加します。
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+|| モーグリ証券_エオルゼア100 | エオルゼア100インデックスファンド | 0 |
+
+このファンドには、購入と償還の両方に関する複数の取引があります。[postings]({{ site.baseurl }}/tables_and_views_jp.html#postings)テーブルに、以下のような取引記録をインポートします。
 
 | posting_index | trade_date | src_account | src_change | dst_account | comment | dst_change |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -333,23 +335,13 @@ tatarubook insert accounting.db accounts NULL モーグリ証券_エオルゼア
 各行の最後のフィールドを明確にするため、ヘッダ一行に`dst_change`が追加されました。しかし、実際にはTataruBookではCSVファイルをインポートする際、ヘッダ一行の内容を考慮しないため、指定された順序で各フィールドの値を入力すれば十分です。
 {: .notice}
 
-次に、このCSVファイルの内容をインポートします。
+和之前一样，向[prices]({{ site.baseurl }}/tables_and_views_jp.html#prices)テーブルに[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付における`エオルゼア100インデックスファンド`の価格情報を追加します。
 
-~~~
-tatarubook import accounting.db postings.csv
-~~~
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2023-12-31 | エオルゼア100インデックスフ | 2.35 |
 
-以前のように、[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付におけるエオルゼア100インデックスファンドの価格情報を追加します。
-
-~~~
-tatarubook insert accounting.db prices 2023-12-31 エオルゼア100インデックスファンド 2.35
-~~~
-
-最後に、[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付におけるすべてのアカウントの残高と価値を確認します。`end_stats.csv`ファイルが既に存在する場合は、まずそれを削除してください。
-
-~~~
-tatarubook export accounting.db --table end_stats
-~~~
+完了したら、[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューで[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付におけるすべてのアカウントの残高と市場価値を確認します（`end_stats.csv`ファイルが既に存在する場合は、まずそれを削除してから`export`コマンドを実行してください）。
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -360,21 +352,13 @@ tatarubook export accounting.db --table end_stats
 
 アカウント別に価値を確認できるだけでなく、[end_assets]({{ site.baseurl }}/tables_and_views_jp.html#end_assets)ビューを使用して各資産の数量と価値を確認できます。
 
-~~~
-tatarubook export accounting.db --table end_assets
-~~~
-
 | asset_order | date_val | asset_index | asset_name | amount | price | total_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
 | 0 | 2023-12-31 | 1 | Gil | 6927.0 | 1.0 | 6927.0 | 0.5312 |
 | 1 | 2023-12-31 | 2 | ガーロンド・アイアンワークス社の株 | 200.0 | 12.0 | 2400.0 | 0.1840 |
 | 1 | 2023-12-31 | 3 | エオルゼア100インデックスファンド | 1580.0 | 2.35 | 3713.0 | 0.2847 |
 
-終了日の価値は算出されましたが、これらの売買取引を通じてファンド全体の収益がまた気になります。[return_on_shares]({{ site.baseurl }}/tables_and_views_jp.html#return_on_shares)ビューでは、投資対象が含まれている各アカウントの投資収益を確認できます(TataruBookは、自国通貨以外のすべての資産を投資対象として扱います)。
-
-~~~
-tatarubook export accounting.db --table return_on_shares
-~~~
+最終の価値は算出されましたが、投資者は、これらの売買取引を通じてファンド全体の収益がまた気になります。[return_on_shares]({{ site.baseurl }}/tables_and_views_jp.html#return_on_shares)ビューでは、投資対象が含まれている各アカウントの投資収益を確認できます(TataruBookは、自国通貨以外のすべての資産を投資対象として扱います)。
 
 | asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -398,11 +382,9 @@ tatarubook export accounting.db --table portfolio_stats
 TataruBookは通常、個人または家族のすべての資産を簿記に使用されるため、[portfolio_stats]({{ site.baseurl }}/tables_and_views_jp.html#portfolio_stats)ビューで表示される情報は非常に重要です。このビューには、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)や[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付時点の個人または家族の資産状況や、その期間中の収支、収益情報が表示されます。
 {: .notice}
 
-# GUIアプリでデータベースファイルを表示する
+# グラフィカルインターフェイスソフトウェアでデータベースファイルを表示する
 
-TataruBookはコマンドラインプログラムであり、グラフィカルユーザーインターフェイス(GUI)は備わっていません。ただし、テーブルとビューを含むすべてのデータベースファイルは**SQLiteファイル形式**で保存されているため、SQLite形式を対応しているソフトウェア(SQLiteの最新機能に対応している場合) を使用すれば、これらのテーブルやビューを表示できます。ここでは、オープンソースソフトウェアである[DB Browser for SQLite](https://sqlitebrowser.org/)を例に説明します。
-
-まず、`DB Browser for SQLite`の[nightly](https://nightlies.sqlitebrowser.org/latest)バージョン（SQLiteの新機能に対応しているのはnightlyバージョンのみです）。次に`DB Browser for SQLite`を起動し、最後に`Open Database`ボタンをクリックして`accounting.db`ファイルを選択します。これにより、データベースファイル内のテーブルやビューのデータが表示されます。
+TataruBookはグラフィカルユーザーインターフェイス(GUI)は備わっていませんが、テーブルとビューを含むすべてのデータベースファイルは**SQLiteファイル形式**保存されています。そのため、SQLite形式を対応しているソフトウェア(SQLiteの最新機能に対応している場合) を使用すれば、これらのテーブルやビューを表示できます。ここでは、オープンソースソフトウェアである[DB Browser for SQLite](https://sqlitebrowser.org/)を例に説明します。まず、`DB Browser for SQLite`の[nightlyバージョン](https://nightlies.sqlitebrowser.org/latest)（SQLiteの新機能に対応しているのはnightlyバージョンのみです）をダウンロードしてインストールし、次に`DB Browser for SQLite`を起動し、最後に`データベースファイルを開く`ボタンをクリックして、`accounting.db`文件ファイルを選択します。これにより、データベースファイル内のテーブルやビューのデータが表示されます。
 
 ![DB Browser for SQLiteの画面]({{ site.baseurl }}/assets/images/statements_jp.png)
 

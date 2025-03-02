@@ -213,6 +213,6 @@ Excelテーブルの内容は、以下の要件を満たす必要があります
 
 # csvファイルとして保存し、データをインポートする
 
-`最終結果`ワークシートのデータは、すでにTataruBookの取引記録のインポート要件を満たしています。このデータを`postings.csv`ファイルとして保存し、[import]({{ site.baseurl }}/commands_jp.html#import)コマンドを使用してインポートすれば、すべての作業が完了します。
+`最終結果`ワークシートのデータは、すでにTataruBookの取引記録のインポート要件を満たしています。このデータをクリップボードにコピーし、[paste]({{ site.baseurl }}/commands_jp.html#paste)コマンドを使って挿入すれば、すべての作業は完了です。
 
 ただし、注意が必要です。一部の取引には、TataruBook上でまだ作成されていないアカウントが関与している可能性があります。たとえば、これまで取引されたことのない株式が取引に関わる場合、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルや[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルにその株式の情報が含まれていない可能性があり、これが原因でインポートが失敗する場合があります。ただし、TataruBookでは、記録のインポートに失敗した場合、自動的にロールバックが実行されるため、既存のデータに影響を与えることはありません。そのため、`postings.csv`ファイル全体を正常にインポートできるまで、複数回インポートを試みることができます。その際、失敗時のエラーメッセージに基づき、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルや[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルに必要な情報を追加することで対応可能です。さらに、変換テンプレートの`中間結果`ワークシートにいくつかの新しい列を追加し、[accounts]({{ site.baseurl }}/tables_and_views_jp.html#accounts)テーブルや[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルに必要なフィールドを抽出して、インポート失敗時に不足している記録を補うことができます。
