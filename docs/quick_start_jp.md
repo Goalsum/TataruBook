@@ -69,7 +69,7 @@ standard_asset should contain exactly 1 row but 0 row(s) are found.
 
 注意: 統計期間は`start_date`の日の**終了時**から始まります。したがって、2023年全体のデータを集計する場合、`start_date`を`2023-1-1`としないようにしてください。そうすると、`2023-1-1`の一日分のデータが計に含まれなくなってしまいます。
 
-TataruBook中绝大多数视图的内容都是由[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)表和[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)表所定义的统计周期决定的。比如，[start_stats]({{ site.baseurl }}/tables_and_views_jp.html#start_stats)视图展示`start_date`这天结束时的账户余额和价值；[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)视图展示`end_date`这天结束时的账户余额和价值；投资收益率相关视图展示统计周期内的收益情况，等等。通过修改`start_date`和`end_date`，可以修改统计周期来观察指定的某段历史时期的财务状况。
+TataruBookのほとんどのビューの内容は、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)テーブルと[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)テーブルで定義される統計期間によって決定されます。例えば、[start_stats]({{ site.baseurl }}/tables_and_views_jp.html#start_stats)ビューは`start_date`の終了時の残高と価値を示します。[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューは`end_date`の終了時の残高と価値を示します。ROIに関するビューは統計期間内の収益率を示します。`start_date`と`end_date`を変えることで、統計期間を変更できて、特定の過去期間の財務状態を確認することができます。
 {: .notice}
 
 次に、[standard_asset]({{ site.baseurl }}/tables_and_views_jp.html#standard_asset)テーブルにレコードが必要であるという問題を解決するために、唯一の通貨として`ギル`を**自国通貨**に設定します。先ほど作成した`asset_types.csv`テーブル内の`ギル`を含むセルをコピーし、`accounting.db`ファイルを右クリックして、`TataruBook paste`のサブメニューから`standard_asset`を選択して、自国通貨が`ギル`に設定されます。
