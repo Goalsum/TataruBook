@@ -336,7 +336,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - 包含[diffs]({{ site.baseurl }}/tables_and_views_cn.html#diffs)视图中的`account_index`、`account_name`、`asset_index`字段，以及：
 - `start_amount`：来自[start_balance]({{ site.baseurl }}/tables_and_views_cn.html#start_balance)视图中的`balance`。
 - `diff`：来自[diffs]({{ site.baseurl }}/tables_and_views_cn.html#diffs)视图中的`amount`；或者，如果账户余额在统计周期内没有变化，则为$$ 0 $$。
-- `end_amount`：通过$$ \text{start_amount} + \text{diff} $$计算得到的期末余额。
+- `end_amount`：通过$$ \text{start\_amount} + \text{diff} $$计算得到的期末余额。
 
 ## end_values
 
@@ -496,7 +496,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `end_value`：期末净资产，从[end_values]({{ site.baseurl }}/tables_and_views_cn.html#end_values)视图中的`market_value`累加得到。
 - `net_outflow`：统计周期内的净流出资金额。从[income_and_expenses]({{ site.baseurl }}/tables_and_views_cn.html#income_and_expenses)视图中非[利息账户]({{ site.baseurl }}/tables_and_views_cn.html#interest_accounts)的`total_value`累加得到。注意利息不属于资金流入或流出。如果统计周期内资金是净流入的，那么这个值为负值。
 - `interest`：统计周期内发生的利息收入总计，从[income_and_expenses]({{ site.baseurl }}/tables_and_views_cn.html#income_and_expenses)视图中[利息账户]({{ site.baseurl }}/tables_and_views_cn.html#interest_accounts)的`total_value`累加得到。
-- `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end_value} + \text{net_outflow} - \text{start_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
+- `net_gain`：统计周期内投资产生的总收益（或总亏损），计算方法为$$ \text{end\_value} + \text{net\_outflow} - \text{start\_value} $$。即：除了收入支出产生的净资产变化，其他净资产变动都认为是投资收益（或亏损）。利息收入属于投资收益的一部分。
 - `rate_of_return`：使用[简单Dietz方法]({{ site.baseurl }}/rate_of_return_cn.html#简单dietz方法)计算的投资收益率。
 
 ## flow_stats
@@ -608,7 +608,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `end_value`：期末市场价值。来自[end_values]({{ site.baseurl }}/tables_and_views_cn.html#end_values)视图中的`market_value`，或者$$ 0 $$（如果`end_values`中没有此账户）。
 - `cash_gained`：已实现收益。来自[share_stats]({{ site.baseurl }}/tables_and_views_cn.html#share_stats)视图中的`cash_gained`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
 - `min_inflow`：最小初始资金。来自[share_stats]({{ site.baseurl }}/tables_and_views_cn.html#share_stats)视图中的`min_inflow`，或者$$ 0 $$（如果`share_stats`中没有此账户）。
-- `profit`：该账户的投资利润（或亏损），计算方法为$$ \text{cash_gained} + \text{end_value} - \text{start_value} $$。
+- `profit`：该账户的投资利润（或亏损），计算方法为$$ \text{cash\_gained} + \text{end\_value} - \text{start\_value} $$。
 - `rate_of_return`：使用[最小初始资金法]({{ site.baseurl }}/rate_of_return_cn.html#最小初始资金法)计算的该账户的投资收益率。
 
 **示例1**
