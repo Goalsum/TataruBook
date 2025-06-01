@@ -40,9 +40,6 @@ TataruBookは単なるプログラムであり、財務データ自体は含ま�
 
 TataruBookのデータベースファイルは、財務データと関連する財務諸表を保存するファイルです。各データベースファイルは[SQLiteファイル形式](https://sqlite.com/)で保存されており、SQLite形式を対応している任意のソフトウェアで検索や編集が可能です。
 
-TataruBookが生成したデータベースファイルを他のソフトウェアで検索や編集するには、そのソフトウェアが SQLiteの新機能の一部 (たとえば　STRICT 属性) に対応している必要があります。たとえば、 [DB Browser for SQLite](https://sqlitebrowser.org/)でデータベースファイルを操作する場合、STRICT属性をサポートする`DB Browser for SQLite`の[ナイトリーバージョン](https://nightlies.sqlitebrowser.org/latest/)を使用する必要があります。
-{: .notice}
-
 **注：**他のソフトウェアでデータベースファイルを変更する際は、記録の追加、削除、変更のみが可能であり、テーブルやビューの定義を変更することはできません。そうしないと、TataruBookでそのデータベースファイルを正しく操作できなくなる可能性があります。
 {: .notice--warning}
 

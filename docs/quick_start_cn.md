@@ -367,7 +367,7 @@ TataruBook通常用于记录个人或者家庭的所有资产，因此[portfolio
 
 # 用图形界面软件查看DB文件
 
-TataruBook程序本身没有提供图形界面，但是包含所有表和视图的DB文件是**SQLite格式**文件，任何支持SQLite格式的软件都可查看DB文件中的表和视图（前提是该软件支持SQLite的新特性）。以开源免费的[DB Browser for SQLite](https://sqlitebrowser.org/)软件作为例子来演示：首先下载安装`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest)（只有nightly版本才支持SQLite的新特性），然后运行`DB Browser for SQLite`，最后点击`打开数据库`按钮并选择`accounting.db`文件，就可以查看DB文件里表和视图的数据了。
+TataruBook程序本身没有提供图形界面，但是包含所有表和视图的DB文件是**SQLite格式**文件，任何支持SQLite格式的软件都可查看DB文件中的表和视图。以开源免费的[DB Browser for SQLite](https://sqlitebrowser.org/)软件作为例子来演示：首先下载安装`DB Browser for SQLite`，然后运行`DB Browser for SQLite`，最后点击`打开数据库`按钮并选择`accounting.db`文件，就可以查看DB文件里表和视图的数据了。
 
 ![DB Browser for SQLite界面]({{ site.baseurl }}/assets/images/statements_cn.png)
 

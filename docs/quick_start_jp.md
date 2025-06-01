@@ -384,7 +384,7 @@ TataruBookは通常、個人または家族のすべての資産を簿記に使�
 
 # グラフィカルインターフェイスソフトウェアでデータベースファイルを表示する
 
-TataruBookはグラフィカルユーザーインターフェイス(GUI)は備わっていませんが、テーブルとビューを含むすべてのデータベースファイルは**SQLiteファイル形式**保存されています。そのため、SQLite形式を対応しているソフトウェア(SQLiteの最新機能に対応している場合) を使用すれば、これらのテーブルやビューを表示できます。ここでは、オープンソースソフトウェアである[DB Browser for SQLite](https://sqlitebrowser.org/)を例に説明します。まず、`DB Browser for SQLite`の[nightlyバージョン](https://nightlies.sqlitebrowser.org/latest)（SQLiteの新機能に対応しているのはnightlyバージョンのみです）をダウンロードしてインストールし、次に`DB Browser for SQLite`を起動し、最後に`データベースファイルを開く`ボタンをクリックして、`accounting.db`文件ファイルを選択します。これにより、データベースファイル内のテーブルやビューのデータが表示されます。
+TataruBookはグラフィカルユーザーインターフェイス(GUI)は備わっていませんが、テーブルとビューを含むすべてのデータベースファイルは**SQLiteファイル形式**保存されています。そのため、SQLite形式を対応しているソフトウェアを使用すれば、これらのテーブルやビューを表示できます。ここでは、オープンソースソフトウェアである[DB Browser for SQLite](https://sqlitebrowser.org/)を例に説明します。まず、`DB Browser for SQLite`をダウンロードしてインストールし、次に`DB Browser for SQLite`を起動し、最後に`データベースファイルを開く`ボタンをクリックして、`accounting.db`文件ファイルを選択します。これにより、データベースファイル内のテーブルやビューのデータが表示されます。
 
 ![DB Browser for SQLiteの画面]({{ site.baseurl }}/assets/images/statements_jp.png)
 

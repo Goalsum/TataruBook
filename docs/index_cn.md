@@ -39,9 +39,6 @@ TataruBook只是一个程序，它自身并不包含任何财务数据，所有�
 
 DB文件是保存了财务数据和相关报表的文件。每个DB文件都是[SQLite格式](https://sqlite.com/)的数据库文件，可以使用任何支持SQLite文件格式的软件进行查看和修改。
 
-如果使用其他软件来查看和修改TataruBook生成的DB文件，请确保这些软件支持SQLite的一些新特性（如STRICT属性）。例如：若要使用[DB Browser for SQLite](https://sqlitebrowser.org/)来打开DB文件，则必须用`DB Browser for SQLite`的[nightly版本](https://nightlies.sqlitebrowser.org/latest/)才能支持STRICT属性。
-{: .notice}
-
 **注意：**使用其他软件修改DB文件时，只能添加、删除、修改记录，不可修改表和视图的定义！否则，TataruBook将无法保证以后还能正确操作这个DB文件。
 {: .notice--warning}
 

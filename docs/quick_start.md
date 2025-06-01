@@ -365,7 +365,7 @@ TataruBook is often used to keep track of all of an individual or family's asset
 
 # Viewing DB files with GUI software
 
-TataruBook is a command-line program and does not have a graphical interface. However, the DB file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the DB file (provided that the software supports the new features of SQLite). Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install the [nightly version](https://nightlies.sqlitebrowser.org/latest) of `DB Browser for SQLite` (only the nightly version supports the new features of SQLite), then run `DB Browser for SQLite`, and finally click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the DB file.
+TataruBook is a command-line program and does not have a graphical interface. However, the DB file containing all the tables and views is a **SQLite format** file, and any software that supports the SQLite format can view the tables and views in the DB file. Take the open-source software [DB Browser for SQLite](https://sqlitebrowser.org/) as an example to demonstrate: first download and install `DB Browser for SQLite`, then run `DB Browser for SQLite`, then click the `Open Database` button and select the `accounting.db` file to view the data of tables and views in the DB file.
 
 ![DB Browser for SQLite's UI]({{ site.baseurl }}/assets/images/statements.png)
 
