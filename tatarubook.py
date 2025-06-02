@@ -292,6 +292,58 @@ SQL_CREATE_COMMANDS = (
             portfolio_stats.end_value AS cash_flow
         FROM portfolio_stats, start_date, end_date
         ORDER BY trade_date ASC"""),
+    ("daily_assets", "view",
+     """CREATE VIEW daily_assets AS
+        WITH RECURSIVE changes AS
+            (SELECT trade_date, asset_index,
+                sum(amount) OVER (PARTITION BY asset_index ORDER BY trade_date ROWS UNBOUNDED PRECEDING) AS amount
+            FROM (WITH daily_changes AS
+                    (SELECT single_entries.trade_date, accounts.asset_index, sum(single_entries.amount) AS amount
+                    FROM single_entries INNER JOIN accounts ON single_entries.account_index = accounts.account_index
+                    WHERE accounts.is_external = 0
+                    GROUP BY single_entries.trade_date, accounts.asset_index
+                    HAVING round(sum(single_entries.amount), 6) <> 0)
+                SELECT start_date.val AS trade_date, daily_changes.asset_index, sum(daily_changes.amount) AS amount
+                FROM daily_changes, start_date
+                WHERE daily_changes.trade_date <= start_date.val
+                GROUP BY daily_changes.asset_index
+                HAVING round(sum(daily_changes.amount), 6) <> 0
+                UNION ALL
+                SELECT daily_changes.*
+                FROM daily_changes, start_date, end_date
+                WHERE daily_changes.trade_date > start_date.val AND daily_changes.trade_date <= end_date.val)),
+        accumulation(trade_date, asset_index, amount) AS
+            (SELECT * FROM changes
+            UNION ALL
+            SELECT date(accumulation.trade_date, '1 day'), accumulation.asset_index, accumulation.amount
+            FROM (accumulation LEFT JOIN changes ON
+                date(accumulation.trade_date, '1 day') = changes.trade_date AND
+                accumulation.asset_index = changes.asset_index), end_date
+            WHERE changes.amount ISNULL AND accumulation.trade_date < end_date.val AND
+                round(accumulation.amount, 6) <> 0)
+        SELECT * FROM accumulation
+        WHERE round(amount, 6) <> 0
+        ORDER BY trade_date, asset_index"""),
+    ("price_unavailable", "view",
+     """CREATE VIEW price_unavailable AS
+        SELECT daily_assets.trade_date, asset_types.asset_index, asset_types.asset_name
+        FROM daily_assets LEFT JOIN prices ON
+            daily_assets.trade_date = prices.price_date AND daily_assets.asset_index = prices.asset_index
+            INNER JOIN asset_types ON daily_assets.asset_index = asset_types.asset_index
+        WHERE prices.price ISNULL AND daily_assets.asset_index NOT IN (SELECT * FROM standard_asset)
+        ORDER BY daily_assets.trade_date, asset_types.asset_order, asset_types.asset_index"""),
+    ("equity_trend", "view",
+     """CREATE VIEW equity_trend AS
+        SELECT eligible.trade_date, sum(eligible.amount * eligible.price) AS equity
+        FROM (SELECT daily_assets.trade_date, daily_assets.asset_index, daily_assets.amount,
+                iif(daily_assets.asset_index IN (SELECT * FROM standard_asset), 1.0,
+                    (SELECT price FROM prices WHERE daily_assets.asset_index = prices.asset_index
+                        AND daily_assets.trade_date = prices.price_date)) AS price
+            FROM (SELECT trade_date FROM daily_assets EXCEPT
+                SELECT trade_date FROM price_unavailable) AS dates INNER JOIN daily_assets ON
+                dates.trade_date = daily_assets.trade_date) AS eligible
+        GROUP BY eligible.trade_date
+        ORDER BY eligible.trade_date"""),
     ("check_standard_prices", "view",
      """CREATE VIEW check_standard_prices AS
         SELECT * FROM prices INNER JOIN standard_asset ON prices.asset_index = standard_asset.asset_index"""),
