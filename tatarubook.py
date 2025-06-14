@@ -195,30 +195,31 @@ SQL_CREATE_COMMANDS = (
         ORDER BY single_entries.account_index ASC, single_entries.target ASC"""),
     ("share_trade_flows", "view",
      """CREATE VIEW share_trade_flows AS
-        SELECT single_entries.posting_index, single_entries.trade_date,
-            iif(single_entries.amount = 0, single_entries.target, single_entries.account_index) AS account_index,
-            iif(single_entries.amount = 0, 
-                -(SELECT dst_change FROM posting_extras 
-                    WHERE posting_extras.posting_index = single_entries.posting_index),
+        SELECT posting_index, trade_date, iif(shift, target, account_index) AS account_index,
+            iif(shift, share_asset_index, cash_asset_index) AS cash_asset,
+            iif(shift,
+                -(SELECT dst_change FROM posting_extras WHERE posting_extras.posting_index = unshifted.posting_index),
                 amount) as amount,
-            single_entries.target, single_entries.comment, share_acc.account_name,
-            share_acc.asset_index, asset_types.asset_name, asset_types.asset_order
-        FROM single_entries INNER JOIN accounts AS share_acc ON single_entries.target = share_acc.account_index
-            INNER JOIN asset_types ON share_acc.asset_index = asset_types.asset_index
-        WHERE single_entries.trade_date > (SELECT * FROM start_date)
-            AND single_entries.trade_date <= (SELECT * FROM end_date)
-            AND share_acc.is_external = 0
-            AND single_entries.account_index NOT IN (SELECT * FROM interest_accounts)
-            AND asset_types.asset_index NOT IN (SELECT * FROM standard_asset)"""),
+            target, comment, account_name, share_asset_index as asset_index, asset_name, asset_order
+        FROM (SELECT single_entries.*, share_acc.account_name, share_acc.asset_index AS share_asset_index,
+                cash_acc.asset_index AS cash_asset_index, asset_types.asset_name, asset_types.asset_order,
+                (cash_acc.asset_index NOT IN (SELECT * FROM standard_asset) AND single_entries.amount = 0) AS shift
+            FROM single_entries INNER JOIN accounts AS share_acc ON single_entries.target = share_acc.account_index
+                INNER JOIN accounts AS cash_acc ON single_entries.account_index = cash_acc.account_index
+                INNER JOIN asset_types ON share_acc.asset_index = asset_types.asset_index
+            WHERE single_entries.trade_date > (SELECT * FROM start_date)
+                AND single_entries.trade_date <= (SELECT * FROM end_date)
+                AND share_acc.is_external = 0
+                AND single_entries.account_index NOT IN (SELECT * FROM interest_accounts)
+                AND asset_types.asset_index NOT IN (SELECT * FROM standard_asset)) AS unshifted"""),
     ("share_trades", "view",
      """CREATE VIEW share_trades AS
         SELECT share_trade_flows.*,
-            amount * iif(cash_acc.asset_index IN (SELECT * FROM standard_asset), 1.0,
-                (SELECT price FROM prices WHERE cash_acc.asset_index = prices.asset_index
+            amount * iif(cash_asset IN (SELECT * FROM standard_asset), 1.0,
+                (SELECT price FROM prices WHERE share_trade_flows.cash_asset = prices.asset_index
                     AND prices.price_date = share_trade_flows.trade_date)) AS cash_flow
-        FROM share_trade_flows INNER JOIN accounts AS cash_acc
-            ON share_trade_flows.account_index = cash_acc.account_index
-        ORDER BY share_trade_flows.trade_date ASC, share_trade_flows.posting_index ASC"""),
+        FROM share_trade_flows
+        ORDER BY trade_date ASC, posting_index ASC"""),
     ("share_stats", "view",
      """CREATE VIEW share_stats AS
         SELECT asset_order, asset_index, asset_name, account_index, account_name,
@@ -395,7 +396,7 @@ SQL_CREATE_COMMANDS = (
                 OR (dst_ai.is_external = 1 AND dst_ai.asset_index NOT IN (SELECT * FROM standard_asset)))"""),
     ("check_absent_price", "view",
      """CREATE VIEW check_absent_price AS
-        SELECT asset_types.asset_index, asset_types.asset_name, asset_types.asset_order, absence.date_val
+        SELECT absence.date_val, asset_types.asset_index, asset_types.asset_name, asset_types.asset_order
         FROM (SELECT start_balance.asset_index, start_date.val AS date_val
             FROM start_balance, start_date
             UNION
@@ -403,9 +404,8 @@ SQL_CREATE_COMMANDS = (
             FROM comparison, end_date
             WHERE round(comparison.end_amount, 6) <> 0
             UNION
-            SELECT cash_acc.asset_index, share_trade_flows.trade_date AS date_val
-            FROM share_trade_flows INNER JOIN accounts AS cash_acc
-                ON share_trade_flows.account_index = cash_acc.account_index
+            SELECT cash_asset AS asset_index, trade_date AS date_val
+            FROM share_trade_flows
             EXCEPT
             SELECT asset_index, price_date AS date_val FROM prices) AS absence
             INNER JOIN asset_types ON absence.asset_index = asset_types.asset_index
