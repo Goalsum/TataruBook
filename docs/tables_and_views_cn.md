@@ -77,7 +77,7 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 
 当利息账户与内部账户之间产生了交易，TataruBook认为该内部账户产生了利息收入，并计算相关的**利率**。计算时，TataruBook认为该内部账户的**平均每日余额**是利率的分母。见[interest_rates]({{ site.baseurl }}/tables_and_views_cn.html#interest_rates)视图。
 
-为了不让利率数据失真，基金/股票的分红交易不应该关联到利息账户（除非是单位价格始终为$$ 1 $$，且分红体现为份额增加的货币基金）。因为这些分红是以现金形式发放到另一个内部账户，而不是基金/股票本身所在的内部账户。要了解基金/股票的分红、拆分用什么方式记录，可见[return_on_shares]({{ site.baseurl }}/tables_and_views_cn.html#return_on_shares)视图中的例子。
+为了不让利率数据失真，基金/股票的分红交易不应该关联到利息账户（除非是单位价格始终为$$ 1 $$，且分红体现为份额增加的货币基金）。因为这些分红是以现金形式发放到另一个内部账户，而不是基金/股票本身所在的内部账户。要了解基金/股票的分红用什么方式记录，可见[return_on_shares]({{ site.baseurl }}/tables_and_views_cn.html#return_on_shares)视图中的例子。
 
 **字段**
 - `account_index`（整数）：账户索引，不允许为空，必须是[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中存在的某个账户索引。
@@ -553,8 +553,9 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 **字段**
 - `posting_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`posting_index`。
 - `trade_date`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`trade_date`。
-- `account_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`account_index`或`target`。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中该笔交易的`amount`不为$$ 0 $$则为`account_index`，否则为`target`。
-- `amount`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`amount`或者对应的[posting_extras]({{ site.baseurl }}/tables_and_views_cn.html#posting_extras)表中的`dst_change`的相反数。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中该笔交易的`amount`不为$$ 0 $$则为`amount`，否则为`dst_change`的相反数。
+- `account_index`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`account_index`或`target`。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中`account_index`账户包含标准资产，或者该笔交易的`amount`不为$$ 0 $$，则为`account_index`，否则为`target`。
+- `cash_asset`：`account_index`账户包含的资产的索引，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
+- `amount`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`amount`或者对应的[posting_extras]({{ site.baseurl }}/tables_and_views_cn.html#posting_extras)表中的`dst_change`的相反数。如果[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中`account_index`账户包含标准资产，或者该笔交易的`amount`不为$$ 0 $$，则为`amount`，否则为`dst_change`的相反数。
 - `target`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`target`。
 - `comment`：来自[single_entries]({{ site.baseurl }}/tables_and_views_cn.html#single_entries)视图中的`comment`。
 - `account_name`：`target`的账户名字，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`account_name`。

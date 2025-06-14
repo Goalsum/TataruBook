@@ -230,7 +230,7 @@ However, there is a special type of transaction for which this algorithm does no
 
 This type of transaction usually occurs when dividends are paid on stocks or funds, or when coupons are paid on bonds. For example, if account `A` is a Japanese stock, and account `B` is a Japanese Yen account that receives dividends, then if the above algorithm is still used, account `B` will have an inflow value of $$ 0 $$ for this transaction, which is not reasonable.
 
-To solve this problem, TataruBook does a special treatment: if one party of the transaction has an amount of change of $$ 0 $$, then the inflow and outflow values of both accounts are determined according to the type of asset and the amount of change of the other party (the amount of change of which is not $$ 0 $$). In the example just given, the outflow value of account `A` and the inflow value of account `B` are both $$ 200 $$ multiplied by the price of the asset contained in account `B` on that day. This processing can be observed with the [share_trade_flows]({{ site.baseurl }}/tables_and_views.html#share_trade_flows) view.
+To solve this problem, TataruBook does a special treatment: if both accounts in a transaction contain standard asset, and one of the accounts has an amount of change of $$ 0 $$, then the inflow and outflow values of both accounts are determined according to the type of asset and the amount of change of the other party (the amount of change of which is not $$ 0 $$). In the example just given, the outflow value of account `A` and the inflow value of account `B` are both $$ 200 $$ multiplied by the price of the asset contained in account `B` on that day. This processing can be observed with the [share_trade_flows]({{ site.baseurl }}/tables_and_views.html#share_trade_flows) view.
 
 If you do need to accurately calculate the inflow and outflow values using instant prices, then you can split a single transaction into two transactions using an intermediate account:
 
@@ -240,3 +240,6 @@ If you do need to accurately calculate the inflow and outflow values using insta
 | X | -100 | B | 10 |
 
 The account `X` in this example is an intermediate account, it is a newly created internal account. account `X` contains the standard asset, and the amount of change in `X` reflects the immediate inflow and outflow values at the time of the transaction. By entering transactions in this way, TataruBook can accurately calculate inflow and outflow values, and no longer needs to use the price information in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table.
+
+In a stock split or reverse stock split, only the amount of shares is changing, so there will also be an amount of change of $$ 0 $$ of the other party in the transaction. However there's no external flow in this case. So, when recording a stock split or reverse stock split, you should use an account that contains standard asset as the other party of the transaction to avoid erroneously generating external flows.
+{: .notice}

@@ -75,7 +75,7 @@ A list of interest accounts. **interest accounts** are a special class of **exte
 
 When a transaction arises between an interest account and an internal account, TataruBook assumes that the internal account generates interest earning and calculates the associated **interest rate**. For this calculation, TataruBook considers the **average daily balance** of that internal account to be the denominator of the interest rate. See [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view.
 
-In order not to distort the interest rate data, transactions describing fund/stock distributions should not be related to interest accounts. This is because these distributions are paid in cash to another internal account, not to the internal account in which the fund/share itself resides. To see what way fund/share distributions and splits are recorded, see the example in [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
+In order not to distort the interest rate data, transactions describing fund/stock distributions should not be related to interest accounts. This is because these distributions are paid in cash to another internal account, not to the internal account in which the fund/share itself resides. To see what way fund/share distributions are recorded, see the example in [return_on_shares]({{ site.baseurl }}/tables_and_views.html#return_on_shares) view.
 
 **Fields**
 - `account_index` (integer): the account index, not allowed to be empty, must be one of the account indexes present in [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
@@ -127,7 +127,7 @@ The unit price of an asset, used to convert a non-standard asset to the [standar
 - `price` (floating point): the unit price (i.e., $$ 1 $$ unit of this asset is equal to how many units of standard asset), not allowed to be empty.
 
 **Constraints**
-- There should be no price record associated with the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
+- There should be no price records associated with the standard asset. (Checked by [check_standard_prices]({{ site.baseurl }}/tables_and_views.html#check_standard_prices) view)
 - There should be no more than one price record for one asset on one day, i.e., the `price_date` and `asset_index` of any two records cannot both be the same.
 - On [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), all non-standard assets must have a price record associated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
 - If a transaction occurs between two accounts containing the same non-standard asset (or containing different non-standard assets), no matter either account is internal or external, the non-standard asset contained by each account that has an amount of change other than $$ 0 $$ in the transaction must have a price record associated on the day of the transaction. For example: if HK dollar is a non-standard asset, then when HK dollar is used to buy a HK stock, the unit price of HK dollar and the unit price of that stock (noting that they are prices measured in the standard asset) must both be present on the day of the transaction. This is because when calculating ROI on these two accounts, they both have an inflow or outflow on the day of the transaction and the value of the inflow/outflow needs to be calculated. (Checked by [check_absent_price]({{ site.baseurl }}/tables_and_views.html#check_absent_price) view)
@@ -551,14 +551,15 @@ Transactions between [start_date]({{ site.baseurl }}/tables_and_views.html#start
 **Fields**
 - `posting_index`：`posting_index` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
 - `trade_date`：`trade_date` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
-- `account_index`：`account_index` or `target` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view: `account_index` if the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise `target`.
-- `amount`：`amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view or the negtive number of `dst_change` from the corresponding record of [posting_extras]({{ site.baseurl }}/tables_and_views.html#posting_extras) table: `amount` if the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise the negtive number of `dst_change`.
+- `account_index`：`account_index` or `target` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view: use `account_index` if the `account_index` account in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view contains standard asset or the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise use `target`.
+- `cash_asset`：The index of asset that the `account_index` account contains, i.e. `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) view.
+- `amount`：`amount` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view or the negtive number of `dst_change` from the corresponding record of [posting_extras]({{ site.baseurl }}/tables_and_views.html#posting_extras) table: use `amount` if the `account_index` account in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view contains standard asset or the `amount` in [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view is not $$ 0 $$, otherwise use the negtive number of `dst_change`.
 - `target`：`target` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
 - `comment`：`comment` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
-- `account_name`：The account name of `target`, i.e. `account_name` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
-- `asset_index`：The index of asset that the `target` account contains, i.e. `asset_index` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
-- `asset_name`：The name of asset that the `target` account contains, i.e. `asset_name` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
-- `asset_order`：The order of asset that the `target` account contains, i.e. `asset_order` from [single_entries]({{ site.baseurl }}/tables_and_views.html#single_entries) view.
+- `account_name`：The account name of `target`, i.e. `account_name` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) view.
+- `asset_index`：The index of asset that the `target` account contains, i.e. `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) view.
+- `asset_name`：The name of asset that the `target` account contains, i.e. `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) view.
+- `asset_order`：The order of asset that the `target` account contains, i.e. `asset_order` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) view.
 
 ## share_trades
 
@@ -740,7 +741,7 @@ Then the `return_on_shares` view contents are:
 
 | asset_order | asset_index | asset_name | account_index | account_name | start_amount | start_value | diff | end_amount | end_value | cash_gained | min_inflow | profit | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| 0 | 2 | 金碟币 | 1 | 金碟钱包 | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | 0 | 0 | 2120.0 | 0.212 |
+| 0 | 2 | MGP | 1 | Manderville Gold Saucer account | 1000.0 | 10000.0 | 10.0 | 1010.0 | 12120.0 | 0 | 0 | 2120.0 | 0.212 |
 
 Description: `MGP` is a non-standard asset, and it has interest earned. In this case, the `return_on_shares` view calculates the overall return including interest earnings. The separate interest earnings can be checked in the [interest_rates]({{ site.baseurl }}/tables_and_views.html#interest_rates) view. Remember to add interest account to `interest_accounts` table. In this example, if the record in `interest_accounts` is missing, things will become very differenet.
 
@@ -843,38 +844,38 @@ This view is the data needed to calculate the [internal rate of return (IRR)]({{
 
 ## check_standard_prices
 
-Normally this view has no records. If a record appears, it means that a price record of the standard asset is present in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, violating the constraint.
+Normally this view shows no records. If a record appears, it means that a price record of the standard asset is present in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, violating the constraint.
 
 ## check_interest_account
 
-Normally this view has no records. If a record appears, it means that there are [interest accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) that are internal accounts, violating the constraint.
+Normally this view shows no records. If a record appears, it means that there are [interest accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) that are internal accounts, violating the constraint.
 
 ## check_same_account
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are the same, violating the constraint.
+Normally this view shows no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are the same, violating the constraint.
 
 ## check_both_external
 
 This is a new view in v1.1.
 {: .notice}
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are both external accounts, violating the constraint.
+Normally this view shows no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose `src_account` and `dst_account` are both external accounts, violating the constraint.
 
 ## check_diff_asset
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains different assets, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has no corresponding records, violating the constraint.
+Normally this view shows no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains different assets, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has no corresponding records, violating the constraint.
 
 ## check_same_asset
 
-Normally this view has no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains the same asset, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has corresponding records, violating the constraint.
+Normally this view shows no records. If a record appears, it means that [postings]({{ site.baseurl }}/tables_and_views.html#postings) table contains records whose source and destination accounts contains the same asset, but the [posting_extras table]({{ site.baseurl }}/tables_and_views.html#posting_extras) has corresponding records, violating the constraint.
 
 ## check_external_asset
 
 This is a new view added in v1.1.
 {: .notice}
 
-Normally this view has no records. If a record appears, it means that there is at least a record in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, of which the source or destination account is an external account, and the external account neither contains standard asset nor the same asset as another account, violating the constraint.
+Normally this view shows no records. If a record appears, it means that there is at least a record in [postings]({{ site.baseurl }}/tables_and_views.html#postings) table, of which the source or destination account is an external account, and the external account neither contains standard asset nor the same asset as another account, violating the constraint.
 
 ## check_absent_price
 
-Normally this view has no records. If a record appears, it means that the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table is missing unit prices for certain assets that need to be used on certain dates, violating the constraint.
+Normally this view shows no records. If a record appears, it means that some unit prices for certain assets that need to be used in [prices]({{ site.baseurl }}/tables_and_views.html#prices) table on certain dates are missing, violating the constraint.

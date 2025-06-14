@@ -629,7 +629,7 @@ def integrity_check(con):
         all_passed = check_view(con, x, y) and all_passed
 
     if all_passed:
-        print("Everything is fine, no integrity breach found.")
+        print("Everything is fine, no integrity breaches found.")
 
 
 def strip_trivial(s):
