@@ -335,13 +335,18 @@ SQL_CREATE_COMMANDS = (
         ORDER BY daily_assets.trade_date, asset_types.asset_order, asset_types.asset_index"""),
     ("equity_trend", "view",
      """CREATE VIEW equity_trend AS
+        WITH RECURSIVE all_dates(val) AS
+            (SELECT * FROM start_date
+            UNION ALL
+            SELECT date(all_dates.val, '1 day') FROM all_dates, end_date
+            WHERE all_dates.val < end_date.val)
         SELECT eligible.trade_date, sum(eligible.amount * eligible.price) AS equity
-        FROM (SELECT daily_assets.trade_date, daily_assets.asset_index, daily_assets.amount,
-                iif(daily_assets.asset_index IN (SELECT * FROM standard_asset), 1.0,
+        FROM (SELECT dates.trade_date, daily_assets.asset_index, ifnull(daily_assets.amount, 0) AS amount,
+                iif(daily_assets.asset_index ISNULL OR daily_assets.asset_index IN (SELECT * FROM standard_asset), 1.0,
                     (SELECT price FROM prices WHERE daily_assets.asset_index = prices.asset_index
                         AND daily_assets.trade_date = prices.price_date)) AS price
-            FROM (SELECT trade_date FROM daily_assets EXCEPT
-                SELECT trade_date FROM price_unavailable) AS dates INNER JOIN daily_assets ON
+            FROM (SELECT val AS trade_date FROM all_dates EXCEPT
+                SELECT trade_date FROM price_unavailable) AS dates LEFT JOIN daily_assets ON
                 dates.trade_date = daily_assets.trade_date) AS eligible
         GROUP BY eligible.trade_date
         ORDER BY eligible.trade_date"""),
