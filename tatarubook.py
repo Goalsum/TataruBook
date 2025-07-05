@@ -333,14 +333,14 @@ SQL_CREATE_COMMANDS = (
             INNER JOIN asset_types ON daily_assets.asset_index = asset_types.asset_index
         WHERE prices.price ISNULL AND daily_assets.asset_index NOT IN (SELECT * FROM standard_asset)
         ORDER BY daily_assets.trade_date, asset_types.asset_order, asset_types.asset_index"""),
-    ("equity_trend", "view",
-     """CREATE VIEW equity_trend AS
+    ("net_worth_changes", "view",
+     """CREATE VIEW net_worth_changes AS
         WITH RECURSIVE all_dates(val) AS
             (SELECT * FROM start_date
             UNION ALL
             SELECT date(all_dates.val, '1 day') FROM all_dates, end_date
             WHERE all_dates.val < end_date.val)
-        SELECT eligible.trade_date, sum(eligible.amount * eligible.price) AS equity
+        SELECT eligible.trade_date, sum(eligible.amount * eligible.price) AS net_worth
         FROM (SELECT dates.trade_date, daily_assets.asset_index, ifnull(daily_assets.amount, 0) AS amount,
                 iif(daily_assets.asset_index ISNULL OR daily_assets.asset_index IN (SELECT * FROM standard_asset), 1.0,
                     (SELECT price FROM prices WHERE daily_assets.asset_index = prices.asset_index
