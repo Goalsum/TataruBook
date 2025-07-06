@@ -844,6 +844,152 @@ TataruBook遵循[复式记账](https://en.wikipedia.org/wiki/Double-entry_bookke
 - `period`：该日期相对于周期的开始日期所经过的天数。
 - `cash_flow`：在该日期的资金净流入/流出，已换算成标准资产。注意根据[内部收益率（IRR）]({{ site.baseurl }}/rate_of_return_cn.html#内部收益率irr)的定义，流入为负值，流出为正值，这和通常的定义不一样。
 
+## daily_assets
+
+这个视图为其他视图计算的中间过程，用户通常不需要关心这个视图。
+{: .notice}
+
+这是v1.3版本新增的视图。
+{: .notice}
+
+展示在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间（包括这两天在内）每天结束时每种资产的余额。只展示余额不为$$ 0 $$的数据。
+
+**字段**
+- `trade_date`：余额对应的日期。
+- `asset_index`：余额对应的资产索引，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
+- `amount`：在该日期结束时，`asset_index`对应资产的余额，未换算成标准资产。
+
+## price_unavailable
+
+这是v1.3版本新增的视图。
+{: .notice}
+
+展示在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间（包括这两天在内），试图计算每天所有资产的价值时，发现缺失的非标准资产价格信息。
+
+注意和名字以`check`开头的那些视图不同，`price_unavailable`中有记录并不表示数据存在一致性问题。它只表示相应日期的净资产无法计算，因此在[net_worth_changes]({{ site.baseurl }}/tables_and_views_cn.html#net_worth_changes)视图中会跳过这些日期。现实中并非所有资产在每天都存在有意义的价格信息，比如股票在非交易日就没有市场价格。用户可以根据自己的需要决定输入哪些日期的价格信息。
+
+**字段**
+- `trade_date`：缺失的价格对应的日期。
+- `asset_index`：缺失的价格对应的资产索引，来自[accounts]({{ site.baseurl }}/tables_and_views_cn.html#accounts)表中的`asset_index`。
+- `asset_name`：缺失的价格对应的资产名字，来自[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表中的`asset_name`。
+
+**示例**
+
+假设现有表内容如下：
+
+`asset_types`
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | 加隆德炼铁厂股份 | 0 |
+| 3 | 艾欧泽亚100指数基金 | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`accounts`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | 萨雷安银行活期 | 1 | 0 |
+| 2 | 莫古证券_加隆德股份 | 2 | 0 |
+| 3 | 莫古证券_艾欧泽亚100指数基金 | 3 | 0 |
+| 4 | 工资 | 1 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2025-02-18 | 4 | -8000.0 | 1 | 月工资 |
+| 2 | 2025-02-18 | 1 | -4000.0 | 2 | 买入股票 |
+| 3 | 2025-02-19 | 1 | -4000.0 | 3 | 基金申购 |
+
+`posting_extras`
+
+| posting_index | dst_change |
+|:-:|:-:|
+| 2 | 400 |
+| 3 | 2000 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2025-02-18 | 2 | 10.0 |
+| 2025-02-19 | 2 | 11.0 |
+| 2025-02-19 | 3 | 2.0 |
+| 2025-02-20 | 3 | 2.1 |
+| 2025-02-21 | 2 | 13.0 |
+| 2025-02-21 | 3 | 2.2 |
+
+`start_date`
+
+| val |
+|:-:|
+| 2025-02-17 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2025-02-21 |
+
+则`price_unavailable`视图内容为：
+
+| trade_date | asset_index | asset_name |
+|:-:|:-:|:-:|
+| 2025-02-20 | 2 | 加隆德炼铁厂股份 |
+
+说明：从2025-02-17到2025-02-21，包括这两天在内，一共有5天。每天结束时的资产情况如下：
+
+- 2025-02-17：所有包含非标准资产的账户余额都是$$ 0 $$，不需要任何价格信息。
+- 2025-02-18：只需要`加隆德炼铁厂股份`的价格，`prices`表中已提供。
+- 2025-02-19：需要`加隆德炼铁厂股份`和`艾欧泽亚100指数基金`的价格，`prices`表中都已提供。
+- 2025-02-20：需要`加隆德炼铁厂股份`和`艾欧泽亚100指数基金`的价格，但是`prices`表中只提供了`艾欧泽亚100指数基金`的价格，缺失`加隆德炼铁厂股份`的价格。
+- 2025-02-21：需要`加隆德炼铁厂股份`和`艾欧泽亚100指数基金`的价格，`prices`表中都已提供。
+
+综上，`price_unavailable`展示唯一一条缺失的价格，即2025-02-20的`加隆德炼铁厂股份`的价格。
+
+## net_worth_changes
+
+这是v1.3版本新增的视图。
+{: .notice}
+
+把所有内部账户的集合看作一个**投资组合**，展示该投资组合在[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)之间（包括这两天在内），每天结束时的净资产价值（即换算成标准资产的价值）。
+
+该视图中的`net_worth`字段与[portfolio_stats]({{ site.baseurl }}/tables_and_views_cn.html#portfolio_stats)视图中的`start_value`、`end_value`字段含义相同，但是`net_worth_changes`视图除了展示[start_date]({{ site.baseurl }}/tables_and_views_cn.html#start_date)和[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)这两天的净资产之外，还会展示这两天之间每天的净资产（如果能计算出来的话）。
+
+该视图只展示可以成功完成计算的日期。如果在计算某日期的净资产时遇到某些资产的价格缺失，则该日期会被跳过。通过[price_unavailable]({{ site.baseurl }}/tables_and_views_cn.html#price_unavailable)视图可以查看有哪些价格信息缺失。
+
+该视图展示的数据可用于生成净资产随时间变化的曲线图。例如将数据拷贝到Excel中并使用Excel的**图表**功能进行绘图。
+
+**字段**
+- `trade_date`：净资产对应的日期。
+- `net_worth`：该日期的净资产价值，已换算成标准资产。
+
+**示例**
+
+假设现有表内容与[price_unavailable]({{ site.baseurl }}/tables_and_views_cn.html#price_unavailable)视图中的示例相同，则`net_worth_changes`视图内容为：
+
+| trade_date | net_worth |
+|:-:|:-:|
+| 2025-02-17 | 0.0 |
+| 2025-02-18 | 8000.0 |
+| 2025-02-19 | 8400.0 |
+| 2025-02-21 | 9600.0 |
+
+说明：从2025-02-17到2025-02-21，包括这两天在内，一共有5天。每天结束时的资产情况如下：
+
+- 2025-02-17：所有账户余额都是$$ 0 $$，因此净资产为$$ 0 $$。
+- 2025-02-18：`Gil`余额为$$ 4000 $$；`加隆德炼铁厂股份`余额为$$ 400 $$，价格为$$ 10 $$。因此净资产为$$ 4000 + 400 \times 10 = 8000 $$。
+- 2025-02-19：`加隆德炼铁厂股份`余额为$$ 400 $$，价格为$$ 11 $$；`艾欧泽亚100指数基金`余额为$$ 2000 $$，价格为$$ 2 $$。因此净资产为$$ 400 \times 11 + 2000 \times 2 = 8400 $$。
+- 2025-02-20：`加隆德炼铁厂股份`余额不为$$ 0 $$，但是[prices]({{ site.baseurl }}/tables_and_views_cn.html#prices)表中没有该日期该资产的价格信息，因此该日期的净资产无法计算，不予展示。在[price_unavailable]({{ site.baseurl }}/tables_and_views_cn.html#price_unavailable)视图中可以找到无法计算的原因。
+- 2025-02-21：`加隆德炼铁厂股份`余额为$$ 400 $$，价格为$$ 13 $$；`艾欧泽亚100指数基金`余额为$$ 2000 $$，价格为$$ 2.2 $$。因此净资产为$$ 400 \times 13 + 2000 \times 2.2 = 9600 $$。
+
 ## check_standard_prices
 
 正常情况下这个视图没有记录。如果出现了记录，说明在[prices]({{ site.baseurl }}/tables_and_views_cn.html#prices)表中出现了标准资产的价格记录，违反了约束。

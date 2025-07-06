@@ -5,7 +5,7 @@ This page describes all the tables and views contained in the DB file.
 
 **Tables** contain the financial data provided by the user and they are source of data for all reports. To ensure data integrity and consistency, when adding, modifying, or deleting data from the table, TataruBook checks all aspects to ensure that there are no conflicts or logical contradictions in data.
 
-**Views** are reports calculated using the data in the tables and contain various statistics such as net assets, categorized income and expenses, and ROI. Whenever the data in any table changes, all views are immediately recalculated and updated. Typically the views are updated so quickly that the user is often unaware of the delay. View updates do not need to be triggered manually.
+**Views** are reports calculated using the data in the tables and contain various statistics such as net worth, categorized income and expenses, and ROI. Whenever the data in any table changes, all views are immediately recalculated and updated. Typically the views are updated so quickly that the user is often unaware of the delay. View updates do not need to be triggered manually.
 
 Some views are user-oriented reports, and some views are intermediate calculations used by other views. Users usually don't need to pay attention to these intermediate results views. However, if you have doubts about some report data and want to check the calculation process, you can check these intermediate result views. Also, for advanced users who write their own SQL queries, intermediate result views may be useful.
 
@@ -182,7 +182,7 @@ Converts the double-entry bookkeeping transaction records into single-entry and 
 - `is_external`: `is_external` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
 - `balance`: the balance of the account after this transaction (derived from all previous transaction records). For external accounts, the opposite of balance represents the sum of income/expenses for that category.
 
-**Examples**
+**Example**
 
 Assume that the existing table contents are as follows:
 
@@ -271,7 +271,7 @@ At the end of the day [start_date]({{ site.baseurl }}/tables_and_views.html#star
 - `asset_name`: `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
 - `proportion`: the proportion of this account's market value to the sum of all accounts' market values.
 
-**Examples**
+**Example**
 
 Assume following additional tables are added to existing tables in the example in [statements]({{ site.baseurl }}/tables_and_views.html#statements) view:
 
@@ -356,7 +356,7 @@ Note: The [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) tabl
 **Fields**
 - All fields are the same as in [start_stats]({{ site.baseurl }}/tables_and_views.html#start_stats) view, but the statistics are taken for [end_date]({{ site.baseurl }}/tables_and_views.html#end_date).
 
-**Examples**
+**Example**
 
 Assume following additional tables are added to existing tables in the example in [statements]({{ site.baseurl }}/tables_and_views.html#statements) view:
 
@@ -426,7 +426,7 @@ The total amount of change with transactions between [start_date]({{ site.baseur
 - `total_amount`: the total amount of change (not converted to standard asset) obtained by accumulating the amount of change in all transaction records for this external account between `start_date` and `end_date`.
 - `total_value`: the total market value obtained by converting the amount of change in each transaction to standard assets at the asset's unit price of the day and adding it up. Assuming that there are a total of $$ n $$ transactions in an external account, and the amount of change in each transaction is $$ a_1 \dots a_n $$ respectively, and the unit price of the asset contained in the account on the day of each transaction is $$ p_1 \dots p_n $$ respectively, then the total value will be: $$ \displaystyle\sum_{i=1}^{n} p_ia_i $$.
 
-**Examples**
+**Example**
 
 Assume that the existing table contents are as follows:
 
@@ -487,14 +487,14 @@ If an external account contains the standard asset (such as `Gil` in the example
 
 ## portfolio_stats
 
-There is only one record: consider the set of all internal accounts as a **portfolio**, showing the portfolio's net assets at the beginning and ending of the statistics period, as well as total income and expenses, investment profit or loss during the statistics period.
+There is only one record: consider the set of all internal accounts as a **portfolio**, showing the portfolio's net worth at the beginning and ending of the statistics period, as well as total income and expenses, investment profit or loss during the statistics period.
 
 **Fields**
 - `start_value`: market value at the beginning of the statistics period, obtained by accumulating `market_value` from [start_values]({{ site.baseurl }}/tables_and_views.html#start_values) view.
 - `end_value`: market value at the ending of the statistics period, obtained by accumulating `market_value` from [end_values]({{ site.baseurl }}/tables_and_views.html#end_values) view.
 - `net_outflow`: the value of net outflow during the statistical period, obtained by accumulating `total_value` from all external accounts other than [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) in [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view. Note that interest is not an inflow or outflow. If there is a net inflow during the statistics period, then this value is negative.
 - `interest`: the total amount of interest earnings incurred during the statistics period, obtained  by accumulating `total_value` from all [interest_accounts]({{ site.baseurl }}/tables_and_views.html#interest_accounts) in [income_and_expenses]({{ site.baseurl }}/tables_and_views.html#income_and_expenses) view.
-- `net_gain`: the total gain (or total loss) generated by the investments during the statistics period, calculated as $$ \text{end\_value} + \text{net\_outflow} - \text{start\_value} $$. That is, all changes in net assets are considered investment income (or loss) except for changes in net assets resulting from income and expenses. Interest earnings are part of investment income.
+- `net_gain`: the total gain (or total loss) generated by the investments during the statistics period, calculated as $$ \text{end\_value} + \text{net\_outflow} - \text{start\_value} $$. That is, all changes in net worth are considered investment income (or loss) except for changes resulting from income and expenses. Interest earnings are part of investment income.
 - `rate_of_return`: the rate of return on investments calculated using the [simple Dietz method]({{ site.baseurl }}/rate_of_return.html#simple-dietz-method).
 
 ## flow_stats
@@ -772,7 +772,7 @@ The rate of return shown in this view is only the rate of return on the interest
 - `interest`: `amount` from [interest_stats]({{ site.baseurl }}/tables_and_views.html#interest_stats) view.
 - `rate_of_return`: the return on investment (i.e., the interest rate) calculated using the [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modified-dietz-method).
 
-**Examples**
+**Example**
 
 Assume that the existing table contents are as follows:
 
@@ -833,7 +833,7 @@ Note: See [modified Dietz method]({{ site.baseurl }}/rate_of_return.html#modifie
 
 ## periods_cash_flows
 
-Consider the set of all internal accounts as a **portfolio** and show everyday's net inflow/outflow value into/from that portfolio between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), only days that the net inflow/outflow value of which is not $$ 0 $$ are shown. The flows on the day of `start_date` are not counted, the flows on the day of `end_date` are counted. Interest earnings, as investment income, are not counted as inflows/outflows; transactions between external and internal accounts other than interest accounts are counted as inflows/outflows. At the beginning of the cycle, the net assets of the portfolio are treated as a net inflow; at the end of the cycle, the net assets of the portfolio are treated as a net outflow.
+Consider the set of all internal accounts as a **portfolio** and show everyday's net inflow/outflow value into/from that portfolio between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), only days that the net inflow/outflow value of which is not $$ 0 $$ are shown. The flows on the day of `start_date` are not counted, the flows on the day of `end_date` are counted. Interest earnings, as investment income, are not counted as inflows/outflows; transactions between external and internal accounts other than interest accounts are counted as inflows/outflows. At the beginning of the cycle, the net worth of the portfolio are treated as a net inflow; at the end of the cycle, the net worth of the portfolio are treated as a net outflow.
 
 This view is the data needed to calculate the [internal rate of return (IRR)]({{ site.baseurl }}/rate_of_return.html#internal-rate-of-return-irr).
 
@@ -841,6 +841,152 @@ This view is the data needed to calculate the [internal rate of return (IRR)]({{
 - `trade_date`: the date of the net inflow/outflow.
 - `period`: the number of days that have elapsed since the start date.
 - `cash_flow`: the net inflow/outflow on that date, converted to standard asset. Note that according to the definition of [internal rate of return (IRR)]({{ site.baseurl }}/rate_of_return.html#internal-rate-of-return-irr), inflows are negative and outflows are positive, which is different from the usual definition.
+
+## daily_assets
+
+This view serves as an intermediate process for the calculations of the other views, and users usually don't need to care about this view.
+{: .notice}
+
+This is a new view added in v1.3.
+{: .notice}
+
+Shows balance of each asset on the end of each date between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) (with these two dates also included). Only records with `amount` not equal to $$ 0 $$ are shown.
+
+**Fields**
+- `trade_date`: the date of the balance.
+- `asset_index`: `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `amount`: the balance of the asset indicated by `asset_index` on the end of `trade_date`, not converted to standard asset.
+
+## price_unavailable
+
+This is a new view added in v1.3.
+{: .notice}
+
+Shows absent prices of non-standard assets which are needed by the calculation of the net worth on the end of each date between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) (with these two dates also included).
+
+Note that unlike views whose names begin with `check`, the presence of records in `price_unavailable` does not indicate a data consistency issue. It only indicates that the net worth for the corresponding date cannot be calculated, so these dates will be skipped in the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view. In reality, assets may not always have a meaningful price every day. For example, stocks do not have market prices on non-trading days. Users can decide which dates' price information to input based on their own needs.
+
+**Fields**
+- `trade_date`: the date on which the price is absent.
+- `asset_index`: the asset index of asset whose price is absent. i.e., `asset_index` from [accounts]({{ site.baseurl }}/tables_and_views.html#accounts) table.
+- `asset_name`: the asset name of asset whose price is absent. i.e., `asset_name` from [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table.
+
+**Example**
+
+Assume that the existing table contents are as follows:
+
+`asset_types`
+
+| asset_index | asset_name | asset_order |
+|:-:|:-:|:-:|
+| 1 | Gil | 0 |
+| 2 | Garlond Ironworks shares | 0 |
+| 3 | Eorzea 100 Index Fund | 0 |
+
+`standard_asset`
+
+| asset_index |
+|:-:|
+| 1 |
+
+`accounts`
+
+| account_index | account_name | asset_index | is_external |
+|:-:|:-:|:-:|:-:|
+| 1 | Sharlayan Bank current | 1 | 0 |
+| 2 | Moogle:Garlond Ironworks shares | 2 | 0 |
+| 3 | Moogle:Eorzea 100 Index Fund | 3 | 0 |
+| 4 | Salary | 1 | 1 |
+
+`postings`
+
+| posting_index | trade_date | src_account | src_change | dst_account | comment |
+|:-:|:-:|:-:|:-:|:-:|:-:|
+| 1 | 2025-02-18 | 4 | -8000.0 | 1 | Monthly salary |
+| 2 | 2025-02-18 | 1 | -4000.0 | 2 | Buy shares |
+| 3 | 2025-02-19 | 1 | -4000.0 | 3 | Purchase |
+
+`posting_extras`
+
+| posting_index | dst_change |
+|:-:|:-:|
+| 2 | 400 |
+| 3 | 2000 |
+
+`prices`
+
+| price_date | asset_index | price |
+|:-:|:-:|:-:|
+| 2025-02-18 | 2 | 10.0 |
+| 2025-02-19 | 2 | 11.0 |
+| 2025-02-19 | 3 | 2.0 |
+| 2025-02-20 | 3 | 2.1 |
+| 2025-02-21 | 2 | 13.0 |
+| 2025-02-21 | 3 | 2.2 |
+
+`start_date`
+
+| val |
+|:-:|
+| 2025-02-17 |
+
+`end_date`
+
+| val |
+|:-:|
+| 2025-02-21 |
+
+Then the `price_unavailable` view contents are:
+
+| trade_date | asset_index | asset_name |
+|:-:|:-:|:-:|
+| 2025-02-20 | 2 | Garlond Ironworks shares |
+
+Note: From 2025-02-17 to 2025-02-21, with these two dates also included, there are a total of 5 days. The asset status at the end of each day is as follows:
+
+- 2025-02-17: the balances of all accounts containing non-standard assets are $$ 0 $$, so no price information is required.
+- 2025-02-18: only the price of `Garlond Ironworks shares` is required, which has been provided in the `prices` table.
+- 2025-02-19: the prices of `Garlond Ironworks shares` and `Eorzea 100 Index Fund` are required, both of which have been provided in the `prices` table.
+- 2025-02-20: the prices of `Garlond Ironworks shares` and `Eorzea 100 Index Fund` are required, but the `prices` table only provides the price of `Eorzea 100 Index Fund`, so the price of `Garlond Ironworks shares` is missing.
+- 2025-02-21: the prices of `Garlond Ironworks shares` and `Eorzea 100 Index Fund` are required, both of which have been provided in the `prices` table.
+
+Therefore, `price_unavailable` displays the only missing price, which is the price of `Garlond Ironworks shares` on 2025-02-20.
+
+## net_worth_changes
+
+This is a new view added in v1.3.
+{: .notice}
+
+Consider the set of all internal accounts as a **portfolio** and show the net worth of the portfolio at the end of each day between [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date) (with these two dates also included). The net worth are measured in standard asset.
+
+The `net_worth` field in this view has the same meaning as the `start_value` and `end_value` fields in the [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view, but besides [start_date]( {{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), `net_worth_changes` view also shows the net worth for each date between these two dates (if it can be calculated successfully).
+
+This view only displays dates for which calculations can be successfully completed. If any required asset's price is missing when calculating the net worth for a particular date, that date will be skipped. You can find all missing prices via the [price_unavailable]({{ site.baseurl }}/tables_and_views.html#price_unavailable) view.
+
+The data in this view can be used to generate a chart showing changes in net worth over time. For example, you can copy the data into Excel and use Excel's **Charts** feature.
+
+**Fields**
+- `trade_date`: the date of the net worth.
+- `net_worth`: the net worth measured in standard asset on the end of `trade_date`.
+
+**Example**
+
+Assuming that the existing tables' contents are the same as the example in the [price_unavailable]({{ site.baseurl }}/tables_and_views.html#price_unavailable) view, then the content of the `net_worth_changes` view is:
+
+| trade_date | net_worth |
+|:-:|:-:|
+| 2025-02-17 | 0.0 |
+| 2025-02-18 | 8000.0 |
+| 2025-02-19 | 8400.0 |
+| 2025-02-21 | 9600.0 |
+
+Note: From 2025-02-17 to 2025-02-21, with these two dates also included, there are a total of 5 days. The asset status at the end of each day is as follows:
+
+- 2025-02-17: all accounts' balances are $$ 0 $$, so the net worth is $$ 0 $$.
+- 2025-02-18: the balance of `Gil` is $$ 4000 $$; the balance of `Garlond Ironworks shares` is $$ 400 $$ and the price of which is $$ 10 $$. Therefore, the net worth is $$ 4000 + 400 \times 10 = 8000 $$.
+- 2025-02-19: the balance of `Garlond Ironworks shares` is $$ 400 $$ and the price of which is $$ 11 $$; the balance of `Eorzea 100 Index Fund` is $$ 2000 $$ and the price of which is $$ 2 $$. Therefore, the net worth is $$ 400 \times 11 + 2000 \times 2 = 8400 $$.
+- 2025-02-20: the balance of `Garlond Ironworks shares` is not $$ 0 $$ but no price for this asset on this date can be found in the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table, so the net worth for this date cannot be calculated and is not shown in the view. This reason can be inspected in the [price_unavailable]({{ site.baseurl }}/tables_and_views.html#price_unavailable) view.
+- 2025-02-21: the balance of `Garlond Ironworks shares` is $$ 400 $$ and the price of which is $$ 13 $$; the balance of `Eorzea 100 Index Fund` is $$ 2000 $$ and the price of which is $$ 2.2 $$. Therefore, the net worth is $$ 400 \times 13 + 2000 \times 2.2 = 9600 $$.
 
 ## check_standard_prices
 

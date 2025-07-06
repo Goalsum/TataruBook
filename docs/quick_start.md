@@ -71,7 +71,7 @@ The content of the vast majority of views in TataruBook is determined by the sta
 
 Then set the unique currency `Gil` as the bookkeeping **home currency** to solve the problem of needing a record in the [standard_asset]({{ site.baseurl }}/tables_and_views.html#standard_asset) table: select and copy the cell in previous `asset_types.csv` table which contains `Gil`, then right-click on the `accounting.db` file, select `standard_asset` under the `TataruBook paste` submenu. This sets the home currency to `Gil`.
 
-In the actual data of DB file's table, assets are referenced using the value of the `asset_index` field rather than the `asset_name` field, since the `asset_name` field is not the primary key of the table, and it is possible that there may be assets with the same name. However, it is not convenient for the user to enter the value of the `asset_index` field, so TataruBook allows the user to enter the value of the `asset_name` field where the value of the `asset_index` field is required, and as long as an asset can be uniquely identified based on the value entered, then TataruBook will automatically convert it internally to the corresponding `asset_index` field value.
+In the actual data of DB file's table, assets are referenced using the value of the `asset_index` field rather than the `asset_name` field, since the `asset_name` field is not the primary key of the table, and it is possible that there may be assets with the same name. However, it is not convenient for the user to enter the value of the `asset_index` field, so TataruBook allows the user to enter the value of the `asset_name` field where the value of the `asset_index` field is required, and as long as an asset can be uniquely identified based on the value entered, then TataruBook will automatically convert it internally to the corresponding `asset_index` field value. For the detail of this function, see [here]({{ site.baseurl }}/commands.html#lookup-index-by-name).
 {: .notice}
 
 Now the data consistency issues are all solved. In the pop-up window of the last `TataruBook paste` operation, TataruBook reports:
@@ -277,7 +277,7 @@ These (date, asset) pairs need price info in calculation.
 (2, 'Garlond Ironworks shares', 1, '2023-12-31')
 ~~~
 
-This is because TataruBook needs to know the value of the other assets measured in home currency when calculating the net assets, so you need to enter the share price on a specific date. We add records to the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table to fulfill this requirement:
+This is because TataruBook needs to know the value of the other assets measured in home currency when calculating the net worth, so you need to enter the share price on a specific date. We add records to the [prices]({{ site.baseurl }}/tables_and_views.html#prices) table to fulfill this requirement:
 
 | price_date | asset_index | price |
 |:-:|:-:|:-:|
@@ -362,6 +362,40 @@ These figures show that all internal accounts had a total investment return of $
 
 TataruBook is often used to keep track of all of an individual or family's assets, so the information in [portfolio_stats]({{ site.baseurl }}/tables_and_views.html#portfolio_stats) view is important: it shows the net worth at the end of both [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) and [end_date]({{ site.baseurl }}/tables_and_views.html#end_date), as well as the net income and expenses and investment income between the two dates.
 {: .notice}
+
+# Net worth change chart
+
+Through the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view, you can view the net worth for each day during the period from [start_date]({{ site.baseurl }}/tables_and_views.html#start_date) to [end_date]( {{ site.baseurl }}/tables_and_views.html#end_date). Net worth is the sum of all internal accounts' balances, i.e., all assets minus all liabilities.
+
+Since the content of this view is quite lengthy, only a portion of the records is listed here for illustrative purposes:
+
+| trade_date | net_worth |
+|:-:|:-:|
+| ... | ... |
+| 2023-01-04 | 5000.0 |
+| 2023-01-05 | 4980.0 |
+| 2023-01-06 | 4980.0 |
+| 2023-01-07 | 4935.0 |
+| ... | ... |
+
+This view shows the net worth for each day prior to 2023-07-02, but starting from 2023-07-03, subsequent dates (except for 2023-12-31) are not displayed in the view. This is because, starting from 2023-07-03, some accounts' balances include non-standard assets such as stocks and funds, and TataruBook needs to know the prices of these assets to calculate the net worth for that day.
+
+Manually identifying which prices are missing is cumbersome, so the [price_unavailable]({{ site.baseurl }}/tables_and_views.html#price_unavailable) view shows which assets' prices are missing on which dates:
+
+| trade_date | asset_index | asset_name |
+|:-:|:-:|:-:|
+| 2023-07-03 | 2 | Garlond Ironworks shares |
+| 2023-07-04 | 2 | Garlond Ironworks shares |
+| 2023-07-05 | 2 | Garlond Ironworks shares |
+| ... | ... | ... |
+
+You can insert some or all of these prices as you need. For example, if you want to know the net worth at the end of 2023-07-03, you can filter the records for 2023-07-03 in the [price_unavailable]({{ site.baseurl }}/tables_and_views.html#price_unavailable) view and insert the prices of these assets on that day into the [prices]( {{ site.baseurl }}/tables_and_views.html#prices) table. After insertion, the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view will include a net worth record for 2023-07-03.
+
+If you want to insert prices for multiple dates in bulk, it is best to use technical means to automatically query and fill in the data. For example, in Excel 365, you can use the [STOCKHISTORY](https://support.microsoft.com/en-us/office/stockhistory-function-1ac8b5b3-5f62-4d94-8ab8-7504ec7239a8) function.
+
+The content of the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view can be used to generate a chart showing how net worth changes over time. For example, using Excel's Chart function, the line chart generated for the accounting data in this tutorial is:
+
+![Net worth change chart]({{ site.baseurl }}/assets/images/net_worth_chart.png)
 
 # Viewing DB files with GUI software
 
