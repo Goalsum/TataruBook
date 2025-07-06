@@ -393,7 +393,7 @@ You can insert some or all of these prices as you need. For example, if you want
 
 If you want to insert prices for multiple dates in bulk, it is best to use technical means to automatically query and fill in the data. For example, in Excel 365, you can use the [STOCKHISTORY](https://support.microsoft.com/en-us/office/stockhistory-function-1ac8b5b3-5f62-4d94-8ab8-7504ec7239a8) function.
 
-The content of the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view can be used to generate a chart showing how net worth changes over time. For example, using Excel's Chart function, the line chart generated for the accounting data in this tutorial is:
+The content of the [net_worth_changes]({{ site.baseurl }}/tables_and_views.html#net_worth_changes) view can be used to generate a chart showing how net worth changes over time. For example, using Excel's **Charts** feature, the line chart generated for the accounting data in this tutorial is:
 
 ![Net worth change chart]({{ site.baseurl }}/assets/images/net_worth_chart.png)
 
