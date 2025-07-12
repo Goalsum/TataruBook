@@ -514,7 +514,7 @@ class BatchHandler:
         self.table = table
         self.col_info = col_info
 
-    def handle(self, row):
+    def handle(self, no, row):
         pass
 
 
@@ -522,12 +522,12 @@ class Inserter(BatchHandler):
     def __init__(self, con, table, col_info):
         super().__init__(con, table, col_info)
 
-    def handle(self, row):
+    def handle(self, no, row):
         print("> {}".format(row))
         if len(row) > len(self.col_info) and not any(row[len(self.col_info):]):
             row = row[:len(self.col_info)]
 
-        if is_headline(row):
+        if is_headline(no, row):
             print("Headline detected, Skip this row.")
         elif len(self.col_info) != len(row) and (self.table, len(row)) not in COMBINED_INSERT:
             raise TypeError("Table {} has {} columns but {} columns are provided.".format(
@@ -540,12 +540,12 @@ class Deleter(BatchHandler):
     def __init__(self, con, table, col_info):
         super().__init__(con, table, col_info)
 
-    def handle(self, row):
+    def handle(self, no, row):
         print("> {}".format(row))
         if len(row) > len(self.col_info) and not any(row[len(self.col_info):]):
             row = row[:len(self.col_info)]
 
-        if is_headline(row):
+        if is_headline(no, row):
             print("Headline detected, Skip this row.")
         elif len(self.col_info) != len(row):
             raise TypeError("Table {} has {} key columns but {} columns are provided.".format(
@@ -560,8 +560,8 @@ def decode_csv(csv_file, encoding, handler):
     for codec in codecs:
         try:
             with csv_file.open(newline='', encoding=codec) as file:
-                for row in csv.reader(file):
-                    handler.handle(row)
+                for (no, row) in enumerate(csv.reader(file)):
+                    handler.handle(no, row)
             break
         except UnicodeError as e:
             if codec == codecs[-1]:
@@ -718,11 +718,13 @@ def is_number(s):
         return False
 
 
-def is_headline(line):
-    return all((not is_number(x) for x in line))
+def is_headline(no, line):
+    return no == 0 and all((not is_number(x) for x in line))
 
 
 def sql_date_str(s):
+    if len(s) < 8:
+        raise ValueError(f"'{s}' is not a valid date")
     if s[4] == "-" or s[4] == "/" or s[4] == ".":
         s = s.replace(s[4], "-")
     else:
@@ -870,8 +872,8 @@ def paste(db_file, table):
         else:
             inserter = Inserter(con, table, col_info)
             with in_transaction(con):
-                for row in content.splitlines():
-                    inserter.handle(row.split("\t"))
+                for (no, row) in enumerate(content.splitlines()):
+                    inserter.handle(no, row.split("\t"))
 
         print("Integrity check after paste:")
         integrity_check(con)
