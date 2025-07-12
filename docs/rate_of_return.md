@@ -152,7 +152,7 @@ However, this is the characteristic of time-weighted return, which views the ent
 
 If the inflows and outflows of a portfolio are not controlled by the portfolio's manager, then the time-weighted return is a good indicator of the manager's investment performance. But if the manager itself controls the inflows and outflows of the portfolio, then as in the example above, the time-weighted returns do not reflect the true returns.
 
-TataruBook does not provide the ability to calculate time-weighted returns because it requires the ability to calculate the value of the portfolio at each time of the inflows or outflows. For personal or family bookkeeping, this means that the prices of all non-standard assets must be provided every time there is a spending or income, which is not an easy task for the average user. In the future, depending on the situation, TataruBook may include a time-weighted income feature.
+TataruBook does not provide the ability to calculate time-weighted returns because it requires the ability to calculate the value of the portfolio at each time of the inflows or outflows. However, the inflows or outflows of a person or a family rarely follow this requirement. For example, on non-trading days, the value of the portfolio may not be calculable, but there may still be inflows or outflows.
 {: .notice}
 
 # Minimum initial cash method
