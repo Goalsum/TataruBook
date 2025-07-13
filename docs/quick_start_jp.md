@@ -28,7 +28,7 @@ tatarubook init accounting.db
 
 次に、簿記のためには、まず通貨を追加する必要があります。通貨を追加するには、[asset_types]({{ site.baseurl }}/tables_and_views_jp.html#asset_types)テーブルを変更する必要があります。テーブルの内容を変更するために、まずテーブルにどのようなフィールドがあるか分かるようにする必要があります。そのため、まずexport機能を使用してこのテーブルをエクスポートしてから、変更することをお勧めします。
 
-先ほど作成した`accounting.db`ファイルを右クリックし、`TataruBook export`というサブメニューから`asset_types`を選択します。
+先ほど作成した`accounting.db`ファイルを右クリックし、`TataruBook export table`というサブメニューから`asset_types`を選択します。
 
 ![DB文件的快捷菜单]({{ site.baseurl }}/assets/images/context_menu.png)
 
@@ -88,7 +88,7 @@ TataruBookは、データを変更するたびに自動的にデータ整合性�
 
 # 簿記を始める
 
-まずアカウントを追加しましょう。`accounting.db`ファイルを右クリックし、`TataruBook export`のサブメニューから`accounts`を選択し、生成された`accounts.csv`ファイルを開き、右クリックで｢新しい行を追加する」を選択して、以下のような新しい行を追加します。
+まずアカウントを追加しましょう。`accounting.db`ファイルを右クリックし、`TataruBook export table`のサブメニューから`accounts`を選択し、生成された`accounts.csv`ファイルを開き、右クリックで｢新しい行を追加する」を選択して、以下のような新しい行を追加します。
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
@@ -133,7 +133,7 @@ TataruBookは、データを変更するたびに自動的にデータ整合性�
 || 2023-1-5 | シャーレアン銀行普通預金 | -20 | 飲食費用 | ホテルのモーニング |
 || 2023-1-7 | シャーレアン銀行普通預金 | -45 | 飲食費用 | ラストスタンドの夕食 |
 
-実行後、`accounting.db`を右クリックし、`TataruBook export`のサブメニューから`statements`を選択し、[statements]({{ site.baseurl }}/tables_and_views_jp.html#statements)というビューをエクスポートします。そして、Excelを使用して、ディレクトリに生成された`statements.csv`ファイルを開くと、次の内容が確認できます。
+実行後、`accounting.db`を右クリックし、`TataruBook export view`のサブメニューから`statements`を選択し、[statements]({{ site.baseurl }}/tables_and_views_jp.html#statements)というビューをエクスポートします。そして、Excelを使用して、ディレクトリに生成された`statements.csv`ファイルを開くと、次の内容が確認できます。
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -188,10 +188,6 @@ TataruBookでは挿入データに対して多くのチェックが行われる�
 
 [income_and_expenses]({{ site.baseurl }}/tables_and_views_jp.html#income_and_expenses)ビューには、特定の収支における内部アカウントの取引額の合計が表示されます。各内部アカウントごとの詳細な統計データを確認するには、[flow_stats]({{ site.baseurl }}/tables_and_views_jp.html#flow_stats)ビューを使用します。
 
-~~~
-tatarubook export accounting.db --table flow_stats
-~~~
-
 | flow_index | flow_name | account_index | account_name | amount |
 |:-:|:-:|:-:|:-:|:-:|
 | 3 | 飲食費用 | 1 | シャーレアン銀行普通預金 | 65.0 |
@@ -203,10 +199,6 @@ tatarubook export accounting.db --table flow_stats
 [flow_stats]({{ site.baseurl }}/tables_and_views_jp.html#flow_stats)ビューでは、 `シャーレアン銀行普通預金`と`シャーレアン銀行クレジットカード`という２つの内部アカウントの`飲食費用`をそれぞれに確認できます。
 
 これらの取引後の各内部アカウントの最終的な残高を確認するには、[end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューを使用します。
-
-~~~
-tatarubook export accounting.db --table end_stats
-~~~
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -294,13 +286,9 @@ These (date, asset) pairs need price info in calculation:
 
 これは、TataruBookが資産を計算する際に、自国通貨で他の資産の価値を算出するため、特定の日付の株価情報を入力する必要があるためです。この要件を満たすためには、[prices]({{ site.baseurl }}/tables_and_views_jp.html#prices)テーブルに記録を追加します。
 
-~~~
-tatarubook insert accounting.db prices 2023-12-31 ガーロンド・アイアンワークス社の株 12
-~~~
-
 [end_stats]({{ site.baseurl }}/tables_and_views_jp.html#end_stats)ビューを使用して、[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)におけるすべてのアカウント残高と価値を確認できます。
 
-もし入門書に従って最初から実行していた場合、`end_stats.csv`ファイルがエクスポートされており、このファイルが既にカレントフォルダに存在するはずです。この場合、まず`end_stats.csv`ファイルを削除してから、`export`コマンドを実行してください。そうしないと、`export`コマンドの実行時に失敗が報告され、`end_stats.csv`ファイルの内容は変わりません。これは、TataruBookが既存のファイルを誤って破壊しないようにしているためです。
+もし入門書に従って最初から実行していた場合、`end_stats.csv`ファイルがエクスポートされており、このファイルが既にカレントフォルダに存在するはずです。この場合、まず`end_stats.csv`ファイルを削除してから、`Tatarubook export view`コマンドを実行してください。そうしないと、`Tatarubook export view`コマンドの実行時に失敗が報告され、`end_stats.csv`ファイルの内容は変わりません。これは、TataruBookが既存のファイルを誤って破壊しないようにしているためです。
 {: .notice--warning}
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
@@ -368,10 +356,6 @@ tatarubook insert accounting.db prices 2023-12-31 ガーロンド・アイアン
 これらの投資から、`モーグリ証券_ガーロンドの株`のアカウントの投資収益は$$ 400 $$ギル、収益率は$$ 20\% $$、`モーグリ証券_エオルゼア100`のアカウントの投資収益は$$ 1013.0 $$ギル、収益率は$$ 25.325\% $$であることがわかります。計算の詳細については、[最小初期現金法]({{ site.baseurl }}/rate_of_return_jp.html#最小初期現金法)を参照してください。
 
 TataruBookでは、すべての内部アカウントを**ポートフォリオ**として認定されるため、この資産アロケーション全体の収益率が計算されます。この結果は[portfolio_stats]({{ site.baseurl }}/tables_and_views_jp.html#portfolio_stats)ビューに表示されます。
-
-~~~
-tatarubook export accounting.db --table portfolio_stats
-~~~
 
 | start_value | end_value | net_outflow | interest | net_gain | rate_of_return |
 |:-:|:-:|:-:|:-:|:-:|:-:|

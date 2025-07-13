@@ -13,7 +13,8 @@ The following is a list of commands that can be invoked from the context menu. C
 |:-:|:-:|:-:|
 | Right-click on the background of a folder's content | TataruBook create DB file | [init]({{ site.baseurl }}/commands.html#init) |
 | Right-click on a DB file | TataruBook check | [check]({{ site.baseurl }}/commands.html#check) |
-| Right-click on a DB file | TataruBook export | [export]({{ site.baseurl }}/commands.html#export) |
+| Right-click on a DB file | TataruBook export table | [export]({{ site.baseurl }}/commands.html#export) |
+| Right-click on a DB file | TataruBook export view | [export]({{ site.baseurl }}/commands.html#export) |
 | Right-click on a DB file | TataruBook paste | [paste]({{ site.baseurl }}/commands.html#paste) |
 | Right-click on a DB file | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands.html#upgrade) |
 

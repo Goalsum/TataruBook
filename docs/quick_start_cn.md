@@ -27,7 +27,7 @@ tatarubook init accounting.db
 
 接下来，为了记账，需要先添加一种货币类型。添加货币类型需要修改[asset_types]({{ site.baseurl }}/tables_and_views_cn.html#asset_types)表。为了修改表内容，需要先了解表有哪些字段。我们推荐先使用`export`功能导出这张表再进行修改。
 
-在刚才创建的`accounting.db`文件上点右键，选择`TataruBook export`子菜单下的`asset_types`：
+在刚才创建的`accounting.db`文件上点右键，选择`TataruBook export table`子菜单下的`asset_types`：
 
 ![DB文件的快捷菜单]({{ site.baseurl }}/assets/images/context_menu.png)
 
@@ -87,7 +87,7 @@ TataruBook在每次修改数据操作之后都会自动进行数据一致性检�
 
 # 开始记账
 
-让我们先添加一个银行账户：在`accounting.db`文件上点右键，选择`TataruBook export`子菜单下的`accounts`，打开生成的`accounts.csv`文件，添加一行内容：
+让我们先添加一个银行账户：在`accounting.db`文件上点右键，选择`TataruBook export table`子菜单下的`accounts`，打开生成的`accounts.csv`文件，添加一行内容：
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
@@ -131,7 +131,7 @@ TataruBook在每次修改数据操作之后都会自动进行数据一致性检�
 || 2023-1-5 | 萨雷安银行活期 | -20 | 餐饮费 | 旅店早餐 |
 || 2023-1-7 | 萨雷安银行活期 | -45 | 餐饮费 | 背水咖啡厅晚餐 |
 
-执行完成后，在`accounting.db`文件上点右键，选择`TataruBook export`子菜单下的`statements`，导出[statements]({{ site.baseurl }}/tables_and_views_cn.html#statements)视图。用Excel打开目录中出现的`statements.csv`文件，看到的内容如下：
+执行完成后，在`accounting.db`文件上点右键，选择`TataruBook export view`子菜单下的`statements`，导出[statements]({{ site.baseurl }}/tables_and_views_cn.html#statements)视图。用Excel打开目录中出现的`statements.csv`文件，看到的内容如下：
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -287,7 +287,7 @@ These (date, asset) pairs need price info in calculation:
 
 现在可以通过[end_stats]({{ site.baseurl }}/tables_and_views_cn.html#end_stats)视图来查看在[end_date]({{ site.baseurl }}/tables_and_views_cn.html#end_date)日期的所有账户余额和市场价值：
 
-如果你一直是按这个教程操作的，那么现在当前目录下已经有一个`end_stats.csv`文件了（因为之前导出过）。在这种情况下，你要先把已有的`end_stats.csv`文件删除，然后再执行`export`命令。否则，`export`执行时会报告失败，且`end_stats.csv`文件的内容不会变化——因为TataruBook要避免意外的损坏已有文件。
+如果你一直是按这个教程操作的，那么现在当前目录下已经有一个`end_stats.csv`文件了（因为之前导出过）。在这种情况下，你要先把已有的`end_stats.csv`文件删除，然后再执行`TataruBook export view`命令。否则，`TataruBook export view`执行时会报告失败，且`end_stats.csv`文件的内容不会变化——因为TataruBook要避免意外的损坏已有文件。
 {: .notice--warning}
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |

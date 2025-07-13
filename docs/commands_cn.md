@@ -15,7 +15,8 @@ TataruBook是基于命令行的程序，但是在Windows 10或更高版本中提
 |:-:|:-:|:-:|
 | 文件夹内容空白处点右键 | TataruBook create DB file | [init]({{ site.baseurl }}/commands_cn.html#init) |
 | DB文件上点右键 | TataruBook check | [check]({{ site.baseurl }}/commands_cn.html#check) |
-| DB文件上点右键 | TataruBook export | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| DB文件上点右键 | TataruBook export table | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| DB文件上点右键 | TataruBook export view | [export]({{ site.baseurl }}/commands_cn.html#export) |
 | DB文件上点右键 | TataruBook paste | [paste]({{ site.baseurl }}/commands_cn.html#paste) |
 | DB文件上点右键 | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands_cn.html#upgrade) |
 

@@ -16,7 +16,8 @@ TataruBookはコマンドベースのプログラムですが、Windows 10以降
 |:-:|:-:|:-:|
 | フォルダー内の空白を右クリックする | TataruBook create DB file | [init]({{ site.baseurl }}/commands_cn.html#init) |
 | データベースファイルを右クリックする | TataruBook check | [check]({{ site.baseurl }}/commands_cn.html#check) |
-| データベースファイルを右クリックする | TataruBook export | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| データベースファイルを右クリックする | TataruBook export table | [export]({{ site.baseurl }}/commands_cn.html#export) |
+| データベースファイルを右クリックする | TataruBook export view | [export]({{ site.baseurl }}/commands_cn.html#export) |
 | データベースファイルを右クリックする | TataruBook paste | [paste]({{ site.baseurl }}/commands_cn.html#paste) |
 | データベースファイルを右クリックする | TataruBook upgrade | [upgrade]({{ site.baseurl }}/commands_cn.html#upgrade) |
 

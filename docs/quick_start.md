@@ -25,7 +25,7 @@ This operation also creates the `accounting.db` file. In fact, when using Tataru
 
 Next, in order to do bookkeeping, you need to add a currency type first. Adding a currency type requires modifying the [asset_types]({{ site.baseurl }}/tables_and_views.html#asset_types) table. In order to modify the table contents, you need to know what fields the table includes first. We recommend exporting this table using the `export` command before modifying it.
 
-Right-click on the `accounting.db` file you just created and select `asset_types` under the `TataruBook export` submenu:
+Right-click on the `accounting.db` file you just created and select `asset_types` under the `TataruBook export table` submenu:
 
 ![context menu for a DB file]({{ site.baseurl }}/assets/images/context_menu.png)
 
@@ -85,7 +85,7 @@ TataruBook automatically performs a data consistency check after each data modif
 
 # Start bookkeeping
 
-Let's start by adding a bank account: right-click on the `accounting.db` file, select `accounts` under the `TataruBook export` submenu, open the resulting `accounts.csv` file and add one line of content:
+Let's start by adding a bank account: right-click on the `accounting.db` file, select `accounts` under the `TataruBook export table` submenu, open the resulting `accounts.csv` file and add one line of content:
 
 | account_index | account_name | asset_index | is_external |
 |:-:|:-:|:-:|:-:|
@@ -129,7 +129,7 @@ Then, add two purchases to [postings]({{ site.baseurl }}/tables_and_views.html#p
 || 2023-1-5 | Sharlayan Bank current | -20 | Food and Beverages | Breakfast at Inn |
 || 2023-1-7 | Sharlayan Bank current | -45 | Food and Beverages | Dinner at the Last Stand |
 
-After the execution is complete, right-click on the `accounting.db` file and select `statements` under the `TataruBook export` submenu to export the [statements]({{ site.baseurl }}/tables_and_views.html#statements) view. Open the `statements.csv` file that appears in the folder with Excel and you'll see the following:
+After the execution is complete, right-click on the `accounting.db` file and select `statements` under the `TataruBook export view` submenu to export the [statements]({{ site.baseurl }}/tables_and_views.html#statements) view. Open the `statements.csv` file that appears in the folder with Excel and you'll see the following:
 
 | posting_index | trade_date | account_index | amount | target | comment | src_name | asset_index | is_external | target_name | balance |
 |:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -285,7 +285,7 @@ This is because TataruBook needs to know the value of the other assets measured 
 
 It is now possible to view all records on [end_stats]({{ site.baseurl }}/tables_and_views.html#end_stats) view to see all account balances and market values on the [end_date]({{ site.baseurl }}/tables_and_views.html#end_date):
 
-If you follow this tutorial all along, now there is already an `end_stats.csv` file existing in this folder because we've exported it before. In this circumstance, when you execute `TataruBook export`, you will see an error message and that file will not be updated. That's because TataruBook avoids accidentally damaging existing files. So you need to delete the `end_stats.csv` file first, and then execute `TataruBook export`.
+If you follow this tutorial all along, now there is already an `end_stats.csv` file existing in this folder because we've exported it before. In this circumstance, when you execute `TataruBook export view`, you will see an error message and that file will not be updated. That's because TataruBook avoids accidentally damaging existing files. So you need to delete the `end_stats.csv` file first, and then execute `TataruBook export view`.
 {: .notice--warning}
 
 | asset_order | date_val | account_index | account_name | balance | asset_index | asset_name | price | market_value | proportion |
