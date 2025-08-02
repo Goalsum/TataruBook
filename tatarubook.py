@@ -736,9 +736,13 @@ def format_value(s, sql_type, is_date=False):
     if sql_type == "TEXT":
         if is_date:
             s = sql_date_str(s)
-        return "'" + s + "'"
+        return s
     if not s or s == "NULL" or s == "null":
-        return "NULL"
+        return None
+    if sql_type == "INTEGER":
+        return int(s)
+    if sql_type == "REAL":
+        return float(s)
     return s
 
 
@@ -754,10 +758,11 @@ def translate_value(con, s, table, col):
             if lookup_cols[rule[1]][2] == "INTEGER" and not is_integer(s):
                 continue
             lookup_val = format_value(s, lookup_cols[rule[1]][2])
-            condition = "{} = {}".format(lookup_cols[rule[1]][1], lookup_val)
+            condition = "{} = ?".format(lookup_cols[rule[1]][1])
             if lookup_cols[rule[1]][2] == "TEXT":
-                condition = "instr({}, {}) > 0".format(lookup_cols[rule[1]][1], lookup_val)
-            cur = con.execute("SELECT {} FROM {} WHERE {}".format(lookup_cols[rule[2]][1], rule[0], condition))
+                condition = "instr({}, ?) > 0".format(lookup_cols[rule[1]][1])
+            cur = con.execute("SELECT {} FROM {} WHERE {}".format(lookup_cols[rule[2]][1], rule[0], condition),
+                              (lookup_val,))
             ret = cur.fetchall()
             if len(ret) == 1:
                 s = str(ret[0][0])
@@ -773,11 +778,11 @@ def translate_value(con, s, table, col):
 
 
 def insert_row(con, table, col_info, row, returning=None):
-    values = (translate_value(con, x, table, y) for x, y in zip(row, col_info))
+    values = [translate_value(con, x, table, y) for x, y in zip(row, col_info)]
     returning = " returning " + returning if returning else ""
-    cmd = "INSERT INTO {} VALUES ({}){}".format(table, ",".join(values), returning)
-    print(cmd)
-    return con.execute(cmd)
+    cmd = "INSERT INTO {} VALUES ({}){}".format(table, ",".join(["?"] * len(col_info)), returning)
+    print(cmd + ", param={}".format(values))
+    return con.execute(cmd, values)
 
 
 def atomic_insert(con, table, col_info, row):
@@ -880,11 +885,11 @@ def paste(db_file, table):
 
 
 def delete_row(con, table, col_info, content):
-    condition = " AND ".join((x[1] + " = " + format_value(y, x[2], (table, x[1]) in DATE_COLUMNS)
-                              for x, y in zip(col_info, content)))
+    condition = " AND ".join((x[1] + " = ?" for x in col_info))
     cmd = "DELETE FROM {} WHERE {}".format(table, condition)
-    print(cmd)
-    con.execute(cmd)
+    param = [format_value(y, x[2], (table, x[1]) in DATE_COLUMNS) for x, y in zip(col_info, content)]
+    print(cmd + ", param={}".format(param))
+    con.execute(cmd, param)
 
 
 def atomic_delete(con, table, col_info, content):
