@@ -74,7 +74,7 @@ TataruBookのほとんどのビューの内容は、[start_date]({{ site.baseurl
 
 次に、[standard_asset]({{ site.baseurl }}/tables_and_views_jp.html#standard_asset)テーブルにレコードが必要であるという問題を解決するために、唯一の通貨として`ギル`を**自国通貨**に設定します。先ほど作成した`asset_types.csv`テーブル内の`ギル`を含むセルをコピーし、`accounting.db`ファイルを右クリックして、`TataruBook paste`のサブメニューから`standard_asset`を選択して、自国通貨が`ギル`に設定されます。
 
-実際のTataruBookのデータでは、資産を参照する際に`asset_index`フィールドではなく、`asset_name`フィールドの値が使用されます。これは、`asset_name`フィールドがテーブルのメインキーではなく、同名の資産が存在する可能性があるためです。ただし、ユーザーが`asset_index`フィールドの値を直接入力するのは不便です。そのため、TataruBookでは、`asset_index`フィールドの値を入力する必要があるところで、`asset_name`フィールドの値を入力できるようにしています。入力された値が資産のタイプを特定できる場合、TataruBookは内部で自動的にそれを対応する`asset_index`フィールドの値に変換します。
+実際のTataruBookのデータでは、資産を参照する際に`asset_index`フィールドではなく、`asset_name`フィールドの値が使用されます。これは、`asset_name`フィールドがテーブルのメインキーではなく、同名の資産が存在する可能性があるためです。ただし、ユーザーが`asset_index`フィールドの値を直接入力するのは不便なので、TataruBookでは、`asset_index`フィールドの値を入力する必要がある時、`asset_name`フィールドの値を入力できるようにしています。入力された値が資産のタイプを特定できる場合、TataruBookは内部で自動的にそれに対応する`asset_index`フィールドの値に変換します。この機能の詳細は、[こちら]({{ site.baseurl }}/commands_jp.html#名前によるインデックスの検索)。を見てください。
 {: .notice}
 
 以上でデータ整合性の問題が解決しました。最後の`TataruBook paste`の操作で表示されたポップアップで、TataruBookは次のように報告します。
@@ -365,6 +365,40 @@ TataruBookでは、すべての内部アカウントを**ポートフォリオ**
 
 TataruBookは通常、個人または家族のすべての資産を簿記に使用されるため、[portfolio_stats]({{ site.baseurl }}/tables_and_views_jp.html#portfolio_stats)ビューで表示される情報は非常に重要です。このビューには、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)や[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)の日付時点の個人または家族の資産状況や、その期間中の収支、収益情報が表示されます。
 {: .notice}
+
+# 純資産推移チャート
+
+[net_worth_changes]({{ site.baseurl }}/tables_and_views_jp.html#net_worth_changes)ビューを通じて、[start_date]({{ site.baseurl }}/tables_and_views_jp.html#start_date)から[end_date]({{ site.baseurl }}/tables_and_views_jp.html#end_date)までの期間における毎日の純資産の状況を確認できます。純資産とは、すべての内部アカウントの残高の合計、すなわち全ての資産から全ての負債を差し引いたものです。
+
+このビューの内容は非常に多いため、ここでは一部の記録のみを例として示します。
+
+| trade_date | net_worth |
+|:-:|:-:|
+| ... | ... |
+| 2023-01-04 | 5000.0 |
+| 2023-01-05 | 4980.0 |
+| 2023-01-06 | 4980.0 |
+| 2023-01-07 | 4935.0 |
+| ... | ... |
+
+このビューでは、2023-07-02以前の各日の純資産が表示されますが、2023-07-03以降（2023-12-31を除く）の日付は表示されません。これは、2023-07-03以降の一部のアカウント残高に、株式やファンドなどの非標準資産を含むためです。TataruBookでは、その日の純資産を正しく計算するために、これら資産の価格情報が必要となります。
+
+どの資産の価格がどの日付でが不足しているのかを手動で確定するのは手間がかかります。そこで、[price_unavailable]({{ site.baseurl }}/tables_and_views_jp.html#price_unavailable)ビューでは、どの日にどの資産の価格が不足しているかを表示しています。
+
+| trade_date | asset_index | asset_name |
+|:-:|:-:|:-:|
+| 2023-07-03 | 2 | ガーロンド・アイアンワークス社の株式 |
+| 2023-07-04 | 2 | ガーロンド・アイアンワークス社の株式 |
+| 2023-07-05 | 2 | ガーロンド・アイアンワークス社の株式 |
+| ... | ... | ... |
+
+必要に応じて、これらの価格を追加できます。たとえば、2023-07-03の終了時点の純資産を確認したい場合は、[price_unavailable]({{ site.baseurl }}/tables_and_views_jp.html#price_unavailable)ビューで日付が2023-07-03の記録を絞り込み、その日の資産の価格を[prices]({{ site.baseurl }}/tables_and_views_jp.html#prices)テーブルに入力します。挿入後、[net_worth_changes]({{ site.baseurl }}/tables_and_views_jp.html#net_worth_changes)ビューに2023-07-03の純資産のレコードが表示されるようになります。
+
+複数の日付にわたる価格を一括で入力したい場合は、技術的手段を使って、自動的に検索や記入する方法があります。たとえば、Excel 365では [STOCKHISTORY](https://support.microsoft.com/en-us/office/stockhistory-function-1ac8b5b3-5f62-4d94-8ab8-7504ec7239a8)関数を利用することができます。
+
+[net_worth_changes]({{ site.baseurl }}/tables_and_views_jp.html#net_worth_changes)ビューの内容は、純資産の時系列の変化を示すグラフを作成する際に利用できます。例えば、本サポートファイルの記帳データに基づいて、Excelのグラフ機能で作成された折れ線グラフは次のようになります：
+
+![净资产变化曲线图]({{ site.baseurl }}/assets/images/net_worth_chart.png)
 
 # グラフィカルインターフェイスソフトウェアでデータベースファイルを表示する
 
