@@ -7,7 +7,7 @@ sidebar:
 
 # TataruBook是什么？
 
-TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_and_views_cn.html#简化的复式记账法)的、基于SQL表和视图的、以命令行方式执行的、面向个人或家庭的记账和理财收益计算工具软件。该工具可辅助用户把资产、账户、交易明细等数据输入[DB文件]({{ site.baseurl }}/index_cn.html#什么是DB文件)，并计算出净资产、分类收入支出、投资收益率等各种统计数据。
+TataruBook是一个使用[简化的复式记账法]({{ site.baseurl }}/tables_and_views_cn.html#简化的复式记账法)的、基于SQL表和视图的、以命令行方式执行的、面向个人或家庭的记账和理财收益计算工具软件。该工具可辅助用户把资产、账户、交易明细等数据输入[DB文件]({{ site.baseurl }}/index_cn.html#什么是db文件)，并计算出净资产、分类收入支出、投资收益率等各种统计数据。
 
 # 如何下载和安装TataruBook？
 
